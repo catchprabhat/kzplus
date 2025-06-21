@@ -86,9 +86,9 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-        <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+        <Calendar className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
         Select Dates & Times
       </h3>
       
@@ -96,7 +96,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         {/* Pickup Date & Time */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Calendar className="w-4 h-4 inline mr-1" />
               Pickup Date
             </label>
@@ -105,19 +105,19 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               value={pickupDateTime.date}
               onChange={(e) => handlePickupDateChange(e.target.value)}
               min={today}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Clock className="w-4 h-4 inline mr-1" />
               Pickup Time
             </label>
             <select
               value={pickupDateTime.time}
               onChange={(e) => handlePickupTimeChange(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all bg-white"
             >
               {timeSlots.map((slot) => (
                 <option key={slot.value} value={slot.value}>
@@ -131,7 +131,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         {/* Drop Date & Time */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Calendar className="w-4 h-4 inline mr-1" />
               Drop Date
             </label>
@@ -140,19 +140,19 @@ export const DatePicker: React.FC<DatePickerProps> = ({
               value={dropDateTime.date}
               onChange={(e) => handleDropDateChange(e.target.value)}
               min={pickupDateTime.date || today}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Clock className="w-4 h-4 inline mr-1" />
               Drop Time
             </label>
             <select
               value={dropDateTime.time}
               onChange={(e) => handleDropTimeChange(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white"
+              className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all bg-white"
             >
               {timeSlots.map((slot) => (
                 <option key={slot.value} value={slot.value}>
@@ -165,13 +165,13 @@ export const DatePicker: React.FC<DatePickerProps> = ({
       </div>
       
       {calculateDuration() && (
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+        <div className="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
           <div className="flex justify-between items-center">
-            <span className="text-blue-900 font-medium">Total Duration:</span>
-            <span className="text-blue-900 font-bold">{calculateDuration()}</span>
+            <span className="text-blue-900 dark:text-blue-300 font-medium">Total Duration:</span>
+            <span className="text-blue-900 dark:text-blue-300 font-bold">{calculateDuration()}</span>
           </div>
           {pickupDate && dropDate && (
-            <div className="mt-2 text-sm text-blue-700">
+            <div className="mt-2 text-sm text-blue-700 dark:text-blue-400">
               <div>Pickup: {new Date(pickupDate).toLocaleDateString('en-US', { 
                 weekday: 'long', 
                 year: 'numeric', 

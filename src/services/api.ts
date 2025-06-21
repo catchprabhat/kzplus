@@ -1,6 +1,7 @@
 // Mock API service - replace with your actual API endpoints
-const API_BASE_URL = 'https://api.example.com'; // Replace with your actual API URL
-
+const NETLIFY_DATABASE_URL='postgresql://neondb_owner:npg_c2IJw9LjlbpE@ep-cold-lab-a56reurn-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require'; 
+import { neon } from '@netlify/neon';
+const sql = neon(NETLIFY_DATABASE_URL); // automatically uses env NETLIFY_DATABASE_URL
 export interface ApiBooking {
   id: string;
   carId: string;
@@ -21,7 +22,7 @@ export interface ApiBooking {
 // Mock data for demonstration - remove when connecting to real API
 const mockBookings: ApiBooking[] = [
   {
-    id: 'example-1',
+    id: "car-01",
     carId: '1',
     carName: 'Tesla Model 3',
     carType: 'Electric',
@@ -37,7 +38,7 @@ const mockBookings: ApiBooking[] = [
     createdAt: new Date().toISOString()
   },
   {
-    id: 'example-2',
+    id: "car-02",
     carId: '2',
     carName: 'BMW X5',
     carType: 'SUV',
@@ -53,7 +54,7 @@ const mockBookings: ApiBooking[] = [
     createdAt: new Date().toISOString()
   },
   {
-    id: 'example-3',
+    id: "car-03",
     carId: '3',
     carName: 'Audi A4',
     carType: 'Sedan',
@@ -77,15 +78,15 @@ export const bookingApi = {
   // Fetch all bookings
   async getBookings(): Promise<ApiBooking[]> {
     try {
-      await delay(500); // Simulate network delay
+      const response = await sql`SELECT * FROM CarBookings`
       
       // For demo purposes, return mock data
       // Replace with actual API call:
       // const response = await fetch(`${API_BASE_URL}/bookings`);
       // if (!response.ok) throw new Error('Failed to fetch bookings');
-      // return await response.json();
-      
-      return mockBookings;
+      return await response.json();
+      console.log(booking);
+      return booking as ApiBooking[];
     } catch (error) {
       console.error('Error fetching bookings:', error);
       throw new Error('Failed to fetch bookings');
@@ -99,7 +100,7 @@ export const bookingApi = {
       
       const newBooking: ApiBooking = {
         ...booking,
-        id: Date.now().toString(),
+        id: "car-04",
         createdAt: new Date().toISOString()
       };
 

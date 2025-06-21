@@ -12,25 +12,32 @@ import { OTPLoginForm } from './components/OTPLoginForm';
 import { UserProfile } from './components/UserProfile';
 import { ContactUs } from './components/ContactUs';
 import { TermsAndConditions } from './components/TermsAndConditions';
+import { SalePurchase } from './components/SalePurchase';
+import { AdminPage } from './components/AdminPage';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ErrorMessage } from './components/ErrorMessage';
+import { ThemeToggle } from './components/ThemeToggle';
 import { cars } from './data/cars';
 import { Car, Booking, ServiceBooking as ServiceBookingType } from './types';
 import { useBookings } from './hooks/useBookings';
 import { useServiceBookings } from './hooks/useServiceBookings';
 import { useAuth } from './hooks/useAuth';
+import { useTheme } from './hooks/useTheme';
 
 function App() {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [pickupDate, setPickupDate] = useState('');
   const [dropDate, setDropDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin'>('home');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [latestBooking, setLatestBooking] = useState<Booking | null>(null);
   const [latestServiceBooking, setLatestServiceBooking] = useState<ServiceBookingType | null>(null);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [serviceBookingLoading, setServiceBookingLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Theme
+  const { theme, toggleTheme, isDark } = useTheme();
 
   // Authentication
   const { user, loading: authLoading, isAuthenticated, login, logout, updateProfile } = useAuth();
@@ -58,10 +65,15 @@ function App() {
   // Show loading spinner while checking authentication
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 flex items-center justify-center transition-colors duration-300">
         <LoadingSpinner size="lg" text="Loading..." />
       </div>
     );
+  }
+
+  // Show admin page if admin tab is active
+  if (activeTab === 'admin') {
+    return <AdminPage onBackToHome={() => setActiveTab('home')} />;
   }
 
   // Show login form if not authenticated and trying to access protected routes
@@ -183,36 +195,39 @@ function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 transition-colors duration-300">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <header className="bg-white dark:bg-dark-800 shadow-sm border-b dark:border-dark-700 sticky top-0 z-40 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center cursor-pointer" onClick={() => handleTabChange('home')}>
-              <CarIcon className="w-8 h-8 text-blue-600 mr-3" />
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">DriveEasy</h1>
+              <CarIcon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">DriveEasy</h1>
             </div>
             
             {/* Desktop Header Info & Auth */}
             <div className="hidden md:flex items-center space-x-4">
-              <div className="flex items-center text-sm text-gray-600">
+              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
                 <MapPin className="w-4 h-4 mr-1" />
                 Premium Car Solutions & Services
               </div>
               
+              {/* Theme Toggle */}
+              <ThemeToggle />
+              
               {isAuthenticated ? (
                 <div className="flex items-center space-x-3">
-                  <span className="text-sm text-gray-700">Welcome, {user?.name}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">Welcome, {user?.name}</span>
                   <button
                     onClick={() => handleTabChange('profile')}
-                    className="flex items-center px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    className="flex items-center px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                   >
                     <User className="w-4 h-4 mr-1" />
                     Profile
                   </button>
                   <button
                     onClick={() => handleAuthAction('logout')}
-                    className="px-3 py-2 text-sm text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                    className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg transition-colors"
                   >
                     Logout
                   </button>
@@ -220,7 +235,7 @@ function App() {
               ) : (
                 <button
                   onClick={() => handleAuthAction('login')}
-                  className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  className="flex items-center px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
                 >
                   <User className="w-4 h-4 mr-2" />
                   Login
@@ -230,16 +245,19 @@ function App() {
 
             {/* Mobile Menu Button */}
             {activeTab !== 'home' && (
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                {mobileMenuOpen ? (
-                  <X className="w-6 h-6 text-gray-600" />
-                ) : (
-                  <Menu className="w-6 h-6 text-gray-600" />
-                )}
-              </button>
+              <div className="md:hidden flex items-center space-x-2">
+                <ThemeToggle />
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
+                >
+                  {mobileMenuOpen ? (
+                    <X className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  ) : (
+                    <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  )}
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -281,28 +299,28 @@ function App() {
       {/* Mobile Navigation Overlay */}
       {mobileMenuOpen && activeTab !== 'home' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={() => setMobileMenuOpen(false)}>
-          <div className="fixed top-0 right-0 h-full w-80 bg-white shadow-xl transform transition-transform duration-300 ease-in-out">
+          <div className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-dark-800 shadow-xl transform transition-transform duration-300 ease-in-out">
             <div className="p-6">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="text-xl font-bold text-gray-900">Navigation</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Navigation</h2>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
                 >
-                  <X className="w-6 h-6 text-gray-600" />
+                  <X className="w-6 h-6 text-gray-600 dark:text-gray-300" />
                 </button>
               </div>
               
               {/* User Info */}
               {isAuthenticated && user && (
-                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
                   <div className="flex items-center">
-                    <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                      <User className="w-5 h-5 text-blue-600" />
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mr-3">
+                      <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{user.name}</p>
-                      <p className="text-sm text-gray-600">{user.email}</p>
+                      <p className="font-semibold text-gray-900 dark:text-white">{user.name}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
                     </div>
                   </div>
                 </div>
@@ -318,22 +336,22 @@ function App() {
                       disabled={isDisabled}
                       className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
                         activeTab === key
-                          ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
+                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 dark:border-blue-400'
                           : isDisabled
-                          ? 'text-gray-400 cursor-not-allowed'
-                          : 'text-gray-700 hover:bg-gray-50'
+                          ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
                       }`}
                     >
                       <Icon className="w-5 h-5 mr-3" />
                       <span>{label}</span>
                       {isProtected && !isAuthenticated && (
-                        <span className="ml-auto text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                        <span className="ml-auto text-xs bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
                           Login Required
                         </span>
                       )}
                       {((key === 'bookings' && bookings.length > 0) || 
                         (key === 'service-bookings' && serviceBookings.length > 0)) && (
-                        <span className="ml-auto bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                        <span className="ml-auto bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2 py-1 rounded-full">
                           {key === 'bookings' ? bookings.length : serviceBookings.length}
                         </span>
                       )}
@@ -342,15 +360,15 @@ function App() {
                 })}
                 
                 {/* Auth Actions */}
-                <div className="border-t pt-4 mt-4">
+                <div className="border-t dark:border-dark-600 pt-4 mt-4">
                   {isAuthenticated ? (
                     <>
                       <button
                         onClick={() => handleTabChange('profile')}
                         className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
                           activeTab === 'profile'
-                            ? 'bg-blue-50 text-blue-600 border-l-4 border-blue-600'
-                            : 'text-gray-700 hover:bg-gray-50'
+                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 dark:border-blue-400'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
                         }`}
                       >
                         <User className="w-5 h-5 mr-3" />
@@ -358,7 +376,7 @@ function App() {
                       </button>
                       <button
                         onClick={() => handleAuthAction('logout')}
-                        className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-red-600 hover:bg-red-50 transition-colors"
+                        className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
                       >
                         <User className="w-5 h-5 mr-3" />
                         <span>Logout</span>
@@ -367,7 +385,7 @@ function App() {
                   ) : (
                     <button
                       onClick={() => handleAuthAction('login')}
-                      className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                      className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
                     >
                       <User className="w-5 h-5 mr-3" />
                       <span>Login</span>
@@ -382,7 +400,7 @@ function App() {
 
       {/* Desktop Navigation */}
       {activeTab !== 'home' && (
-        <nav className="bg-white border-b hidden md:block">
+        <nav className="bg-white dark:bg-dark-800 border-b dark:border-dark-700 hidden md:block transition-colors duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex space-x-8 overflow-x-auto">
               {navigationItems.map(({ key, label, icon: Icon, protected: isProtected }) => {
@@ -394,22 +412,22 @@ function App() {
                     disabled={isDisabled}
                     className={`flex items-center px-4 py-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                       activeTab === key
-                        ? 'border-blue-500 text-blue-600'
+                        ? 'border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400'
                         : isDisabled
-                        ? 'border-transparent text-gray-400 cursor-not-allowed'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'border-transparent text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-dark-600'
                     }`}
                   >
                     <Icon className="w-4 h-4 mr-2" />
                     {label}
                     {isProtected && !isAuthenticated && (
-                      <span className="ml-2 text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">
+                      <span className="ml-2 text-xs bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
                         Login Required
                       </span>
                     )}
                     {((key === 'bookings' && bookings.length > 0) || 
                       (key === 'service-bookings' && serviceBookings.length > 0)) && (
-                      <span className="ml-2 bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                      <span className="ml-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
                         {key === 'bookings' ? bookings.length : serviceBookings.length}
                       </span>
                     )}
@@ -423,8 +441,8 @@ function App() {
                   onClick={() => handleTabChange('profile')}
                   className={`flex items-center px-4 py-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
                     activeTab === 'profile'
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-dark-600'
                   }`}
                 >
                   <User className="w-4 h-4 mr-2" />
@@ -438,28 +456,28 @@ function App() {
 
       {/* Mobile Tab Bar for Home */}
       {activeTab === 'home' && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-30 md:hidden">
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
           <div className="grid grid-cols-5 gap-1 p-2">
             <button
               onClick={() => handleServiceNavigation('self-drive')}
-              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
             >
-              <CarIcon className="w-5 h-5 text-blue-600 mb-1" />
-              <span className="text-xs text-gray-600 font-medium">Book Car</span>
+              <CarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Book Car</span>
             </button>
             <button
               onClick={() => handleServiceNavigation('car-services')}
-              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
             >
-              <Wrench className="w-5 h-5 text-green-600 mb-1" />
-              <span className="text-xs text-gray-600 font-medium">Services</span>
+              <Wrench className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Services</span>
             </button>
             <button
               onClick={() => handleTabChange('bookings')}
-              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors relative"
+              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors relative"
             >
-              <Calendar className="w-5 h-5 text-purple-600 mb-1" />
-              <span className="text-xs text-gray-600 font-medium">Bookings</span>
+              <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Bookings</span>
               {!isAuthenticated && (
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                   !
@@ -473,17 +491,17 @@ function App() {
             </button>
             <button
               onClick={() => handleTabChange('contact')}
-              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
             >
-              <MapPin className="w-5 h-5 text-indigo-600 mb-1" />
-              <span className="text-xs text-gray-600 font-medium">Contact</span>
+              <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Contact</span>
             </button>
             <button
               onClick={() => isAuthenticated ? handleTabChange('profile') : handleAuthAction('login')}
-              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
             >
-              <User className="w-5 h-5 text-orange-600 mb-1" />
-              <span className="text-xs text-gray-600 font-medium">
+              <User className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
                 {isAuthenticated ? 'Profile' : 'Login'}
               </span>
             </button>
@@ -499,18 +517,18 @@ function App() {
             <section className="text-center py-12 sm:py-20 relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl sm:rounded-3xl"></div>
               <div className="relative z-10 px-4">
-                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 sm:mb-6">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
                   Your Complete
                   <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 block sm:inline"> Car Solution</span>
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-gray-600 mb-6 sm:mb-8 max-w-3xl mx-auto">
+                <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto">
                   From premium self-drive rentals to professional car services and seamless buying/selling - 
                   everything you need for your automotive journey.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
                   <button
                     onClick={() => handleServiceNavigation('self-drive')}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                    className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
                   >
                     <CarIcon className="w-5 sm:w-6 h-5 sm:h-6 mr-2" />
                     Book Self-Drive Car
@@ -518,7 +536,7 @@ function App() {
                   </button>
                   <button
                     onClick={() => handleServiceNavigation('car-services')}
-                    className="bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                    className="bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-dark-500 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
                   >
                     <Wrench className="w-5 sm:w-6 h-5 sm:h-6 mr-2" />
                     Explore Services
@@ -530,15 +548,15 @@ function App() {
             {/* Services Section */}
             <section className="py-8 sm:py-16">
               <div className="text-center mb-12 sm:mb-16">
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Our Premium Services</h2>
-                <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto px-4">
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Premium Services</h2>
+                <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
                   Comprehensive automotive solutions designed to meet all your car-related needs
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                 {/* Car Services */}
-                <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                <div className="group bg-white dark:bg-dark-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
                   <div className="relative h-48 sm:h-64 overflow-hidden">
                     <img 
                       src="https://images.pexels.com/photos/3806288/pexels-photo-3806288.jpeg?auto=compress&cs=tinysrgb&w=800" 
@@ -551,21 +569,21 @@ function App() {
                     </div>
                   </div>
                   <div className="p-6 sm:p-8">
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Car Services</h3>
-                    <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Car Services</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
                       Professional maintenance, detailing, and repair services for your vehicle. 
                       From basic wash to ceramic coating and mechanical repairs.
                     </p>
                     <div className="space-y-2 mb-6">
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Shield className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-green-500" />
                         Professional certified technicians
                       </div>
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Clock className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-blue-500" />
                         Quick turnaround time
                       </div>
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-yellow-500" />
                         Premium quality service
                       </div>
@@ -581,7 +599,7 @@ function App() {
                 </div>
 
                 {/* Self-Drive Car Rental */}
-                <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
+                <div className="group bg-white dark:bg-dark-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
                   <div className="relative h-48 sm:h-64 overflow-hidden">
                     <img 
                       src="https://images.pexels.com/photos/193991/pexels-photo-193991.jpeg?auto=compress&cs=tinysrgb&w=800" 
@@ -594,21 +612,21 @@ function App() {
                     </div>
                   </div>
                   <div className="p-6 sm:p-8">
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Self-Drive Car Rental</h3>
-                    <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Self-Drive Car Rental</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
                       Premium fleet of well-maintained vehicles for your self-drive adventures. 
                       From economy to luxury cars, find the perfect ride for any occasion.
                     </p>
                     <div className="space-y-2 mb-6">
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Users className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-blue-500" />
                         Wide range of vehicles
                       </div>
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Shield className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-green-500" />
                         Fully insured & sanitized
                       </div>
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Clock className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-purple-500" />
                         24/7 roadside assistance
                       </div>
@@ -624,7 +642,7 @@ function App() {
                 </div>
 
                 {/* Sale/Purchase */}
-                <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden md:col-span-2 lg:col-span-1">
+                <div className="group bg-white dark:bg-dark-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden md:col-span-2 lg:col-span-1">
                   <div className="relative h-48 sm:h-64 overflow-hidden">
                     <img 
                       src="https://images.pexels.com/photos/1592384/pexels-photo-1592384.jpeg?auto=compress&cs=tinysrgb&w=800" 
@@ -637,21 +655,21 @@ function App() {
                     </div>
                   </div>
                   <div className="p-6 sm:p-8">
-                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Sale / Purchase</h3>
-                    <p className="text-gray-600 mb-6 text-sm sm:text-base">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Sale / Purchase</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
                       Seamless car buying and selling experience with verified listings, 
                       fair pricing, and complete documentation assistance.
                     </p>
                     <div className="space-y-2 mb-6">
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Shield className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-green-500" />
                         Verified listings & sellers
                       </div>
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Star className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-yellow-500" />
                         Fair market pricing
                       </div>
-                      <div className="flex items-center text-xs sm:text-sm text-gray-500">
+                      <div className="flex items-center text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                         <Users className="w-3 sm:w-4 h-3 sm:h-4 mr-2 text-blue-500" />
                         Complete documentation help
                       </div>
@@ -669,45 +687,45 @@ function App() {
             </section>
 
             {/* Features Section */}
-            <section className="py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50 rounded-2xl sm:rounded-3xl">
+            <section className="py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-dark-800 dark:to-dark-700 rounded-2xl sm:rounded-3xl transition-colors duration-300">
               <div className="text-center mb-12 sm:mb-16 px-4">
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Why Choose DriveEasy?</h2>
-                <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Why Choose DriveEasy?</h2>
+                <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                   We're committed to providing exceptional automotive solutions with unmatched service quality
                 </p>
               </div>
 
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 px-4">
                 <div className="text-center p-4 sm:p-6">
-                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600" />
+                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Trusted & Secure</h3>
-                  <p className="text-sm sm:text-base text-gray-600">Fully verified services with comprehensive insurance coverage</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Trusted & Secure</h3>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Fully verified services with comprehensive insurance coverage</p>
                 </div>
 
                 <div className="text-center p-4 sm:p-6">
-                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Clock className="w-6 sm:w-8 h-6 sm:h-8 text-green-600" />
+                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Clock className="w-6 sm:w-8 h-6 sm:h-8 text-green-600 dark:text-green-400" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">24/7 Support</h3>
-                  <p className="text-sm sm:text-base text-gray-600">Round-the-clock customer support and roadside assistance</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">24/7 Support</h3>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Round-the-clock customer support and roadside assistance</p>
                 </div>
 
                 <div className="text-center p-4 sm:p-6">
-                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Star className="w-6 sm:w-8 h-6 sm:h-8 text-purple-600" />
+                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Star className="w-6 sm:w-8 h-6 sm:h-8 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Premium Quality</h3>
-                  <p className="text-sm sm:text-base text-gray-600">High-quality vehicles and professional service standards</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Premium Quality</h3>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">High-quality vehicles and professional service standards</p>
                 </div>
 
                 <div className="text-center p-4 sm:p-6">
-                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-                    <Users className="w-6 sm:w-8 h-6 sm:h-8 text-yellow-600" />
+                  <div className="w-12 sm:w-16 h-12 sm:h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                    <Users className="w-6 sm:w-8 h-6 sm:h-8 text-yellow-600 dark:text-yellow-400" />
                   </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Customer First</h3>
-                  <p className="text-sm sm:text-base text-gray-600">Personalized service tailored to your specific needs</p>
+                  <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Customer First</h3>
+                  <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Personalized service tailored to your specific needs</p>
                 </div>
               </div>
             </section>
@@ -744,17 +762,17 @@ function App() {
           <div className="space-y-8">
             {/* Hero Section */}
             <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
                 Find Your Perfect Ride
               </h2>
-              <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+              <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                 Choose from our premium fleet of self-drive cars and experience the freedom of the road
               </p>
             </div>
 
             {/* Car Selection */}
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Choose Your Car</h3>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Choose Your Car</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cars.map(car => (
                   <CarCard
@@ -789,13 +807,13 @@ function App() {
         {activeTab === 'calendar' && (
           <div>
             <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Booking Calendar</h2>
-              <p className="text-base sm:text-lg text-gray-600">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Booking Calendar</h2>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                 View all car bookings in a monthly calendar format with color-coded vehicle types
               </p>
             </div>
             {loading ? (
-              <div className="bg-white rounded-xl shadow-lg p-8">
+              <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8">
                 <LoadingSpinner size="lg" text="Loading calendar..." />
               </div>
             ) : (
@@ -807,8 +825,8 @@ function App() {
         {activeTab === 'bookings' && (
           <div>
             <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">My Bookings</h2>
-              <p className="text-base sm:text-lg text-gray-600">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">My Bookings</h2>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                 Manage and view all your car reservations
               </p>
             </div>
@@ -831,8 +849,8 @@ function App() {
         {activeTab === 'service-bookings' && (
           <div>
             <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Service Bookings</h2>
-              <p className="text-base sm:text-lg text-gray-600">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Service Bookings</h2>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                 Manage and view all your car service appointments
               </p>
             </div>
@@ -845,44 +863,7 @@ function App() {
           </div>
         )}
 
-        {activeTab === 'sale-purchase' && (
-          <div className="space-y-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                Car Sale & Purchase
-              </h2>
-              <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-                Buy or sell your car with confidence through our verified marketplace
-              </p>
-            </div>
-
-            <div className="bg-white rounded-xl shadow-lg p-6 sm:p-8 text-center">
-              <CarIcon className="w-12 sm:w-16 h-12 sm:h-16 text-blue-600 mx-auto mb-6" />
-              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Coming Soon!</h3>
-              <p className="text-base sm:text-lg text-gray-600 mb-6">
-                Our car marketplace is under development. Soon you'll be able to buy and sell cars 
-                with complete verification, fair pricing, and documentation assistance.
-              </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-gray-900">Verified Listings</h4>
-                  <p className="text-sm text-gray-600">All cars and sellers thoroughly verified</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <Star className="w-6 sm:w-8 h-6 sm:h-8 text-green-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-gray-900">Fair Pricing</h4>
-                  <p className="text-sm text-gray-600">Market-based pricing with transparency</p>
-                </div>
-                <div className="p-4 bg-purple-50 rounded-lg">
-                  <Users className="w-6 sm:w-8 h-6 sm:h-8 text-purple-600 mx-auto mb-2" />
-                  <h4 className="font-semibold text-gray-900">Full Support</h4>
-                  <p className="text-sm text-gray-600">Complete documentation and legal assistance</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {activeTab === 'sale-purchase' && <SalePurchase />}
 
         {activeTab === 'contact' && <ContactUs />}
 
@@ -891,8 +872,8 @@ function App() {
         {activeTab === 'settings' && (
           <div>
             <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">Notification Settings</h2>
-              <p className="text-base sm:text-lg text-gray-600">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Notification Settings</h2>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                 Configure email and WhatsApp notifications for bookings
               </p>
             </div>
@@ -903,8 +884,8 @@ function App() {
         {activeTab === 'profile' && isAuthenticated && user && (
           <div>
             <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">User Profile</h2>
-              <p className="text-base sm:text-lg text-gray-600">
+              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">User Profile</h2>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                 Manage your account information and preferences
               </p>
             </div>
@@ -918,7 +899,7 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white mt-16">
+      <footer className="bg-gray-900 dark:bg-dark-950 text-white mt-16 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="col-span-2 md:col-span-1">
@@ -964,7 +945,7 @@ function App() {
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+          <div className="border-t border-gray-800 dark:border-dark-700 mt-8 pt-8 text-center text-gray-400">
             <p>&copy; 2025 DriveEasy. All rights reserved.</p>
           </div>
         </div>

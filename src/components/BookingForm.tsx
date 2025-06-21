@@ -99,16 +99,16 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   const isFormValid = selectedCar && pickupDate && dropDate && customerData.name && customerData.email && customerData.phone;
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-        <User className="w-5 h-5 mr-2 text-blue-600" />
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+        <User className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
         Booking Details
       </h3>
 
       {selectedCar && pickupDate && dropDate && (
-        <div className="mb-6 p-4 bg-gray-50 rounded-lg">
-          <h4 className="font-semibold text-gray-900 mb-2">Booking Summary</h4>
-          <div className="space-y-2 text-sm text-gray-700">
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg">
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Booking Summary</h4>
+          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
             <div className="flex justify-between">
               <span>Car:</span>
               <span className="font-medium">{selectedCar.name}</span>
@@ -129,12 +129,12 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <span>Rate:</span>
               <span className="font-medium">${selectedCar.pricePerDay}/day</span>
             </div>
-            <div className="flex justify-between border-t pt-2 font-bold text-blue-900">
+            <div className="flex justify-between border-t dark:border-dark-600 pt-2 font-bold text-blue-900 dark:text-blue-300">
               <span>Total:</span>
               <span>${calculateTotalPrice()}</span>
             </div>
           </div>
-          <div className="mt-3 text-xs text-gray-500">
+          <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
             <div>Pickup: {new Date(pickupDate).toLocaleDateString('en-US', { 
               weekday: 'short', 
               month: 'short', 
@@ -159,7 +159,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <User className="w-4 h-4 inline mr-1" />
             Full Name
           </label>
@@ -167,7 +167,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="text"
             value={customerData.name}
             onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your full name"
             required
             disabled={loading}
@@ -175,7 +175,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Mail className="w-4 h-4 inline mr-1" />
             Email Address
           </label>
@@ -183,7 +183,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="email"
             value={customerData.email}
             onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your email"
             required
             disabled={loading}
@@ -191,7 +191,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             <Phone className="w-4 h-4 inline mr-1" />
             Phone Number
           </label>
@@ -199,7 +199,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="tel"
             value={customerData.phone}
             onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your phone number"
             required
             disabled={loading}
@@ -211,8 +211,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           disabled={!isFormValid || loading}
           className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center transition-all ${
             isFormValid && !loading
-              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
-              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white shadow-lg hover:shadow-xl'
+              : 'bg-gray-300 dark:bg-dark-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
           }`}
         >
           {loading ? (

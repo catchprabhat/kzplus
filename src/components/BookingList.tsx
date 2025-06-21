@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit } from 'lucide-react';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
+import { ApiBooking } from '../services/api';
 
 interface BookingListProps {
   bookings: Booking[];
@@ -18,9 +19,25 @@ export const BookingList: React.FC<BookingListProps> = ({
 }) => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [filteredBookings, setFilteredBookings] = useState<ApiBooking[]>();
+
+  useEffect(() => {
+    let filterdList = async () => {
+      const bookings = await getBookings();
+      return bookings;
+    };
+    filterdList().then(bookings => {
+      debugger;
+      setFilteredBookings(bookings);
+    });
+    /*const filtered = bookings.filter(booking => 
+      booking.customerPhone.includes(phoneFilter)
+    );*/
+    //setFilteredBookings(null);
+  }, []);
 
   const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
+    return new Date(date.toString()).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
