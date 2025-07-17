@@ -711,7 +711,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full">
         {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
           <div className="flex items-center justify-between">
@@ -744,14 +744,14 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-200px)]">
+        <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]">
           <form onSubmit={handleSubmit}>
             {renderStepContent()}
           </form>
         </div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 p-6">
+        <div className="border-t bg-gray-50 p-1 pb-2 min-h-[60px] sticky bottom-0 z-10">
           <div className="flex justify-between">
             <button
               type="button"
@@ -762,7 +762,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
               Previous
             </button>
 
-            <div className="flex space-x-3">
+            <div className="flex space-x-4">
               <button
                 type="button"
                 onClick={onCancel}

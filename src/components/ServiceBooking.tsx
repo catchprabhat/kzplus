@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { Search, Car, Phone, Calendar, Clock, User, Mail, Plus, Minus, Wrench, ArrowRight, UserPlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Car, Phone, Calendar, Clock, User, Mail, Plus, Minus, Wrench, UserPlus } from 'lucide-react';
 import { Service, Vehicle, ServiceBooking as ServiceBookingType } from '../types';
 import { services } from '../data/services';
 import { LoadingSpinner } from './LoadingSpinner';
-import { ErrorMessage } from './ErrorMessage';
 import { CustomerDetailsForm, CustomerFormData } from './CustomerDetailsForm';
 
 interface ServiceBookingProps {
@@ -15,6 +14,11 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   onServiceBookingComplete,
   loading = false
 }) => {
+  // Add useEffect to scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'vehicle' | 'phone'>('vehicle');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -29,6 +33,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   });
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+  const [searchAttempted, setSearchAttempted] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [customerFormLoading, setCustomerFormLoading] = useState(false);
 
@@ -39,6 +44,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     try {
       setSearchLoading(true);
       setSearchError(null);
+      setSearchAttempted(true);
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -70,11 +76,8 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             notes: ''
           });
         } else {
-          // Customer not found - show registration form
-          setSearchError('Customer not found. Please register as a new customer.');
-          setTimeout(() => {
-            setShowCustomerForm(true);
-          }, 1000);
+          // Customer not found - show new customer message
+          setSearchError('Customer not found.');
         }
       } else {
         // Search by vehicle number
@@ -87,11 +90,8 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             notes: ''
           });
         } else {
-          // Vehicle not found - show registration form
-          setSearchError('Vehicle not found. Please register as a new customer.');
-          setTimeout(() => {
-            setShowCustomerForm(true);
-          }, 1000);
+          // Vehicle not found - show new customer message without error
+          setSelectedVehicle(null);
         }
       }
     } catch (error) {
@@ -143,6 +143,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       // Close the form
       setShowCustomerForm(false);
       setSearchError(null);
+      setSearchAttempted(false);
       
       // Clear search query and update it with the new vehicle number
       setSearchQuery(formData.vehicleNumber);
@@ -233,6 +234,28 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     setScheduledTime('09:00');
     setCustomerData({ name: '', email: '', phone: '', notes: '' });
     setSearchQuery('');
+    setSearchAttempted(false);
+  };
+
+  const handleRepeatService = () => {
+    // Auto-select the last service if available
+    if (selectedVehicle?.lastServiceDate) {
+      const previousService = services.find(s => s.id === 'wash-premium'); // Mock: replace with actual last service
+      if (previousService && !selectedServices.find(s => s.id === previousService.id)) {
+        setSelectedServices([previousService]);
+      }
+    }
+    // Scroll to booking form
+    setTimeout(() => {
+      document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' });
+    }, 500);
+  };
+
+  const handleSelectService = () => {
+    // Scroll to service selection
+    setTimeout(() => {
+      document.getElementById('service-selection')?.scrollIntoView({ behavior: 'smooth' });
+    }, 500);
   };
 
   const today = new Date().toISOString().split('T')[0];
@@ -249,7 +272,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         />
       )}
 
-      {/* Hero Section with Quick Book Button */}
+      {/* Hero Section with Vehicle Search */}
       <div className="text-center mb-12">
         <h2 className="text-4xl font-bold text-gray-900 mb-4">
           Book Car Services
@@ -258,59 +281,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           Professional car maintenance and detailing services at your convenience
         </p>
         
-        {/* Quick Book Service Button */}
-        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl p-6 mb-8 max-w-md mx-auto">
-          <div className="text-white text-center">
-            <Wrench className="w-8 h-8 mx-auto mb-3" />
-            <h3 className="text-xl font-bold mb-2">Quick Service Booking</h3>
-            <p className="text-green-100 mb-4 text-sm">
-              Skip the search - book popular services instantly
-            </p>
-            <button
-              onClick={() => {
-                // Auto-fill with demo data for quick booking
-                setSelectedVehicle({
-                  id: 'quick-1',
-                  vehicleNumber: 'QUICK123',
-                  name: 'Honda Civic',
-                  type: 'Sedan',
-                  model: 'Civic LX',
-                  year: 2022,
-                  color: 'Silver',
-                  ownerName: 'Quick Book User',
-                  ownerPhone: '+1-555-QUICK',
-                  ownerEmail: 'quick@example.com',
-                  lastServiceDate: new Date(2024, 10, 15),
-                  createdAt: new Date()
-                });
-                setCustomerData({
-                  name: 'Quick Book User',
-                  email: 'quick@example.com',
-                  phone: '+1-555-QUICK',
-                  notes: 'Quick booking demo'
-                });
-                // Auto-select popular service
-                const popularService = services.find(s => s.id === 'wash-premium');
-                if (popularService) {
-                  setSelectedServices([popularService]);
-                }
-                // Scroll to booking form
-                document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="bg-white text-green-600 hover:bg-green-50 px-6 py-3 rounded-xl font-semibold transition-all transform hover:scale-105 flex items-center justify-center mx-auto"
-            >
-              <Calendar className="w-5 h-5 mr-2" />
-              Quick Book Service
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-8">
-        {/* Vehicle Search */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+        {/* Find Your Vehicle Card */}
+        <div className="bg-white rounded-xl shadow-lg p-6 max-w-md mx-auto">
+          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center justify-center">
             <Search className="w-5 h-5 mr-2 text-blue-600" />
             Find Your Vehicle
           </h3>
@@ -345,7 +318,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setSearchAttempted(false); // Reset searchAttempted when typing
+                }}
                 placeholder={searchType === 'vehicle' ? 'Enter vehicle number (e.g., ABC123)' : 'Enter phone number (e.g., 5550123)'}
                 className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 disabled={searchLoading}
@@ -363,35 +339,35 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               </button>
             </div>
 
-            {/* New Customer Button */}
-            <div className="text-center">
-              <button
-                onClick={() => setShowCustomerForm(true)}
-                className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
-              >
-                <UserPlus className="w-4 h-4 mr-2" />
-                New Customer? Register Here
-              </button>
-            </div>
+            {/* New Customer Button - Only show if no vehicle is selected and no search has been attempted */}
+            {!selectedVehicle && !searchAttempted && (
+              <div className="text-center">
+                <button
+                  onClick={() => setShowCustomerForm(true)}
+                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <UserPlus className="w-4 h-4 mr-2" />
+                  New Customer? Register Here
+                </button>
+              </div>
+            )}
 
-            {searchError && (
-              <div className="space-y-3">
-                <ErrorMessage message={searchError} onRetry={searchVehicle} />
-                {searchError.includes('not found') && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="font-semibold text-blue-900 mb-2">New Customer?</h4>
-                    <p className="text-blue-800 text-sm mb-3">
-                      Don't worry! We'll help you register quickly and get your vehicle serviced.
-                    </p>
-                    <button
-                      onClick={() => setShowCustomerForm(true)}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center"
-                    >
-                      <UserPlus className="w-4 h-4 mr-2" />
-                      Register Now
-                    </button>
-                  </div>
-                )}
+            {/* New Customer Message - Show only after search attempt */}
+            {searchAttempted && (searchError || !selectedVehicle) && !searchLoading && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-semibold text-blue-900 mb-2">New Customer?</h4>
+                <p className="text-blue-800 text-sm mb-3">
+                  Don't worry! We'll help you register quickly and get your vehicle serviced.
+                </p>
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => setShowCustomerForm(true)}
+                    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Register Now
+                  </button>
+                </div>
               </div>
             )}
 
@@ -411,13 +387,32 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                     <strong>Last Service:</strong> {selectedVehicle.lastServiceDate.toLocaleDateString()}
                   </div>
                 )}
+                <div className="mt-4 flex space-x-4">
+                  <button
+                    onClick={handleRepeatService}
+                    className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Repeat Service
+                  </button>
+                  <button
+                    onClick={handleSelectService}
+                    className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                  >
+                    <Wrench className="w-4 h-4 mr-2" />
+                    Select Service
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
+      </div>
 
+      {/* Service Selection and Booking Form */}
+      <div className="grid lg:grid-cols-2 gap-8">
         {/* Service Selection */}
-        <div id="service-selection" className="bg-white rounded-xl shadow-lg p-6">
+        <div id="service-selection" className="bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl">
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <Wrench className="w-5 h-5 mr-2 text-blue-600" />
             Select Services
@@ -488,11 +483,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             </div>
           )}
         </div>
-      </div>
 
-      {/* Booking Form */}
-      {selectedVehicle && selectedServices.length > 0 && (
-        <div id="booking-form" className="bg-white rounded-xl shadow-lg p-6">
+        {/* Booking Form */}
+        <div id="booking-form" className="bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl">
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <Calendar className="w-5 h-5 mr-2 text-blue-600" />
             Schedule Service
@@ -620,7 +613,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             </button>
           </form>
         </div>
-      )}
+      </div>
     </div>
   );
 };
