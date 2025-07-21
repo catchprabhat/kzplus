@@ -19,7 +19,6 @@ import {
 } from 'lucide-react';
 import { CarSubmission } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
-import { apiService } from '../services/api';
 
 interface AdminDashboardProps {
   submissions: CarSubmission[];
@@ -202,7 +201,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600 dark:text-gray-400">Price/Day:</span>
-                      <span className="font-medium text-green-600 dark:text-green-400">${selectedSubmission.pricePerDay}/day</span>
+                      <span className="font-medium text-green-600 dark:text-green-400">${selectedSubmission.pricePerDay}</span>
                     </div>
                   </div>
                 </div>
