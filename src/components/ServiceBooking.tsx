@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Car, Phone, Calendar, Clock, User, Mail, Plus, Minus, Wrench, UserPlus } from 'lucide-react';
+import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { Search, Car, Phone, Calendar, Clock, User, Mail, Plus, Minus, Wrench, UserPlus, CheckCircle } from 'lucide-react';
 import { Service, Vehicle, ServiceBooking as ServiceBookingType } from '../types';
 import { services } from '../data/services';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -14,11 +15,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   onServiceBookingComplete,
   loading = false
 }) => {
-  // Add useEffect to scroll to top when component mounts
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'vehicle' | 'phone'>('vehicle');
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
@@ -36,20 +36,19 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [searchAttempted, setSearchAttempted] = useState(false);
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [customerFormLoading, setCustomerFormLoading] = useState(false);
+  const [isRepeatServiceMode, setIsRepeatServiceMode] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  // Mock vehicle search - replace with actual API call
   const searchVehicle = async () => {
     if (!searchQuery.trim()) return;
-    
+
     try {
       setSearchLoading(true);
       setSearchError(null);
       setSearchAttempted(true);
-      
-      // Simulate API delay
+
       await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Mock vehicle data - replace with actual API call
+
       const mockVehicle: Vehicle = {
         id: '1',
         vehicleNumber: searchQuery.toUpperCase(),
@@ -64,8 +63,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         lastServiceDate: new Date(2024, 10, 15),
         createdAt: new Date()
       };
-      
-      // Simulate search by phone number
+
       if (searchType === 'phone') {
         if (searchQuery === '5550123' || searchQuery === '+1-555-0123') {
           setSelectedVehicle(mockVehicle);
@@ -76,11 +74,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             notes: ''
           });
         } else {
-          // Customer not found - show new customer message
           setSearchError('Customer not found.');
         }
       } else {
-        // Search by vehicle number
         if (searchQuery.toLowerCase().includes('abc') || searchQuery.toLowerCase().includes('123')) {
           setSelectedVehicle(mockVehicle);
           setCustomerData({
@@ -90,7 +86,6 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             notes: ''
           });
         } else {
-          // Vehicle not found - show new customer message without error
           setSelectedVehicle(null);
         }
       }
@@ -105,11 +100,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const handleCustomerRegistration = async (formData: CustomerFormData) => {
     try {
       setCustomerFormLoading(true);
-      
-      // Simulate API call to register customer
+
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Create vehicle object from form data
+
       const newVehicle: Vehicle = {
         id: Date.now().toString(),
         vehicleNumber: formData.vehicleNumber,
@@ -124,8 +117,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         lastServiceDate: formData.lastServiceDate ? new Date(formData.lastServiceDate) : undefined,
         createdAt: new Date()
       };
-      
-      // Set the vehicle and customer data
+
       setSelectedVehicle(newVehicle);
       setCustomerData({
         name: formData.name,
@@ -133,26 +125,21 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         phone: formData.phone,
         notes: formData.specialRequests || ''
       });
-      
-      // Set service preferences from form
+
       if (formData.preferredDate) {
         setScheduledDate(formData.preferredDate);
       }
       setScheduledTime(formData.preferredTime);
-      
-      // Close the form
+
       setShowCustomerForm(false);
       setSearchError(null);
       setSearchAttempted(false);
-      
-      // Clear search query and update it with the new vehicle number
+
       setSearchQuery(formData.vehicleNumber);
-      
-      // Scroll to service selection
+
       setTimeout(() => {
         document.getElementById('service-selection')?.scrollIntoView({ behavior: 'smooth' });
       }, 500);
-      
     } catch (error) {
       console.error('Failed to register customer:', error);
     } finally {
@@ -161,6 +148,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   };
 
   const handleServiceToggle = (service: Service) => {
+    if (isRepeatServiceMode) return;
     setSelectedServices(prev => {
       const exists = prev.find(s => s.id === service.id);
       if (exists) {
@@ -205,54 +193,57 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedVehicle || selectedServices.length === 0 || !scheduledDate || loading) return;
 
-    const serviceBooking: ServiceBookingType = {
-      id: Date.now().toString(),
-      vehicleNumber: selectedVehicle.vehicleNumber,
-      vehicleName: selectedVehicle.name,
-      vehicleType: selectedVehicle.type,
-      customerName: customerData.name,
-      customerPhone: customerData.phone,
-      customerEmail: customerData.email,
-      services: selectedServices,
-      totalPrice: calculateTotal(),
-      scheduledDate: new Date(scheduledDate),
-      scheduledTime,
-      status: 'pending',
-      notes: customerData.notes,
-      createdAt: new Date()
-    };
+    setShowSuccess(true);
+    setTimeout(() => {
+      setShowSuccess(false);
+      const serviceBooking: ServiceBookingType = {
+        id: Date.now().toString(),
+        vehicleNumber: selectedVehicle.vehicleNumber,
+        vehicleName: selectedVehicle.name,
+        vehicleType: selectedVehicle.type,
+        customerName: customerData.name,
+        customerPhone: customerData.phone,
+        customerEmail: customerData.email,
+        services: selectedServices,
+        totalPrice: calculateTotal(),
+        scheduledDate: new Date(scheduledDate),
+        scheduledTime,
+        status: 'pending',
+        notes: customerData.notes,
+        createdAt: new Date()
+      };
 
-    onServiceBookingComplete(serviceBooking);
-    
-    // Reset form
-    setSelectedVehicle(null);
-    setSelectedServices([]);
-    setScheduledDate('');
-    setScheduledTime('09:00');
-    setCustomerData({ name: '', email: '', phone: '', notes: '' });
-    setSearchQuery('');
-    setSearchAttempted(false);
+      onServiceBookingComplete(serviceBooking);
+
+      setSelectedVehicle(null);
+      setSelectedServices([]);
+      setScheduledDate('');
+      setScheduledTime('09:00');
+      setCustomerData({ name: '', email: '', phone: '', notes: '' });
+      setSearchQuery('');
+      setSearchAttempted(false);
+      setIsRepeatServiceMode(false);
+    }, 1000);
   };
 
   const handleRepeatService = () => {
-    // Auto-select the last service if available
+    setIsRepeatServiceMode(true);
     if (selectedVehicle?.lastServiceDate) {
-      const previousService = services.find(s => s.id === 'wash-premium'); // Mock: replace with actual last service
+      const previousService = services.find(s => s.id === 'wash-premium');
       if (previousService && !selectedServices.find(s => s.id === previousService.id)) {
         setSelectedServices([previousService]);
       }
     }
-    // Scroll to booking form
     setTimeout(() => {
       document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' });
     }, 500);
   };
 
   const handleSelectService = () => {
-    // Scroll to service selection
+    setIsRepeatServiceMode(false);
     setTimeout(() => {
       document.getElementById('service-selection')?.scrollIntoView({ behavior: 'smooth' });
     }, 500);
@@ -261,8 +252,56 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const today = new Date().toISOString().split('T')[0];
   const isFormValid = selectedVehicle && selectedServices.length > 0 && scheduledDate && customerData.name && customerData.phone;
 
+  // Animation variants
+  const containerVariants: Variants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: 'easeOut' } }
+  };
+
+  const cardVariants: Variants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: i * 0.1, duration: 0.3 }
+    })
+  };
+
+  const successVariants: Variants = {
+    hidden: { scale: 0, opacity: 0 },
+    visible: { 
+      scale: 1, 
+      opacity: 1, 
+      transition: { 
+        type: 'spring', 
+        stiffness: 200, 
+        damping: 10 
+      }
+    }
+  };
+
   return (
-    <div className="space-y-8">
+    <motion.div 
+      className="space-y-8 relative"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Success Animation Overlay */}
+      <AnimatePresence>
+        {showSuccess && (
+          <motion.div
+            className="absolute inset-0 bg-green-500 bg-opacity-90 flex items-center justify-center z-50"
+            variants={successVariants}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+          >
+            <CheckCircle className="w-16 h-16 text-white" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Customer Registration Form Modal */}
       {showCustomerForm && (
         <CustomerDetailsForm
@@ -274,15 +313,29 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
       {/* Hero Section with Vehicle Search */}
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+        <motion.h2 
+          className="text-4xl font-bold text-gray-900 mb-4"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.4 }}
+        >
           Book Car Services
-        </h2>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
+        </motion.h2>
+        <motion.p 
+          className="text-xl text-gray-600 max-w-2xl mx-auto mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+        >
           Professional car maintenance and detailing services at your convenience
-        </p>
-        
+        </motion.p>
+
         {/* Find Your Vehicle Card */}
-        <div className="bg-white rounded-xl shadow-lg p-6 max-w-md mx-auto">
+        <motion.div 
+          className="bg-white rounded-xl shadow-lg p-6 max-w-md mx-auto"
+          variants={cardVariants}
+          custom={0}
+        >
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center justify-center">
             <Search className="w-5 h-5 mr-2 text-blue-600" />
             Find Your Vehicle
@@ -290,152 +343,246 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
           <div className="space-y-4">
             <div className="flex space-x-4">
-              <button
+              <motion.button
                 onClick={() => setSearchType('vehicle')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
                   searchType === 'vehicle'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                } relative overflow-hidden`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Car className="w-4 h-4 inline mr-2" />
-                Vehicle Number
-              </button>
-              <button
+                <span className="relative z-10">
+                  <Car className="w-4 h-4 inline mr-2" />
+                  Vehicle Number
+                </span>
+                <motion.span
+                  className="absolute inset-0 bg-blue-500 opacity-0"
+                  whileTap={{ opacity: 0.3, scale: 2 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </motion.button>
+              <motion.button
                 onClick={() => setSearchType('phone')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
                   searchType === 'phone'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                } relative overflow-hidden`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <Phone className="w-4 h-4 inline mr-2" />
-                Phone Number
-              </button>
+                <span className="relative z-10">
+                  <Phone className="w-4 h-4 inline mr-2" />
+                  Phone Number
+                </span>
+                <motion.span
+                  className="absolute inset-0 bg-blue-500 opacity-0"
+                  whileTap={{ opacity: 0.3, scale: 2 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </motion.button>
             </div>
 
             <div className="flex space-x-2">
-              <input
+              <motion.input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  setSearchAttempted(false); // Reset searchAttempted when typing
+                  setSearchAttempted(false);
                 }}
                 placeholder={searchType === 'vehicle' ? 'Enter vehicle number (e.g., ABC123)' : 'Enter phone number (e.g., 5550123)'}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                 disabled={searchLoading}
+                whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
               />
-              <button
+              <motion.button
                 onClick={searchVehicle}
                 disabled={!searchQuery.trim() || searchLoading}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center"
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center relative overflow-hidden"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                {searchLoading ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  <Search className="w-5 h-5" />
-                )}
-              </button>
+                <span className="relative z-10">
+                  {searchLoading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <Search className="w-5 h-5" />
+                  )}
+                </span>
+                <motion.span
+                  className="absolute inset-0 bg-blue-500 opacity-0"
+                  whileTap={{ opacity: 0.3, scale: 2 }}
+                  transition={{ duration: 0.2 }}
+                />
+              </motion.button>
             </div>
 
-            {/* New Customer Button - Only show if no vehicle is selected and no search has been attempted */}
-            {!selectedVehicle && !searchAttempted && (
-              <div className="text-center">
-                <button
-                  onClick={() => setShowCustomerForm(true)}
-                  className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors"
+            {/* New Customer Button */}
+            <AnimatePresence>
+              {!selectedVehicle && !searchAttempted && (
+                <motion.div
+                  className="text-center"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <UserPlus className="w-4 h-4 mr-2" />
-                  New Customer? Register Here
-                </button>
-              </div>
-            )}
-
-            {/* New Customer Message - Show only after search attempt */}
-            {searchAttempted && (searchError || !selectedVehicle) && !searchLoading && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <h4 className="font-semibold text-blue-900 mb-2">New Customer?</h4>
-                <p className="text-blue-800 text-sm mb-3">
-                  Don't worry! We'll help you register quickly and get your vehicle serviced.
-                </p>
-                <div className="flex justify-center">
-                  <button
+                  <motion.button
                     onClick={() => setShowCustomerForm(true)}
-                    className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                    className="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-all duration-200 relative overflow-hidden space-x-2"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                   >
-                    <UserPlus className="w-4 h-4 mr-2" />
-                    Register Now
-                  </button>
-                </div>
-              </div>
-            )}
+                    <UserPlus className="w-4 h-4" />
+                    <span className="relative z-10">New Customer? Register Here</span>
+                    <motion.span
+                      className="absolute inset-0 bg-green-500 opacity-0"
+                      whileTap={{ opacity: 0.3, scale: 2 }}
+                      transition={{ duration: 0.2 }}
+                    />
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {selectedVehicle && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-semibold text-green-900 mb-2">Vehicle Found!</h4>
-                <div className="grid grid-cols-2 gap-2 text-sm text-green-800">
-                  <div><strong>Vehicle:</strong> {selectedVehicle.name}</div>
-                  <div><strong>Number:</strong> {selectedVehicle.vehicleNumber}</div>
-                  <div><strong>Type:</strong> {selectedVehicle.type}</div>
-                  <div><strong>Year:</strong> {selectedVehicle.year}</div>
-                  <div><strong>Owner:</strong> {selectedVehicle.ownerName}</div>
-                  <div><strong>Phone:</strong> {selectedVehicle.ownerPhone}</div>
-                </div>
-                {selectedVehicle.lastServiceDate && (
-                  <div className="mt-2 text-sm text-green-700">
-                    <strong>Last Service:</strong> {selectedVehicle.lastServiceDate.toLocaleDateString()}
+            {/* New Customer Message */}
+            <AnimatePresence>
+              {searchAttempted && (searchError || !selectedVehicle) && !searchLoading && (
+                <motion.div
+                  className="bg-blue-50 border border-blue-200 rounded-lg p-4"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <h4 className="font-semibold text-blue-900 mb-2">New Customer?</h4>
+                  <p className="text-blue-800 text-sm mb-3">
+                    Don't worry! We'll help you register quickly and get your vehicle serviced.
+                  </p>
+                  <div className="flex justify-center">
+                    <motion.button
+                      onClick={() => setShowCustomerForm(true)}
+                      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 relative overflow-hidden space-x-2"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      <span className="relative z-10">Register Now</span>
+                      <motion.span
+                        className="absolute inset-0 bg-blue-500 opacity-0"
+                        whileTap={{ opacity: 0.3, scale: 2 }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    </motion.button>
                   </div>
-                )}
-                <div className="mt-4 flex space-x-4">
-                  <button
-                    onClick={handleRepeatService}
-                    className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Repeat Service
-                  </button>
-                  <button
-                    onClick={handleSelectService}
-                    className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
-                  >
-                    <Wrench className="w-4 h-4 mr-2" />
-                    Select Service
-                  </button>
-                </div>
-              </div>
-            )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Vehicle Found */}
+            <AnimatePresence>
+              {selectedVehicle && (
+                <motion.div
+                  className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <h4 className="font-semibold text-green-900 mb-2">Vehicle Found!</h4>
+                  <div className="grid grid-cols-2 gap-2 text-sm text-green-800">
+                    <div><strong>Vehicle:</strong> {selectedVehicle.name}</div>
+                    <div><strong>Number:</strong> {selectedVehicle.vehicleNumber}</div>
+                    <div><strong>Type:</strong> {selectedVehicle.type}</div>
+                    <div><strong>Year:</strong> {selectedVehicle.year}</div>
+                    <div><strong>Owner:</strong> {selectedVehicle.ownerName}</div>
+                    <div><strong>Phone:</strong> {selectedVehicle.ownerPhone}</div>
+                  </div>
+                  {selectedVehicle.lastServiceDate && (
+                    <div className="mt-2 text-sm text-green-700">
+                      <strong>Last Service:</strong> {selectedVehicle.lastServiceDate.toLocaleDateString()}
+                    </div>
+                  )}
+                  <div className="mt-4 flex space-x-4">
+                    <motion.button
+                      onClick={handleRepeatService}
+                      className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center relative overflow-hidden"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className="relative z-10">
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Repeat Service
+                      </span>
+                      <motion.span
+                        className="absolute inset-0 bg-blue-500 opacity-0"
+                        whileTap={{ opacity: 0.3, scale: 2 }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    </motion.button>
+                    <motion.button
+                      onClick={handleSelectService}
+                      className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center relative overflow-hidden"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <span className="relative z-10">
+                        <Wrench className="w-4 h-4 mr-2" />
+                        More Service
+                      </span>
+                      <motion.span
+                        className="absolute inset-0 bg-blue-500 opacity-0"
+                        whileTap={{ opacity: 0.3, scale: 2 }}
+                        transition={{ duration: 0.2 }}
+                      />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Service Selection and Booking Form */}
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Service Selection */}
-        <div id="service-selection" className="bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl">
+        <motion.div 
+          id="service-selection" 
+          className={`bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl ${isRepeatServiceMode ? 'opacity-50 pointer-events-none' : ''}`}
+          variants={cardVariants}
+          custom={1}
+        >
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <Wrench className="w-5 h-5 mr-2 text-blue-600" />
             Select Services
           </h3>
 
           <div className="space-y-3 max-h-96 overflow-y-auto">
-            {services.map((service) => {
+            {services.map((service, index) => {
               const isSelected = selectedServices.find(s => s.id === service.id);
               return (
-                <div
+                <motion.div
                   key={service.id}
                   onClick={() => handleServiceToggle(service)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                  className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
                     isSelected
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
+                  } ${isRepeatServiceMode ? 'cursor-not-allowed' : ''} hover:shadow-md`}
+                  variants={cardVariants}
+                  custom={index}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex items-start space-x-3">
-                      <div className="mt-1">
+                      <motion.div className="mt-1" whileHover={{ scale: 1.1 }}>
                         {getServiceIcon(service.icon)}
-                      </div>
+                      </motion.div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <h4 className="font-semibold text-gray-900">{service.name}</h4>
@@ -453,39 +600,52 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                         </div>
                       </div>
                     </div>
-                    <div className="ml-4">
+                    <motion.div whileHover={{ scale: 1.2 }}>
                       {isSelected ? (
                         <Minus className="w-5 h-5 text-blue-600" />
                       ) : (
                         <Plus className="w-5 h-5 text-gray-400" />
                       )}
-                    </div>
+                    </motion.div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
 
-          {selectedServices.length > 0 && (
-            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-semibold text-blue-900 mb-2">Selected Services ({selectedServices.length})</h4>
-              <div className="space-y-1 text-sm text-blue-800">
-                {selectedServices.map((service) => (
-                  <div key={service.id} className="flex justify-between">
-                    <span>{service.name}</span>
-                    <span>${service.price}</span>
-                  </div>
-                ))}
-              </div>
-              <div className="border-t border-blue-200 mt-2 pt-2 font-bold text-blue-900">
-                Total: ${calculateTotal()}
-              </div>
-            </div>
-          )}
-        </div>
+          <AnimatePresence>
+            {selectedServices.length > 0 && (
+              <motion.div
+                className="mt-4 p-4 bg-blue-50 rounded-lg"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <h4 className="font-semibold text-blue-900 mb-2">Selected Services ({selectedServices.length})</h4>
+                <div className="space-y-1 text-sm text-blue-800">
+                  {selectedServices.map((service) => (
+                    <div key={service.id} className="flex justify-between">
+                      <span>{service.name}</span>
+                      <span>${service.price}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-blue-200 mt-2 pt-2 font-bold text-blue-900">
+                  Total: ${calculateTotal()}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         {/* Booking Form */}
-        <div id="booking-form" className="bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl">
+        <motion.div 
+          id="booking-form" 
+          className="bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl"
+          variants={cardVariants}
+          custom={2}
+        >
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
             <Calendar className="w-5 h-5 mr-2 text-blue-600" />
             Schedule Service
@@ -498,13 +658,14 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   <Calendar className="w-4 h-4 inline mr-1" />
                   Service Date
                 </label>
-                <input
+                <motion.input
                   type="date"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
                   min={today}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   required
+                  whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
               </div>
 
@@ -513,10 +674,11 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   <Clock className="w-4 h-4 inline mr-1" />
                   Preferred Time
                 </label>
-                <select
+                <motion.select
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:shadow-md focus:shadow-lg"
+                  whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 >
                   {Array.from({ length: 10 }, (_, i) => {
                     const hour = 9 + i;
@@ -527,12 +689,17 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                       hour12: true
                     });
                     return (
-                      <option key={time} value={time}>
+                      <motion.option
+                        key={time}
+                        value={time}
+                        variants={cardVariants}
+                        custom={i}
+                      >
                         {displayTime}
-                      </option>
+                      </motion.option>
                     );
                   })}
-                </select>
+                </motion.select>
               </div>
             </div>
 
@@ -542,12 +709,13 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   <User className="w-4 h-4 inline mr-1" />
                   Customer Name
                 </label>
-                <input
+                <motion.input
                   type="text"
                   value={customerData.name}
                   onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   required
+                  whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
               </div>
 
@@ -556,12 +724,13 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   <Phone className="w-4 h-4 inline mr-1" />
                   Phone Number
                 </label>
-                <input
+                <motion.input
                   type="tel"
                   value={customerData.phone}
                   onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   required
+                  whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
               </div>
             </div>
@@ -571,12 +740,13 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 <Mail className="w-4 h-4 inline mr-1" />
                 Email Address
               </label>
-              <input
+              <motion.input
                 type="email"
                 value={customerData.email}
                 onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                 required
+                whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
               />
             </div>
 
@@ -584,36 +754,46 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Additional Notes (Optional)
               </label>
-              <textarea
+              <motion.textarea
                 value={customerData.notes}
                 onChange={(e) => setCustomerData({ ...customerData, notes: e.target.value })}
                 rows={3}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                 placeholder="Any specific requirements or notes..."
+                whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
               />
             </div>
 
-            <button
+            <motion.button
               type="submit"
               disabled={!isFormValid || loading}
-              className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center transition-all ${
+              className={`w-full py-3 px-6 rounded-lg font-semibold flex items-center justify-center transition-all duration-200 relative overflow-hidden ${
                 isFormValid && !loading
                   ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              {loading ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <>
-                  <Calendar className="w-5 h-5 mr-2" />
-                  Book Service - ${calculateTotal()}
-                </>
-              )}
-            </button>
+              <span className="relative z-10">
+                {loading ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <>
+                    <Calendar className="w-5 h-5 mr-2" />
+                    Book Service - ${calculateTotal()}
+                  </>
+                )}
+              </span>
+              <motion.span
+                className="absolute inset-0 bg-blue-500 opacity-0"
+                whileTap={{ opacity: 0.3, scale: 2 }}
+                transition={{ duration: 0.2 }}
+              />
+            </motion.button>
           </form>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
-};
+}
