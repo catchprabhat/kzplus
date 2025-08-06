@@ -2,29 +2,12 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { User, Mail, Phone, Car, Save, X, CheckCircle } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
+import { CustomerFormData } from '../types';
 
 interface CustomerDetailsFormProps {
   onSubmit: (customerData: CustomerFormData) => void;
   onCancel: () => void;
   loading?: boolean;
-}
-
-export interface CustomerFormData {
-  // Personal Information
-  name: string;
-  email: string;
-  phone: string;
-  alternatePhone?: string;
-  
-  // Address Information
-  address: string;
-  city: string;
-  state: string;
-  pincode: string;
-  
-  // Vehicle Information
-  vehicleNumber: string;
-  vehicleType: 'Sedan' | 'SUV' | 'Hatchback' | 'Sports' | 'Electric' | 'Other';
 }
 
 export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
@@ -42,7 +25,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
     state: 'Karnataka',
     pincode: '',
     vehicleNumber: '',
-    vehicleType: 'Sedan'
+    vehicleType: 'Sedan',
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -84,11 +67,11 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
       setTimeout(() => {
         setShowSuccess(false);
         onSubmit(formData);
-      }, 1000); // Show success animation for 1 second before submitting
+      }, 1000);
     }
   };
 
-  const handleInputChange = (field: keyof CustomerFormData, value: any) => {
+  const handleInputChange = (field: keyof CustomerFormData, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -191,6 +174,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Personal Information */}
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Full Name *
@@ -484,4 +468,4 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
       </motion.div>
     </div>
   );
-}
+};

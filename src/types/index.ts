@@ -72,14 +72,31 @@ export interface Vehicle {
   vehicleNumber: string;
   name: string;
   type: string;
-  model: string;
-  year: number;
-  color: string;
+  model?: string | null;
+  year?: number | null;
+  color?: string | null;
   ownerName: string;
   ownerPhone: string;
   ownerEmail: string;
-  lastServiceDate?: Date;
   createdAt: Date;
+  lastServicedDate?: string | null;
+  lastServiceType?: string | null;
+}
+
+export interface CustomerFormData {
+  // Personal Information
+  name: string;
+  email: string;
+  phone: string;
+  alternatePhone?: string;
+  // Address Information
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  // Vehicle Information
+  vehicleNumber: string;
+  vehicleType: 'Sedan' | 'SUV' | 'Hatchback' | 'Sports' | 'Electric' | 'Other';
 }
 
 export interface CarSubmission {

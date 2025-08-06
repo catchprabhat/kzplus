@@ -174,3 +174,140 @@ export const bookingApi = {
     }
   }
 };
+
+const API_BASE_URL = process.env.NODE_ENV === 'production' 
+  ? 'https://your-backend-url.com/api' 
+  : 'http://localhost:5000/api';
+
+export const apiService = {
+  // User registration
+  async registerUser(userData: {
+    name: string;
+    email: string;
+    phone: string;
+    address?: string;
+    vehicleNumber: string;
+    vehicleName: string;
+    vehicleType: string;
+    model?: string;
+    year?: number;
+    color?: string;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/users/register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(userData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Registration failed');
+    }
+
+    return response.json();
+  },
+
+  // Search vehicle by number
+  async searchVehicleByNumber(vehicleNumber: string) {
+    const response = await fetch(`${API_BASE_URL}/vehicles/search/${vehicleNumber}`);
+    
+    if (response.status === 404) {
+      return null;
+    }
+    
+    if (!response.ok) {
+      throw new Error('Search failed');
+    }
+
+    return response.json();
+  },
+
+  // Search user by phone
+  async searchUserByPhone(phone: string) {
+    const response = await fetch(`${API_BASE_URL}/users/search/phone/${phone}`);
+    
+    if (response.status === 404) {
+      return null;
+    }
+    
+    if (!response.ok) {
+      throw new Error('Search failed');
+    }
+
+    return response.json();
+  },
+
+  // Create service booking
+  async createServiceBooking(bookingData: {
+    userId?: string;
+    vehicleId?: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail: string;
+    scheduledDate: string;
+    scheduledTime: string;
+    services: any[];
+    totalPrice: number;
+    notes?: string;
+  }) {
+    const response = await fetch(`${API_BASE_URL}/bookings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Booking failed');
+    }
+
+    return response.json();
+  },
+
+  // Admin login
+  async adminLogin(username: string, password: string) {
+    const response = await fetch(`${API_BASE_URL}/admin/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ username, password }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Login failed');
+    }
+
+    return response.json();
+  },
+
+  // Get admin data (with auth token)
+  async getAdminData(token: string) {
+    const [users, bookings] = await Promise.all([
+      fetch(`${API_BASE_URL}/admin/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }),
+      fetch(`${API_BASE_URL}/admin/bookings`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      }),
+    ]);
+
+    if (!users.ok || !bookings.ok) {
+      throw new Error('Failed to fetch admin data');
+    }
+
+    return {
+      users: await users.json(),
+      bookings: await bookings.json(),
+    };
+  },
+};

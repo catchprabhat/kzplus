@@ -18,7 +18,6 @@ import { TermsAndConditions } from './components/TermsAndConditions';
 import { SalePurchase } from './components/SalePurchase';
 import { AdminPage } from './components/AdminPage';
 import { LoadingSpinner } from './components/LoadingSpinner';
-import { ErrorMessage } from './components/ErrorMessage';
 import { ThemeToggle } from './components/ThemeToggle';
 import { cars } from './data/cars';
 import { Car, Booking, ServiceBooking as ServiceBookingType } from './types';
@@ -28,16 +27,29 @@ import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
 import { faCoffee } from '@fortawesome/free-solid-svg-icons'; // Example icon
 
-
 // Initialize FontAwesome library
 library.add(fas);
 
 // Custom service icons
 const serviceIcons = [
   {
-    id: 'Bike Wash',
-    name: 'Bike Wash',
+    id: 'Bike Diesel Wash',
+    name: 'Bike Diesel Wash',
     icon: <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+    </div>
+  },
+  {
+    id: 'Bike Normal Wash',
+    name: 'Bike Normal Wash',
+    icon: <div className="w-16 h-16 mx-auto mb-2">
+      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+    </div>
+  },
+  {
+    id: 'Bike detailing',
+    name: 'Bike detailing',
+    icon: <div className="w-16 h-16 mx-auto mb-2">
       <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
     </div>
   },
@@ -49,8 +61,29 @@ const serviceIcons = [
     </div>
   },
   {
-    id: 'Car Detailings',
+    id: 'Car Full body Wash',
+    name: 'Car Full body Wash',
+    icon: <div className="w-16 h-16 mx-auto mb-2">
+      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+    </div>
+  },
+  {
+    id: 'Car Detailing',
     name: 'Car Detailing',
+    icon: <div className="w-16 h-16 mx-auto mb-2">
+      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+    </div>
+  },
+  {
+    id: 'Car Mechanical Work',
+    name: 'Car Mechanical Work',
+    icon: <div className="w-16 h-16 mx-auto mb-2">
+      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+    </div>
+  },
+  {
+    id: 'Windows Films',
+    name: 'Windows Films',
     icon: <div className="w-16 h-16 mx-auto mb-2">
       <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
     </div>
@@ -101,47 +134,12 @@ const serviceIcons = [
     id: 'Brake repairs',
     name: 'Brake repairs',
     icon: <div className="w-16 h-16 mx-auto mb-2">
-     <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
-    </div>
-  },
-  {
-    id: 'clutch-body',
-    name: 'Clutch & Body Parts',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
       <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
     </div>
   },
   {
-    id: 'insurance',
-    name: 'Insurance Claims',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
-    </div>
-  },
-  {
-    id: 'oil-change',
-    name: 'Oil Change',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
-    </div>
-  },
-  {
-    id: 'brake-service',
-    name: 'Brake Service',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
-    </div>
-  },
-  {
-    id: 'engine-diagnostic',
-    name: 'Engine Diagnostic',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
-    </div>
-  },
-  {
-    id: 'transmission',
-    name: 'Transmission Service',
+    id: 'Bike Mechanical work',
+    name: 'Bike Mechanical work',
     icon: <div className="w-16 h-16 mx-auto mb-2">
       <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
     </div>
@@ -198,7 +196,6 @@ function App() {
   const { 
     bookings, 
     loading, 
-    error, 
     fetchBookings, 
     createBooking, 
     updateBookingStatus, 
@@ -208,7 +205,6 @@ function App() {
   const {
     serviceBookings,
     loading: serviceLoading,
-    error: serviceError,
     fetchServiceBookings,
     createServiceBooking,
     updateServiceBookingStatus,
@@ -373,10 +369,10 @@ function App() {
             {/* Header */}
             <div className="text-center py-6 mb-8">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-black">
-                Best Car Services
+                Best Car & Bike Services
               </h2>
               <p className="text-gray-600 dark:text-black-300 mt-2">
-                Your Car, Our Service!
+                Your Vehicle, Our Service!
               </p>
             </div>
             
@@ -513,16 +509,6 @@ function App() {
                 </p>
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Error Notification */}
-        {(error || serviceError) && (
-          <div className="fixed top-20 left-4 right-4 z-50 max-w-md mx-auto">
-            <ErrorMessage 
-              message={error || serviceError || ''} 
-              onRetry={error ? fetchBookings : fetchServiceBookings} 
-            />
           </div>
         )}
 

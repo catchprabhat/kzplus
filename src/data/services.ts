@@ -1,3 +1,4 @@
+
 import { Service } from '../types';
 
 export const services: Service[] = [
@@ -56,7 +57,6 @@ export const services: Service[] = [
     category: 'cleaning',
     icon: 'home'
   },
-  
   // Maintenance Services
   {
     id: 'oil-change',
@@ -85,7 +85,6 @@ export const services: Service[] = [
     category: 'maintenance',
     icon: 'circle'
   },
-  
   // Repair Services
   {
     id: 'engine-diagnostic',
