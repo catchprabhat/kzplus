@@ -67,6 +67,7 @@ router.post(
   }
 );
 
+// Update the search queries in users.ts
 router.get('/search/phone/:phone', async (req: Request, res: Response) => {
   try {
     const { phone } = req.params;
@@ -80,18 +81,13 @@ router.get('/search/phone/:phone', async (req: Request, res: Response) => {
         u.*,
         (SELECT sb.scheduled_date 
          FROM service_bookings sb 
-         WHERE sb.service_id = u.id 
+         WHERE sb.user_id = u.id 
          ORDER BY sb.scheduled_date DESC 
          LIMIT 1) as last_serviced_date,
-        (SELECT bs.service_name 
-         FROM booking_services bs 
-         WHERE bs.booking_id = (
-           SELECT sb2.id 
-           FROM service_bookings sb2 
-           WHERE sb2.service_id = u.id 
-           ORDER BY sb2.scheduled_date DESC 
-           LIMIT 1
-         )
+        (SELECT (sb.services->0->>'name')::text 
+         FROM service_bookings sb 
+         WHERE sb.user_id = u.id 
+         ORDER BY sb.scheduled_date DESC 
          LIMIT 1) as last_service_type
       FROM users u
       WHERE u.phone = ${phone}` as (User & {
@@ -136,18 +132,13 @@ router.get('/search/vehicle/:vehicleNumber', async (req: Request, res: Response)
         u.*,
         (SELECT sb.scheduled_date 
          FROM service_bookings sb 
-         WHERE sb.service_id = u.id 
+         WHERE sb.user_id = u.id 
          ORDER BY sb.scheduled_date DESC 
          LIMIT 1) as last_serviced_date,
-        (SELECT bs.service_name 
-         FROM booking_services bs 
-         WHERE bs.booking_id = (
-           SELECT sb2.id 
-           FROM service_bookings sb2 
-           WHERE sb2.service_id = u.id 
-           ORDER BY sb2.scheduled_date DESC 
-           LIMIT 1
-         )
+        (SELECT (sb.services->0->>'name')::text 
+         FROM service_bookings sb 
+         WHERE sb.user_id = u.id 
+         ORDER BY sb.scheduled_date DESC 
          LIMIT 1) as last_service_type
       FROM users u
       WHERE u.vehicle_number = ${vehicleNumber.toUpperCase()}` as (User & {

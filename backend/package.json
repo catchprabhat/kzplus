@@ -9,7 +9,13 @@
     "build": "tsc --build",
     "test": "jest --config jest.config.ts"
   },
-  "keywords": ["node", "express", "typescript", "neon", "api"],
+  "keywords": [
+    "node",
+    "express",
+    "typescript",
+    "neon",
+    "api"
+  ],
   "author": "Your Name <your.email@example.com>",
   "license": "ISC",
   "type": "commonjs",
@@ -21,13 +27,14 @@
     "@neondatabase/serverless": "^1.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.21.0",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "path-to-regexp": "^8.2.0"
+    "path-to-regexp": "^8.2.0",
+    "twilio": "^5.8.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

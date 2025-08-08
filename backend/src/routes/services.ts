@@ -3,7 +3,7 @@ import { sql } from '../config/database';
 
 // Define type for services
 interface Service {
-  id: number; // Changed from string to number
+  service_id: number; // Changed from id to service_id
   name: string;
   description: string;
   price: number;
@@ -17,10 +17,10 @@ const router: Router = express.Router();
 // Get all services
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const services = await sql`SELECT id, name, description, price, duration, category, active
+    const services = await sql`SELECT service_id, name, description, price, duration, category, active
                               FROM services
                               WHERE active = true
-                              ORDER BY id` as Service[];
+                              ORDER BY service_id` as Service[];
 
     res.json(services);
   } catch (error) {

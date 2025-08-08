@@ -6,13 +6,14 @@ const router = express.Router();
 
 interface ServiceBooking {
   id: number;
-  service_id: number;
+  user_id: number; // Changed from service_id to user_id
   scheduled_date: string;
   scheduled_time: string;
   total_price: number;
   status: string;
   notes: string;
   created_at: string;
+  services: any; // Added services field
 }
 
 router.post(
@@ -42,10 +43,10 @@ router.post(
     try {
       await sql`BEGIN`;
 
-      // Insert into service_bookings
+      // Insert into service_bookings with user_id and services as JSONB
       const bookingResult = await sql`
-        INSERT INTO service_bookings (service_id, scheduled_date, scheduled_time, total_price, notes)
-        VALUES (${userId}, ${scheduledDate}, ${scheduledTime}, ${totalPrice}, ${notes || ''})
+        INSERT INTO service_bookings (user_id, scheduled_date, scheduled_time, total_price, notes, services)
+        VALUES (${userId}, ${scheduledDate}, ${scheduledTime}, ${totalPrice}, ${notes || ''}, ${JSON.stringify(services)})
         RETURNING *;
       ` as ServiceBooking[];
 
@@ -55,14 +56,7 @@ router.post(
 
       const booking = bookingResult[0];
 
-      // Insert each service into booking_services
-      for (const service of services) {
-        await sql`
-          INSERT INTO booking_services (booking_id, service_id, service_name, service_price)
-          VALUES (${booking.id}, ${service.id}, ${service.name}, ${service.price})
-          RETURNING id;
-        `;
-      }
+      // No need to insert into booking_services as that table has been dropped
 
       await sql`COMMIT`;
 
@@ -81,19 +75,12 @@ router.get(
   authenticateAdmin,
   async (_req: Request, res: Response) => {
     try {
+      // Updated query to not join with booking_services
       const result = await sql`
-        SELECT sb.*, 
-               ARRAY_AGG(
-                 JSON_BUILD_OBJECT(
-                   'name', bs.service_name,
-                   'price', bs.service_price
-                 )
-               ) as services
+        SELECT sb.*
         FROM service_bookings sb
-        LEFT JOIN booking_services bs ON sb.id = bs.booking_id
-        GROUP BY sb.id
         ORDER BY sb.created_at DESC
-      ` as (ServiceBooking & { services: { name: string; price: number }[] })[];
+      ` as ServiceBooking[];
 
       res.status(200).json(result);
     } catch (error) {

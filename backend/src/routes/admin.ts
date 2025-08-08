@@ -94,12 +94,13 @@ router.post(
   }
 );
 
+// Update the users query
 router.get('/users', authenticateAdmin, async (_req: Request, res: Response) => {
   try {
     const users = await sql`SELECT u.*, 
                            COUNT(sb.id) as booking_count
                            FROM users u
-                           LEFT JOIN service_bookings sb ON sb.service_id = u.id
+                           LEFT JOIN service_bookings sb ON sb.user_id = u.id
                            GROUP BY u.id
                            ORDER BY u.created_at DESC` as User[];
 
@@ -110,18 +111,11 @@ router.get('/users', authenticateAdmin, async (_req: Request, res: Response) => 
   }
 });
 
+// Update the bookings query
 router.get('/bookings', authenticateAdmin, async (_req: Request, res: Response) => {
   try {
-    const bookings = await sql`SELECT sb.*, 
-                             ARRAY_AGG(
-                               JSON_BUILD_OBJECT(
-                                 'name', bs.service_name,
-                                 'price', bs.service_price
-                               )
-                             ) as services
+    const bookings = await sql`SELECT sb.*
                              FROM service_bookings sb
-                             LEFT JOIN booking_services bs ON sb.id = bs.booking_id
-                             GROUP BY sb.id
                              ORDER BY sb.created_at DESC` as Booking[];
 
     res.json(bookings);
