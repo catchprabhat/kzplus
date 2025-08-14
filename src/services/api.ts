@@ -176,9 +176,11 @@ export const bookingApi = {
 };
 
 // Configure API base URL to work in both environments
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000/api'  // Local development
-  : 'https://kzplus-7p4c.vercel.app/api';  // Production
+const API_BASE_URL = import.meta.env.VITE_API_URL || (
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:5000/api'  // Local development
+    : 'https://kzplus-7p4c.vercel.app/api'  // Production
+);
 
 // Export it so other components can use it
 export { API_BASE_URL };
@@ -202,12 +204,13 @@ export const apiService = {
       headers: {
         'Content-Type': 'application/json',
       },
+      credentials: 'include',
       body: JSON.stringify(userData),
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Registration failed');
+      const errorData = await response.json().catch(() => ({ error: 'Registration failed' }));
+      throw new Error(errorData.error || 'Registration failed');
     }
 
     return response.json();
