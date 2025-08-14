@@ -11,6 +11,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useBookings } from '../hooks/useBookings';
 import { useTranslation } from 'react-i18next';
 import { ComingSoon } from './ComingSoon';
+import { API_BASE_URL } from '../services/api';
 
 interface User {
   id: string;
@@ -96,7 +97,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
       let response;
       if (searchType === 'phone') {
-        response = await axios.get(`http://localhost:5000/api/users/search/phone/${encodeURIComponent(searchQuery)}`);
+        response = await axios.get(`${API_BASE_URL}/users/search/phone/${encodeURIComponent(searchQuery)}`);
         const user = response.data;
         setSelectedUser({
           id: user.id.toString(),
@@ -116,7 +117,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           notes: ''
         });
       } else {
-        response = await axios.get(`http://localhost:5000/api/users/search/vehicle/${encodeURIComponent(searchQuery)}`);
+        response = await axios.get(`${API_BASE_URL}/users/search/vehicle/${encodeURIComponent(searchQuery)}`);
         const user = response.data;
         setSelectedUser({
           id: user.id.toString(),

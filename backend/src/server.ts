@@ -1,29 +1,41 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import helmet from 'helmet';
+// Remove or use the helmet import
+// import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 5000;
-
-const frontendUrl = process.env.VITE_FRONTEND_URL || 'http://localhost:5173';
-if (!frontendUrl.match(/^https?:\/\/[a-zA-Z0-9.-]+(:[0-9]+)?$/)) {
-  throw new Error(`Invalid VITE_FRONTEND_URL: ${process.env.VITE_FRONTEND_URL}`);
-}
-
+// Import the route files
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import serviceRoutes from './routes/services';
 import bookingRoutes from './routes/bookings';
 import adminRoutes from './routes/admin';
 
-app.use(helmet());
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+
+// Configure allowed origins for CORS
+const allowedOrigins = [
+  'http://localhost:5173',  // Local frontend
+  'http://127.0.0.1:5173',  // Alternative local frontend
+  'https://kzplus.vercel.app',  // Production frontend
+  process.env.VITE_FRONTEND_URL || 'http://localhost:5173'  // From environment variable
+];
+
+// CORS configuration
 app.use(
   cors({
-    origin: frontendUrl,
+    origin: function(origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) !== -1) {
+        return callback(null, true);
+      }
+      return callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );
@@ -53,3 +65,5 @@ app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+export default app;
