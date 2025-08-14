@@ -18,8 +18,8 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
   const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
     email: '',
-    phone: '',
-    alternatePhone: '',
+    phone: '+91',
+    alternatePhone: '+91',
     address: '',
     city: 'Bangalore',
     state: 'Karnataka',
@@ -38,13 +38,13 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
     if (!formData.name.trim()) newErrors.name = 'Name is required';
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
     }
-    if (!formData.phone.trim()) {
+    if (!formData.phone.trim() || formData.phone === '+91') {
       newErrors.phone = 'Phone number is required';
-    } else if (!/^\+?[\d\s\-\(\)]{10,}$/.test(formData.phone)) {
-      newErrors.phone = 'Phone number is invalid';
+    } else if (!/^\+91\d{10}$/.test(formData.phone)) {
+      newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
     if (!formData.address.trim()) newErrors.address = 'Address is required';
     if (!formData.pincode.trim()) {
@@ -72,13 +72,28 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
   };
 
   const handleInputChange = (field: keyof CustomerFormData, value: string) => {
+    if (field === 'phone' || field === 'alternatePhone') {
+      // Ensure +91 prefix is always present
+      if (!value.startsWith('+91')) {
+        value = '+91' + value.replace(/^\+91/, '');
+      }
+      // Limit to +91 + 10 digits
+      if (value.length > 13) {
+        value = value.slice(0, 13);
+      }
+      // Only allow numbers after +91
+      const phoneDigits = value.slice(3);
+      if (phoneDigits && !/^\d*$/.test(phoneDigits)) {
+        return; // Don't update if non-numeric characters after +91
+      }
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
 
-  const vehicleTypes = ['Sedan', 'SUV', 'Hatchback', 'Sports', 'Electric', 'Other'];
+  const vehicleTypes = ['Small Car', 'Sedan Car', 'Compact SUV', 'SUV', 'Luxury', 'Yellow Board', 'Bike'];
 
   // Animation variants for form content
   const formVariants: Variants = {
@@ -244,7 +259,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
                       errors.phone ? 'border-red-300' : 'border-gray-300'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 Enter 10 digit number"
                     disabled={loading}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
@@ -271,7 +286,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                     value={formData.alternatePhone}
                     onChange={(e) => handleInputChange('alternatePhone', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
-                    placeholder="+91 98765 43210"
+                    placeholder="+91 Enter 10 digit number"
                     disabled={loading}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
@@ -373,7 +388,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
                       errors.vehicleNumber ? 'border-red-300' : 'border-gray-300'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
-                    placeholder="MH01AB1234"
+                    placeholder="KA01AB1234"
                     disabled={loading}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />

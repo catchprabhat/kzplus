@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect } from 'react';
 import { motion, Variants } from 'framer-motion';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { User, Lock } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
 
@@ -14,6 +13,10 @@ interface User {
   created_at: string;
   vehicle_count: number;
   booking_count: number;
+}
+
+interface ErrorResponse {
+  error?: string;
 }
 
 const AdminPanel: React.FC = () => {
@@ -41,7 +44,8 @@ const AdminPanel: React.FC = () => {
       setPassword('');
       fetchUsers(response.data.token);
     } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+      const axiosError = err as AxiosError<ErrorResponse>;
+      setError(axiosError.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -55,7 +59,8 @@ const AdminPanel: React.FC = () => {
       });
       setUsers(response.data);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to fetch users');
+      const axiosError = err as AxiosError<ErrorResponse>;
+      setError(axiosError.response?.data?.error || 'Failed to fetch users');
     } finally {
       setLoading(false);
     }

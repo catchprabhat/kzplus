@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { User, Mail, Lock, Eye, EyeOff, LogIn, UserPlus, Shield, Clock, RefreshCw } from 'lucide-react';
+import { User, Phone, Shield, Clock, RefreshCw, UserPlus, LogIn } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
-import { otpService } from '../services/otpService';
+import { phoneOtpService } from '../services/phoneOtpService';
 
 interface OTPLoginFormProps {
-  onLogin: (user: { id: string; name: string; email: string; phone: string }) => void;
+  onLogin: (user: { id: string; name: string; email: string; phone: string; token?: string }) => void;
   loading?: boolean;
 }
 
 export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = false }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [step, setStep] = useState<'email' | 'otp' | 'register'>('email');
+  const [step, setStep] = useState<'phone' | 'otp' | 'register'>('phone');
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    phone: '',
-    password: '',
-    confirmPassword: '',
+    phone: '+91',
     otp: ''
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -27,6 +23,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
   const [otpSent, setOtpSent] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [otpExpiresAt, setOtpExpiresAt] = useState<Date | null>(null);
+  const [isNewUser, setIsNewUser] = useState(false);
 
   // Countdown timer for OTP expiry
   useEffect(() => {
@@ -49,35 +46,25 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
     };
   }, [otpExpiresAt, countdown]);
 
-  const validateEmail = (email: string) => {
-    return /\S+@\S+\.\S+/.test(email);
+  const validatePhone = (phone: string) => {
+    // Basic validation - can be enhanced with more sophisticated validation
+    return /^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s+/g, ''));
   };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (step === 'email' || step === 'register') {
-      if (!formData.email) {
-        newErrors.email = 'Email is required';
-      } else if (!validateEmail(formData.email)) {
-        newErrors.email = 'Email is invalid';
+    if (step === 'phone' || step === 'register') {
+      if (!formData.phone) {
+        newErrors.phone = 'Phone number is required';
+      } else if (!validatePhone(formData.phone)) {
+        newErrors.phone = 'Phone number is invalid';
       }
     }
 
     if (step === 'register') {
       if (!formData.name) {
         newErrors.name = 'Name is required';
-      }
-      if (!formData.phone) {
-        newErrors.phone = 'Phone number is required';
-      }
-      if (!formData.password) {
-        newErrors.password = 'Password is required';
-      } else if (formData.password.length < 6) {
-        newErrors.password = 'Password must be at least 6 characters';
-      }
-      if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
       }
     }
 
@@ -100,7 +87,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
       setOtpLoading(true);
       setErrors({});
 
-      const response = await otpService.sendOTP(formData.email);
+      const response = await phoneOtpService.sendOTP(formData.phone);
       
       if (response.success) {
         setOtpSent(true);
@@ -109,10 +96,10 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
         setOtpExpiresAt(expiresAt);
         setCountdown(response.expiresIn || 600);
       } else {
-        setErrors({ email: response.message });
+        setErrors({ phone: response.message });
       }
     } catch (error) {
-      setErrors({ email: 'Failed to send verification code. Please try again.' });
+      setErrors({ phone: 'Failed to send verification code. Please try again.' });
     } finally {
       setOtpLoading(false);
     }
@@ -123,7 +110,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
       setResendLoading(true);
       setErrors({});
 
-      const response = await otpService.resendOTP(formData.email);
+      const response = await phoneOtpService.resendOTP(formData.phone);
       
       if (response.success) {
         const expiresAt = new Date(Date.now() + (response.expiresIn || 600) * 1000);
@@ -147,28 +134,19 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
       setAuthLoading(true);
       setErrors({});
 
-      const response = await otpService.verifyOTP(formData.email, formData.otp);
+      const response = await phoneOtpService.verifyOTP(formData.phone, formData.otp);
       
       if (response.success) {
-        // OTP verified successfully, complete login
-        if (isLogin) {
-          // For existing users - simulate user lookup
-          const user = {
-            id: 'user-' + Date.now(),
-            name: 'John Doe', // In real app, fetch from database
-            email: formData.email,
-            phone: '+1-555-0123' // In real app, fetch from database
-          };
-          onLogin(user);
-        } else {
-          // For new users - complete registration
-          const user = {
-            id: 'user-' + Date.now(),
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone
-          };
-          onLogin(user);
+        if (response.isNewUser) {
+          // New user needs to register
+          setIsNewUser(true);
+          setStep('register');
+        } else if (response.user) {
+          // Existing user, complete login
+          onLogin({
+            ...response.user,
+            email: response.user.email || '' // Ensure email is included even if undefined
+          });
         }
       } else {
         setErrors({ otp: response.message });
@@ -180,21 +158,58 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
     }
   };
 
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    try {
+      setAuthLoading(true);
+      setErrors({});
+
+      const response = await phoneOtpService.register(formData.name, formData.phone);
+      
+      if (response.success && response.user) {
+        onLogin({
+          ...response.user,
+          email: response.user.email || '' // Ensure email is included even if undefined
+        });
+      } else {
+        setErrors({ general: response.message || 'Registration failed. Please try again.' });
+      }
+    } catch (error) {
+      setErrors({ general: 'Registration failed. Please try again.' });
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (step === 'email') {
+    if (step === 'phone') {
       await handleSendOTP();
     } else if (step === 'otp') {
       await handleVerifyOTP();
     } else if (step === 'register') {
-      if (validateForm()) {
-        setStep('email');
-      }
+      await handleRegister();
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
+    if (field === 'phone') {
+      // Ensure +91 prefix is always present
+      if (!value.startsWith('+91')) {
+        value = '+91' + value.replace(/^\+91/, '');
+      }
+      // Limit to +91 + 10 digits
+      if (value.length > 13) {
+        value = value.slice(0, 13);
+      }
+      // Only allow numbers after +91
+      const phoneDigits = value.slice(3);
+      if (phoneDigits && !/^\d*$/.test(phoneDigits)) {
+        return; // Don't update if non-numeric characters after +91
+      }
+    }
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -210,17 +225,15 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
   const resetForm = () => {
     setFormData({
       name: '',
-      email: '',
       phone: '',
-      password: '',
-      confirmPassword: '',
       otp: ''
     });
     setErrors({});
-    setStep('email');
+    setStep('phone');
     setOtpSent(false);
     setOtpExpiresAt(null);
     setCountdown(0);
+    setIsNewUser(false);
   };
 
   const toggleMode = () => {
@@ -243,7 +256,9 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               {step === 'otp' 
-                ? 'Verify Your Email' 
+                ? 'Verify Your Phone' 
+                : step === 'register'
+                ? 'Complete Registration'
                 : isLogin 
                 ? 'Welcome Back' 
                 : 'Create Account'
@@ -251,21 +266,23 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             </h1>
             <p className="text-gray-600">
               {step === 'otp' 
-                ? `Enter the 6-digit code sent to ${formData.email}`
+                ? `Enter the 6-digit code sent to ${formData.phone}`
+                : step === 'register'
+                ? 'Please provide your full name to complete registration'
                 : isLogin 
-                ? 'Sign in with email verification for secure access' 
-                : 'Join DriveEasy with secure email verification'
+                ? 'Sign in with phone verification for secure access' 
+                : 'Join A+ Auto Care with secure phone verification'
               }
             </p>
           </div>
 
           {/* Demo Notice */}
-          {step === 'email' && (
+          {step === 'phone' && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h4 className="font-semibold text-blue-900 mb-2">🔐 Secure Email OTP Login</h4>
+              <h4 className="font-semibold text-blue-900 mb-2">🔐 Secure Phone OTP Login</h4>
               <div className="text-sm text-blue-800 space-y-1">
-                <div>• Enter any valid email address</div>
-                <div>• Check console for the 6-digit verification code</div>
+                <div>• Enter your phone number with country code</div>
+                <div>• You'll receive a 6-digit verification code via SMS</div>
                 <div>• Code expires in 10 minutes</div>
                 <div>• Maximum 3 attempts per code</div>
               </div>
@@ -285,7 +302,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
                 </span>
               </div>
               <p className="text-green-700 text-sm mt-2">
-                Check your email inbox and spam folder for the verification code
+                Check your SMS messages for the verification code
               </p>
             </div>
           )}
@@ -319,91 +336,24 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
               </div>
             )}
 
-            {(step === 'email' || step === 'register') && (
+            {(step === 'phone' || step === 'register') && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Mail className="w-4 h-4 inline mr-1" />
-                  Email Address
+                  <Phone className="w-4 h-4 inline mr-1" />
+                  Phone Number
                 </label>
                 <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => handleInputChange('phone', e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.email ? 'border-red-300' : 'border-gray-300'
+                    errors.phone ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="Enter your email"
-                  disabled={authLoading || otpLoading}
+                  placeholder="+91 Enter 10 digit number"
+                  disabled={authLoading || otpLoading || step === 'register'}
                 />
-                {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
               </div>
-            )}
-
-            {step === 'register' && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.phone ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Enter your phone number"
-                    disabled={authLoading || otpLoading}
-                  />
-                  {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Lock className="w-4 h-4 inline mr-1" />
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={formData.password}
-                      onChange={(e) => handleInputChange('password', e.target.value)}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12 ${
-                        errors.password ? 'border-red-300' : 'border-gray-300'
-                      }`}
-                      placeholder="Enter your password"
-                      disabled={authLoading || otpLoading}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      disabled={authLoading || otpLoading}
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    <Lock className="w-4 h-4 inline mr-1" />
-                    Confirm Password
-                  </label>
-                  <input
-                    type="password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                      errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    placeholder="Confirm your password"
-                    disabled={authLoading || otpLoading}
-                  />
-                  {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
-                </div>
-              </>
             )}
 
             {step === 'otp' && (
@@ -459,16 +409,16 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
                   {step === 'otp' ? (
                     <>
                       <Shield className="w-5 h-5 mr-2" />
-                      Verify & Sign In
+                      Verify Code
                     </>
                   ) : step === 'register' ? (
                     <>
                       <UserPlus className="w-5 h-5 mr-2" />
-                      Continue to Verification
+                      Complete Registration
                     </>
                   ) : (
                     <>
-                      <Mail className="w-5 h-5 mr-2" />
+                      <Phone className="w-5 h-5 mr-2" />
                       Send Verification Code
                     </>
                   )}
@@ -477,25 +427,26 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             </button>
           </form>
 
-          {/* Back Button for OTP step */}
-          {step === 'otp' && (
+          {/* Back Button for OTP and Register steps */}
+          {(step === 'otp' || step === 'register') && (
             <div className="mt-4">
               <button
                 onClick={() => {
-                  setStep('email');
-                  setFormData(prev => ({ ...prev, otp: '' }));
+                  setStep('phone');
+                  setFormData(prev => ({ ...prev, otp: '', name: '' }));
                   setErrors({});
+                  setIsNewUser(false);
                 }}
                 className="w-full text-gray-600 hover:text-gray-800 py-2 text-sm"
                 disabled={authLoading}
               >
-                ← Back to email
+                ← Back to phone number
               </button>
             </div>
           )}
 
           {/* Toggle Form */}
-          {step !== 'otp' && (
+          {step === 'phone' && (
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 {isLogin ? "Don't have an account?" : "Already have an account?"}
@@ -517,11 +468,11 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
               <Shield className="w-4 h-4 text-blue-600" />
             </div>
-            <p className="text-xs text-gray-600">Email OTP</p>
+            <p className="text-xs text-gray-600">Phone OTP</p>
           </div>
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Lock className="w-4 h-4 text-green-600" />
+              <LogIn className="w-4 h-4 text-green-600" />
             </div>
             <p className="text-xs text-gray-600">Secure Login</p>
           </div>

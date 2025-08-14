@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas } from '@fortawesome/free-solid-svg-icons';
+import { fas, faCar } from '@fortawesome/free-solid-svg-icons';
 import { CarCard } from './components/CarCard';
 import { DatePicker } from './components/DatePicker';
 import { BookingForm } from './components/BookingForm';
@@ -19,13 +19,12 @@ import { SalePurchase } from './components/SalePurchase';
 import { AdminPage } from './components/AdminPage';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ThemeToggle } from './components/ThemeToggle';
+import { ComingSoon } from './components/ComingSoon';
 import { cars } from './data/cars';
 import { Car, Booking, ServiceBooking as ServiceBookingType } from './types';
 import { useBookings } from './hooks/useBookings';
 import { useServiceBookings } from './hooks/useServiceBookings';
 import { useAuth } from './hooks/useAuth';
-import { useTheme } from './hooks/useTheme';
-import { faCoffee } from '@fortawesome/free-solid-svg-icons'; // Example icon
 
 // Initialize FontAwesome library
 library.add(fas);
@@ -33,152 +32,274 @@ library.add(fas);
 // Custom service icons
 const serviceIcons = [
   {
-    id: 'Bike Diesel Wash',
-    name: 'Bike Diesel Wash',
-    icon: <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Body Wash',
+  name: 'Body Wash',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/one.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Bike Normal Wash',
-    name: 'Bike Normal Wash',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Full Wash',
+  name: 'Full Wash',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/two.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Bike detailing',
-    name: 'Bike detailing',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Diesel Wash',
+  name: 'Diesel Wash',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/three.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Car Body Wash',
-    name: 'Car Body Wash',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Hard Water Removal',
+  name: 'Hard Water Removal',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/four.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Car Full body Wash',
-    name: 'Car Full body Wash',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Head Light Restoration',
+  name: 'Head Light Restoration',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/five.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Car Detailing',
-    name: 'Car Detailing',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Wax Polish',
+  name: 'Wax Polish',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/six.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Car Mechanical Work',
-    name: 'Car Mechanical Work',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: '3 Step Polish',
+  name: '3 Step Polish',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/seven.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Windows Films',
-    name: 'Windows Films',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Cermaic',
+  name: 'Cermaic',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/eigth.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Ceramic Coating',
-    name: 'Ceramic Coating',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Graphene',
+  name: 'Graphene',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/nine.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Accesories',
-    name: 'Accesories',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'PPF',
+  name: 'PPF',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/ten.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Wheel Alignment / Balancing',
-    name: 'Wheel Alignment / Balancing',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Periodic Maintenance',
+  name: 'Periodic Maintenance',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/eleven.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Tyre change / Restoration',
-    name: 'Tyre change / Restoration',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Mechanic Work',
+  name: 'Mechanic Work',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/twelve.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Air / Puncture',
-    name: 'Air / Puncture',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Tyre Change',
+  name: 'Tyre Change',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/thirteen.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Rim repairs',
-    name: 'Rim repairs',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Rim Restoration',
+  name: 'Rim Restoration',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/fourteen.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Brake repairs',
-    name: 'Brake repairs',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Dent & Paint',
+  name: 'Dent & Paint',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/fifteen.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'Bike Mechanical work',
-    name: 'Bike Mechanical work',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Seat Cover',
+  name: 'Seat Cover',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/sixteen.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'exhaust',
-    name: 'Exhaust System',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Ac vent Cleaning',
+  name: 'Ac vent Cleaning',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/seventeen.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'cooling-system',
-    name: 'Cooling System',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Interior Cleaning',
+  name: 'Interior Cleaning',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/eighteen.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'steering',
-    name: 'Steering & Alignment',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Accessories',
+  name: 'Accessories',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/nineteen.svg"
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  },
+  )
+},
   {
-    id: 'electrical',
-    name: 'Electrical Systems',
-    icon: <div className="w-16 h-16 mx-auto mb-2">
-      <FontAwesomeIcon icon="fa-solid fa-car" className="w-12 h-12 text-blue-600 dark:text-blue-400" />
+  id: 'Others',
+  name: 'Others',
+  icon: (
+    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+      <img
+        src="/images/twenty.svg"
+
+        alt="Body Wash Icon"
+        className="w-12 h-12 text-blue-600 dark:text-blue-400"
+      />
     </div>
-  }
+  )
+}
 ];
 
 function App() {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [pickupDate, setPickupDate] = useState('');
   const [dropDate, setDropDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon'>('home');
+  const [comingSoonTitle, setComingSoonTitle] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [latestBooking, setLatestBooking] = useState<Booking | null>(null);
   const [latestServiceBooking, setLatestServiceBooking] = useState<ServiceBookingType | null>(null);
@@ -187,11 +308,10 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showServicesOverlay, setShowServicesOverlay] = useState(false);
 
-  // Theme
-  const { theme, toggleTheme, isDark } = useTheme();
-
   // Authentication
   const { user, loading: authLoading, isAuthenticated, login, logout, updateProfile } = useAuth();
+
+  
 
   const { 
     bookings, 
@@ -210,6 +330,15 @@ function App() {
     updateServiceBookingStatus,
     deleteServiceBooking
   } = useServiceBookings();
+
+  // Wrapper functions to adapt update status functions to return Promise<void>
+  const handleUpdateBookingStatus = async (id: string, status: 'confirmed' | 'pending' | 'cancelled'): Promise<void> => {
+    await updateBookingStatus(id, status);
+  };
+
+  const handleUpdateServiceBookingStatus = async (id: string, status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled'): Promise<void> => {
+    await updateServiceBookingStatus(id, status);
+  };
 
   // Show loading spinner while checking authentication
   if (authLoading) {
@@ -313,6 +442,18 @@ function App() {
     // Check if user needs to be authenticated for this tab
     if (protectedRoutes.includes(tab) && !isAuthenticated) {
       return; // This will trigger the login form
+    }
+    
+    // For mobile view, handle specific tabs differently
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      if (tab === 'book' || tab === 'bookings' || tab === 'contact') {
+        setComingSoonTitle(tab === 'book' ? 'Book a Car' : tab === 'bookings' ? 'My Bookings' : 'Contact Us');
+        setActiveTab('coming-soon');
+        setMobileMenuOpen(false);
+        setShowServicesOverlay(false);
+        return;
+      }
     }
     
     setActiveTab(tab);
@@ -427,13 +568,17 @@ function App() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center cursor-pointer" onClick={() => handleTabChange('home')}>
-                <CarIcon className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
+                <img 
+                  src="/images/logo/icon.png" 
+                  alt="A Plus Auto Care" 
+                  className="w-20 h-30 mr-3" 
+                />
                 <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">DriveEasy</h1>
               </div>
               
               {/* Desktop Header Info & Auth */}
               <div className="hidden md:flex items-center space-x-4">
-                <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                <div className="flex items-center text-sm text-black-600 dark:text-black-300">
                   <MapPin className="w-4 h-4 mr-1" />
                   Premium Car Solutions & Services
                 </div>
@@ -443,17 +588,17 @@ function App() {
                 
                 {isAuthenticated ? (
                   <div className="flex items-center space-x-3">
-                    <span className="text-sm text-gray-700 dark:text-gray-300">Welcome, {user?.name}</span>
+                    <span className="text-sm text-black-700 dark:text-black-300">Welcome, {user?.name}</span>
                     <button
                       onClick={() => handleTabChange('profile')}
-                      className="flex items-center px-3 py-2 text-sm text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
+                      className="flex items-center px-3 py-2 text-sm text-black-600 dark:text-black-400 hover:bg-black-50 dark:hover:bg-b-900/20 rounded-lg transition-colors"
                     >
                       <User className="w-4 h-4 mr-1" />
                       Profile
                     </button>
                     <button
                       onClick={() => handleAuthAction('logout')}
-                      className="px-3 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg transition-colors"
+                      className="px-3 py-2 text-sm text-black-600 dark:text-black-400 hover:bg-gray-50 dark:hover:bg-dark-700 rounded-lg transition-colors"
                     >
                       Logout
                     </button>
@@ -673,9 +818,9 @@ function App() {
         {/* Mobile Tab Bar for Home */}
         {activeTab === 'home' && (
           <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
-            <div className="grid grid-cols-5 gap-1 p-2">
+            <div className="grid grid-cols-5 gap-1 p-2 max-w-md mx-auto">
               <button
-                onClick={() => handleServiceNavigation('self-drive')}
+                onClick={() => handleTabChange('book')}
                 className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
               >
                 <CarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
@@ -713,7 +858,7 @@ function App() {
                 <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Contact</span>
               </button>
               <button
-                onClick={() => isAuthenticated ? handleTabChange('profile') : handleAuthAction('login')}
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
               >
                 <User className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
@@ -730,47 +875,49 @@ function App() {
           {activeTab === 'home' && (
             <div className="space-y-12 sm:space-y-16">
               {/* Hero Section */}
-              <section className="text-center py-12 sm:py-20 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-2xl sm:rounded-3xl"></div>
-                <div className="relative z-10 px-4">
-                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6">
+              <section className="text-center py-8 sm:py-12 md:py-20 relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl sm:rounded-2xl md:rounded-3xl"></div>
+                <div className="relative z-10 px-3 sm:px-4">
+                  <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
                     Your Complete
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 block sm:inline"> Car Solution</span>
                   </h1>
-                  <p className="text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 max-w-3xl mx-auto">
+                  <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto">
                     From premium self-drive rentals to professional car services and seamless buying/selling - 
                     everything you need for your automotive journey.
                   </p>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center px-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2 sm:px-4">
                     <button
                       onClick={() => handleServiceNavigation('self-drive')}
-                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                      className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-medium sm:font-semibold text-sm xs:text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
                     >
-                      <CarIcon className="w-5 sm:w-6 h-5 sm:h-6 mr-2" />
-                      Book Self-Drive Car
-                      <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 ml-2" />
+                      <CarIcon className="w-4 xs:w-5 sm:w-6 h-4 xs:h-5 sm:h-6 mr-1.5 sm:mr-2" />
+                      <span className="hidden xs:inline">Book Self-Drive Car</span>
+                      <span className="xs:hidden">Book Car</span>
+                      <ArrowRight className="w-3.5 xs:w-4 sm:w-5 h-3.5 xs:h-4 sm:h-5 ml-1.5 sm:ml-2" />
                     </button>
                     <button
                       onClick={() => setShowServicesOverlay(true)}
-                      className="bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-dark-500 px-6 sm:px-8 py-3 sm:py-4 rounded-xl font-semibold text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                      className="bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-dark-500 px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-medium sm:font-semibold text-sm xs:text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
                     >
-                      <Wrench className="w-5 sm:w-6 h-5 sm:h-6 mr-2" />
-                      View All Car Services
+                      <Wrench className="w-4 xs:w-5 sm:w-6 h-4 xs:h-5 sm:h-6 mr-1.5 sm:mr-2" />
+                      <span className="hidden xs:inline">View All Car Services</span>
+                      <span className="xs:hidden">Car Services</span>
                     </button>
                   </div>
                 </div>
               </section>
 
               {/* Services Section */}
-              <section className="py-8 sm:py-16">
-                <div className="text-center mb-12 sm:mb-16">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Our Premium Services</h2>
-                  <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-4">
+              <section className="py-6 xs:py-8 sm:py-12 md:py-16">
+                <div className="text-center mb-8 sm:mb-12 md:mb-16">
+                  <h2 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Our Premium Services</h2>
+                  <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-3 sm:px-4">
                     Comprehensive automotive solutions designed to meet all your car-related needs
                   </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-5 sm:gap-6 md:gap-8 px-3 sm:px-4 md:px-6">
                   {/* Car Services */}
                   <div className="group bg-white dark:bg-dark-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 overflow-hidden">
                     <div className="relative h-48 sm:h-64 overflow-hidden">
@@ -1049,7 +1196,7 @@ function App() {
               <BookingList 
                 bookings={bookings} 
                 loading={loading}
-                onUpdateStatus={updateBookingStatus}
+                onUpdateStatus={handleUpdateBookingStatus}
                 onDelete={deleteBooking}
               />
             </div>
@@ -1073,7 +1220,7 @@ function App() {
               <ServiceBookingList
                 bookings={serviceBookings}
                 loading={serviceLoading}
-                onUpdateStatus={updateServiceBookingStatus}
+                onUpdateStatus={handleUpdateServiceBookingStatus}
                 onDelete={deleteServiceBooking}
               />
             </div>
@@ -1112,6 +1259,8 @@ function App() {
               />
             </div>
           )}
+
+          {activeTab === 'coming-soon' && <ComingSoon title={comingSoonTitle} />}
         </main>
 
         {/* Footer */}

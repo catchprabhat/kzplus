@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit } from 'lucide-react';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
-import { ApiBooking } from '../services/api';
 
 interface BookingListProps {
   bookings: Booking[];
@@ -11,36 +10,30 @@ interface BookingListProps {
   onDelete?: (id: string) => Promise<void>;
 }
 
-export const BookingList: React.FC<BookingListProps> = ({ 
-  bookings, 
+export const BookingList: React.FC<BookingListProps> = ({
+  bookings,
   loading = false,
   onUpdateStatus,
-  onDelete 
+  onDelete,
 }) => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [filteredBookings, setFilteredBookings] = useState<ApiBooking[]>();
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>(bookings);
+  const [phoneFilter, setPhoneFilter] = useState('');
 
   useEffect(() => {
-    let filterdList = async () => {
-      const bookings = await getBookings();
-      return bookings;
-    };
-    filterdList().then(bookings => {
-      debugger;
-      setFilteredBookings(bookings);
-    });
-    /*const filtered = bookings.filter(booking => 
-      booking.customerPhone.includes(phoneFilter)
-    );*/
-    //setFilteredBookings(null);
-  }, []);
+    // Filter bookings based on phoneFilter
+    const filtered = bookings.filter((booking) =>
+      booking.customerPhone.toLowerCase().includes(phoneFilter.toLowerCase())
+    );
+    setFilteredBookings(filtered);
+  }, [bookings, phoneFilter]);
 
   const formatDate = (date: Date) => {
     return new Date(date.toString()).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -59,7 +52,7 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   const handleStatusUpdate = async (id: string, status: 'confirmed' | 'pending' | 'cancelled') => {
     if (!onUpdateStatus) return;
-    
+
     try {
       setActionLoading(id);
       await onUpdateStatus(id, status);
@@ -73,7 +66,7 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   const handleDelete = async (id: string) => {
     if (!onDelete) return;
-    
+
     if (window.confirm('Are you sure you want to delete this booking?')) {
       try {
         setActionLoading(id);
@@ -107,13 +100,25 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-        <Calendar className="w-5 h-5 mr-2 text-blue-600" />
-        Recent Bookings
-      </h3>
-      
+      <div className="flex justify-between items-center mb-6">
+        <h3 className="text-xl font-bold text-gray-900 flex items-center">
+          <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+          Recent Bookings
+        </h3>
+        <div className="relative">
+          <input
+            type="text"
+            value={phoneFilter}
+            onChange={(e) => setPhoneFilter(e.target.value)}
+            placeholder="Filter by phone number"
+            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-64"
+          />
+          <Phone className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        </div>
+      </div>
+
       <div className="space-y-4">
-        {bookings.map((booking) => (
+        {filteredBookings.map((booking) => (
           <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-3">
               <div>
@@ -142,7 +147,7 @@ export const BookingList: React.FC<BookingListProps> = ({
                         <MoreVertical className="w-4 h-4 text-gray-500" />
                       )}
                     </button>
-                    
+
                     {openDropdown === booking.id && (
                       <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
                         {onUpdateStatus && (
@@ -188,7 +193,7 @@ export const BookingList: React.FC<BookingListProps> = ({
                 )}
               </div>
             </div>
-            
+
             <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
               <div className="space-y-1">
                 <div className="flex items-center">
@@ -204,7 +209,7 @@ export const BookingList: React.FC<BookingListProps> = ({
                   {booking.customerPhone}
                 </div>
               </div>
-              
+
               <div className="space-y-1">
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />

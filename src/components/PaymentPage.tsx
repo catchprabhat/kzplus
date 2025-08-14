@@ -524,4 +524,4 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
       </motion.div>
     </PaymentPageErrorBoundary>
   );
-};
+};  

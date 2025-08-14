@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { Search, Car, Phone, Calendar, Clock, User, Mail, Plus, Minus, Wrench, UserPlus, CheckCircle, MapPin } from 'lucide-react';
+import { Search, Car, Phone, Calendar, Clock, User, Mail, Plus, Minus, Wrench, UserPlus, CheckCircle, MapPin, ChevronDown, X } from 'lucide-react';
 import axios from 'axios';
 import { Service, ServiceBooking as ServiceBookingType, CustomerFormData } from '../types';
-import { services } from '../data/services';
+import { services, servicesByCategory } from '../data/services';
 import { LoadingSpinner } from './LoadingSpinner';
 import { CustomerDetailsForm } from './CustomerDetailsForm';
 import { PaymentPage } from './PaymentPage';
 import { useAuth } from '../hooks/useAuth';
 import { useBookings } from '../hooks/useBookings';
 import { useTranslation } from 'react-i18next';
+import { ComingSoon } from './ComingSoon';
 
 interface User {
   id: string;
@@ -32,7 +33,6 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   onServiceBookingComplete,
   loading = false
 }) => {
-  // Move all useState declarations to the top
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'vehicle' | 'phone'>('vehicle');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -53,31 +53,38 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [isRepeatServiceMode, setIsRepeatServiceMode] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showPaymentPage, setShowPaymentPage] = useState(false);
+  const [vehicleCategory, setVehicleCategory] = useState<keyof typeof servicesByCategory>('Small Car');
+  const [filteredServices, setFilteredServices] = useState<Service[]>(services);
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon'>('services');
+  const [comingSoonTitle, setComingSoonTitle] = useState('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Hooks for authentication, bookings, and translation
   const { isAuthenticated, login } = useAuth();
   const { bookings } = useBookings();
   const { t, i18n } = useTranslation();
 
-  // Toggle language between English and Kannada
   const toggleLanguage = () => {
     const newLang = i18n.language === 'en' ? 'kn' : 'en';
     i18n.changeLanguage(newLang);
   };
 
-  // useEffect hooks after useState declarations
   useEffect(() => {
     console.log('ServiceBooking mounted');
     window.scrollTo(0, 0);
   }, []);
 
-  // Scroll to top when navigating to PaymentPage
   useEffect(() => {
     if (showPaymentPage) {
       console.log('Navigating to PaymentPage, scrolling to top');
       window.scrollTo(0, 0);
     }
   }, [showPaymentPage]);
+
+  useEffect(() => {
+    setFilteredServices(servicesByCategory[vehicleCategory] || []);
+    // Clear selected services when vehicle category changes
+    setSelectedServices([]);
+  }, [vehicleCategory]);
 
   const searchUser = async () => {
     if (!searchQuery.trim()) return;
@@ -129,7 +136,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           notes: ''
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       setSearchError(error.response?.data?.error || 'Search failed');
       setSelectedUser(null);
     } finally {
@@ -177,7 +184,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       setTimeout(() => {
         document.getElementById('service-selection')?.scrollIntoView({ behavior: 'smooth' });
       }, 500);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to register customer:', error);
       setSearchError(error.response?.data?.error || 'Registration failed');
     } finally {
@@ -201,22 +208,26 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     return selectedServices.reduce((total, service) => total + service.price, 0);
   };
 
-  const getServiceIcon = (iconName: string) => {
-    const iconMap: { [key: string]: React.ReactNode } = {
-      droplets: <div className="w-5 h-5 bg-blue-500 rounded-full"></div>,
-      sparkles: <div className="w-5 h-5 bg-yellow-500 rounded-full"></div>,
-      shield: <div className="w-5 h-5 bg-green-500 rounded-full"></div>,
-      star: <div className="w-5 h-5 bg-purple-500 rounded-full"></div>,
-      wind: <div className="w-5 h-5 bg-cyan-500 rounded-full"></div>,
-      home: <div className="w-5 h-5 bg-orange-500 rounded-full"></div>,
-      droplet: <div className="w-5 h-5 bg-blue-600 rounded-full"></div>,
-      disc: <div className="w-5 h-5 bg-red-500 rounded-full"></div>,
-      circle: <div className="w-5 h-5 bg-gray-500 rounded-full"></div>,
-      search: <div className="w-5 h-5 bg-indigo-500 rounded-full"></div>,
-      battery: <div className="w-5 h-5 bg-green-600 rounded-full"></div>,
-      wrench: <div className="w-5 h-5 bg-amber-500 rounded-full"></div>
+  const getServiceIcon = (service: Service) => {
+    // Map color names to their hex values
+    const colorMap: Record<string, string> = {
+      'blue': '#3b82f6',    // blue-500
+      'green': '#22c55e',   // green-500
+      'indigo': '#6366f1',  // indigo-500
+      'orange': '#f97316',  // orange-500
+      'yellow': '#eab308',  // yellow-500
+      'purple': '#a855f7',  // purple-500
+      'red': '#ef4444',     // red-500
     };
-    return iconMap[iconName] || <Wrench className="w-5 h-5" />;
+    
+    const bgColor = colorMap[service.color || 'blue'] || '#3b82f6';
+    
+    return (
+      <div 
+        className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 rounded-full" 
+        style={{ backgroundColor: bgColor }}
+      ></div>
+    );
   };
 
   const getCategoryColor = (category: string) => {
@@ -278,7 +289,6 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     }, 500);
   };
 
-  // Navigation handlers
   const handleServiceNavigation = (service: string) => {
     const tabMap: { [key: string]: 'book' | 'services' | 'sale-purchase' } = {
       'self-drive': 'book',
@@ -292,19 +302,24 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   };
 
   const handleTabChange = (tab: 'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin') => {
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+      if (tab === 'book' || tab === 'bookings' || tab === 'contact') {
+        setComingSoonTitle(tab === 'book' ? 'Book a Car' : tab === 'bookings' ? 'My Bookings' : 'Contact Us');
+        setActiveTab('coming-soon');
+        return;
+      }
+    }
     setActiveTab(tab);
   };
 
   const handleAuthAction = (action: 'login' | 'logout') => {
     if (action === 'login') {
-      setActiveTab('profile');
+      setMobileMenuOpen(true);
     } else {
       setActiveTab('home');
     }
   };
-
-  // State for active tab (to highlight current tab in mobile nav)
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin'>('services');
 
   const today = new Date().toISOString().split('T')[0];
   const isFormValid = selectedUser && selectedServices.length > 0 && scheduledDate && customerData.name && customerData.phone;
@@ -336,6 +351,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     }
   };
 
+  if (activeTab === 'coming-soon') {
+    return <ComingSoon title={comingSoonTitle} />;
+  }
+
   if (showPaymentPage && selectedUser) {
     return (
       <PaymentPage
@@ -355,11 +374,106 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   return (
     <motion.div 
-      className="min-h-screen bg-gray-100 space-y-8 relative py-6 px-4 sm:px-6 lg:px-8 pb-20 md:pb-8"
+      className="min-h-screen bg-gray-100 space-y-6 sm:space-y-8 relative py-4 sm:py-6 px-3 sm:px-4 lg:px-8 pb-20 md:pb-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
     >
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={() => setMobileMenuOpen(false)}>
+          <div className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-dark-800 shadow-xl transform transition-transform duration-300 ease-in-out">
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Navigation</h2>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
+                >
+                  <X className="w-6 h-6 sm:w-7 sm:h-7 md:w-6 md:h-6 text-gray-600 dark:text-gray-300" />
+                </button>
+              </div>
+              
+              {/* User Info */}
+              {isAuthenticated && (
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mr-3">
+                      <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">User Name</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">user@email.com</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <nav className="space-y-2">
+                <button onClick={() => handleTabChange('home')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Home
+                </button>
+                <button onClick={() => handleTabChange('book')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Book a Car
+                </button>
+                <button onClick={() => handleTabChange('calendar')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Calendar
+                </button>
+                <button onClick={() => handleTabChange('bookings')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  My Bookings
+                </button>
+                <button onClick={() => handleTabChange('services')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 dark:border-blue-400">
+                  <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Car Services
+                </button>
+                <button onClick={() => handleTabChange('service-bookings')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Service Bookings
+                </button>
+                <button onClick={() => handleTabChange('sale-purchase')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Sale/Purchase
+                </button>
+                <button onClick={() => handleTabChange('contact')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Contact Us
+                </button>
+                <button onClick={() => handleTabChange('terms')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Terms & Conditions
+                </button>
+                <button onClick={() => handleTabChange('settings')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                  Settings
+                </button>
+                <div className="border-t dark:border-dark-600 pt-4 mt-4">
+                  {isAuthenticated ? (
+                    <>
+                      <button onClick={() => handleTabChange('profile')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                        <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                        Profile
+                      </button>
+                      <button onClick={() => handleAuthAction('logout')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                        <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                        Logout
+                      </button>
+                    </>
+                  ) : (
+                    <button onClick={() => handleAuthAction('login')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                      <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                      Login
+                    </button>
+                  )}
+                </div>
+              </nav>
+            </div>
+          </div>
+        </div>
+      )}
+
       <AnimatePresence>
         {showSuccess && (
           <motion.div
@@ -369,7 +483,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             animate="visible"
             exit="hidden"
           >
-            <CheckCircle className="w-16 h-16 text-white" />
+            <CheckCircle className="w-12 h-12 sm:w-16 sm:h-16 md:w-16 md:h-16 text-white" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -421,7 +535,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           custom={0}
         >
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center justify-center">
-            <Search className="w-5 h-5 mr-2 text-blue-600" />
+            <Search className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-2 text-blue-600" />
             {t('find_vehicle')}
           </h3>
 
@@ -438,7 +552,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="relative z-10">
-                  <Car className="w-4 h-4 inline mr-2" />
+                  <Car className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-2" />
                   {t('vehicle_number')}
                 </span>
                 <motion.span
@@ -458,7 +572,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 whileTap={{ scale: 0.95 }}
               >
                 <span className="relative z-10">
-                  <Phone className="w-4 h-4 inline mr-2" />
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-2" />
                   {t('phone_number')}
                 </span>
                 <motion.span
@@ -493,7 +607,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   {searchLoading ? (
                     <LoadingSpinner size="sm" />
                   ) : (
-                    <Search className="w-5 h-5" />
+                    <Search className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5" />
                   )}
                 </span>
                 <motion.span
@@ -519,7 +633,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <UserPlus className="w-4 h-4" />
+                    <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4" />
                     <span className="relative z-10">{t('new_customer_register')}</span>
                     <motion.span
                       className="absolute inset-0 bg-green-500 opacity-0"
@@ -541,9 +655,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   transition={{ duration: 0.3 }}
                 >
                   <h4 className="font-semibold text-blue-900 mb-2">{t('new_customer_prompt')}</h4>
-                  <p className="text-blue-800 text-sm mb-3">
-                    {t('new_customer_message')}
-                  </p>
+                  <p className="text-blue-800 text-sm mb-3">{t('new_customer_message')}</p>
                   <div className="flex justify-center">
                     <motion.button
                       onClick={() => setShowCustomerForm(true)}
@@ -551,7 +663,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <UserPlus className="w-4 h-4" />
+                      <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4" />
                       <span className="relative z-10">{t('register_now')}</span>
                       <motion.span
                         className="absolute inset-0 bg-blue-500 opacity-0"
@@ -610,7 +722,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Calendar className="w-4 h-4 mr-2" />
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-2" />
                     {t('repeat_service')}
                   </motion.button>
                   <motion.button
@@ -619,7 +731,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Wrench className="w-4 h-4 mr-2" />
+                    <Wrench className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-2" />
                     {t('more_service')}
                   </motion.button>
                 </div>
@@ -632,20 +744,42 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       <div className="grid lg:grid-cols-2 gap-8">
         <motion.div 
           id="service-selection" 
-          className={`bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl ${isRepeatServiceMode ? 'opacity-50 pointer-events-none blur-sm' : ''}`}
+          className={`bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:ml-auto lg:max-w-xl ${isRepeatServiceMode ? 'opacity-50 pointer-events-none blur-sm' : ''}`}
           variants={cardVariants}
           custom={1}
         >
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <Wrench className="w-5 h-5 mr-2 text-blue-600" />
+            <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-2 text-blue-600" />
             {t('select_services')}
           </h3>
 
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Vehicle Category
+            </label>
+            <div className="relative">
+              <select
+                value={vehicleCategory}
+                onChange={(e) => setVehicleCategory(e.target.value as keyof typeof servicesByCategory)}
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:shadow-md focus:shadow-lg appearance-none"
+              >
+                {Object.keys(servicesByCategory).map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                <ChevronDown className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-gray-400" />
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-3 max-h-96 overflow-y-auto">
-            {services.length === 0 ? (
+            {filteredServices.length === 0 ? (
               <p className="text-red-500 text-center">{t('no_services_available')}</p>
             ) : (
-              services.map((service, index) => {
+              filteredServices.map((service, index) => {
                 const isSelected = selectedServices.find(s => s.id === service.id);
                 return (
                   <motion.div
@@ -664,19 +798,16 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                     <div className="flex items-start justify-between">
                       <div className="flex items-start space-x-3">
                         <motion.div className="mt-1" whileHover={{ scale: isRepeatServiceMode ? 1 : 1.1 }}>
-                          {getServiceIcon(service.icon)}
+                          {getServiceIcon(service)}
                         </motion.div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
                             <h4 className="font-semibold text-gray-900">{service.name}</h4>
-                            <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getCategoryColor(service.category)}`}>
-                              {service.category}
-                            </span>
                           </div>
                           <p className="text-sm text-gray-600 mt-1">{service.description}</p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                             <span className="flex items-center">
-                              <Clock className="w-4 h-4 mr-1" />
+                              <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-1" />
                               {service.duration}
                             </span>
                             <span className="font-semibold text-blue-600">₹{service.price}</span>
@@ -685,9 +816,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                       </div>
                       <motion.div whileHover={{ scale: isRepeatServiceMode ? 1 : 1.2 }}>
                         {isSelected ? (
-                          <Minus className="w-5 h-5 text-blue-600" />
+                          <Minus className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-blue-600" />
                         ) : (
-                          <Plus className="w-5 h-5 text-gray-400" />
+                          <Plus className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-gray-400" />
                         )}
                       </motion.div>
                     </div>
@@ -725,20 +856,20 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
         <motion.div 
           id="booking-form" 
-          className="bg-white rounded-xl shadow-lg p-6 lg:ml-auto lg:max-w-xl"
+          className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:ml-auto lg:max-w-xl"
           variants={cardVariants}
           custom={2}
         >
           <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-2 text-blue-600" />
             {t('schedule_service')}
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Calendar className="w-4 h-4 inline mr-1" />
+                <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('service_date')}
                 </label>
                 <motion.input
@@ -746,7 +877,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
                   min={today}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   required
                   whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
@@ -754,7 +885,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Clock className="w-4 h-4 inline mr-1" />
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('preferred_time')}
                 </label>
                 <motion.select
@@ -789,7 +920,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             <div className="grid md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4 inline mr-1" />
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('customer_name')}
                 </label>
                 <motion.input
@@ -804,7 +935,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Phone className="w-4 h-4 inline mr-1" />
+                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('phone_number_form')}
                 </label>
                 <motion.input
@@ -819,7 +950,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Mail className="w-4 h-4 inline mr-1" />
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('email')}
                 </label>
                 <motion.input
@@ -856,7 +987,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   <LoadingSpinner size="sm" />
                 ) : (
                   <>
-                    <Calendar className="w-4 h-4 inline mr-2" />
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-2" />
                     {t('book_service')}
                   </>
                 )}
@@ -871,7 +1002,6 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         </motion.div>
       </div>
 
-      {/* Mobile Tab Bar */}
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
         <div className="grid grid-cols-5 gap-1 p-2">
           <button
@@ -882,7 +1012,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 : 'hover:bg-gray-50 dark:hover:bg-dark-700'
             }`}
           >
-            <Car className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
+            <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-blue-600 dark:text-blue-400 mb-1" />
             <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('book_car')}</span>
           </button>
           <button
@@ -893,14 +1023,14 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 : 'hover:bg-gray-50 dark:hover:bg-dark-700'
             }`}
           >
-            <Wrench className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
+            <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-green-600 dark:text-green-400 mb-1" />
             <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('services')}</span>
           </button>
           <button
             onClick={() => handleTabChange('bookings')}
             className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors relative"
           >
-            <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-purple-600 dark:text-purple-400 mb-1" />
             <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('bookings')}</span>
             {!isAuthenticated && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
@@ -921,18 +1051,18 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 : 'hover:bg-gray-50 dark:hover:bg-dark-700'
             }`}
           >
-            <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
+            <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
             <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('contact')}</span>
           </button>
           <button
-            onClick={() => isAuthenticated ? handleTabChange('profile') : handleAuthAction('login')}
+            onClick={() => setMobileMenuOpen(true)}
             className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
               activeTab === 'profile'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-orange-600 dark:text-orange-400'
                 : 'hover:bg-gray-50 dark:hover:bg-dark-700'
             }`}
           >
-            <User className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
+            <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-orange-600 dark:text-orange-400 mb-1" />
             <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
               {isAuthenticated ? t('profile') : t('login')}
             </span>

@@ -46,8 +46,9 @@ export interface Service {
   description: string;
   price: number;
   duration: string; // e.g., "2 hours", "1 day"
-  category: 'cleaning' | 'maintenance' | 'repair' | 'enhancement';
+  category: string; // Changed from enum to string to support new categories
   icon: string;
+  color?: string; // Added color property
 }
 
 export interface ServiceBooking {
