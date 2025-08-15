@@ -124,7 +124,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
       const servicesPayload = bookingData.selectedServices.map(service => ({
         id: service.id,
         name: service.name,
-        price: service.price
+        price: service.price // This will now use the custom price we passed from ServiceBooking
       }));
 
       const response = await axios.post(`${API_BASE_URL}/bookings`, {

@@ -59,6 +59,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon'>('services');
   const [comingSoonTitle, setComingSoonTitle] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [customServiceValues, setCustomServiceValues] = useState<Record<string, { price: number, duration: string }>>({});
 
   const { isAuthenticated, login } = useAuth();
   const { bookings } = useBookings();
@@ -69,6 +70,22 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     i18n.changeLanguage(newLang);
   };
 
+  // Define services that should have custom price and duration inputs for each category
+  const customizableServices = {
+    'Bike': ['Mechanic Work', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others', 'Periodic Maintenance'],
+    'Small Car': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
+    'Sedan Car': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
+    'Compact SUV': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
+    'SUV': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
+    'Luxury': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
+    'Yellow Board': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others']
+  };
+  
+  // Check if a service should have custom inputs
+  const shouldHaveCustomInputs = (service: Service) => {
+    return customizableServices[vehicleCategory as keyof typeof customizableServices]?.includes(service.name);
+  };
+  
   useEffect(() => {
     console.log('ServiceBooking mounted');
     window.scrollTo(0, 0);
@@ -195,18 +212,55 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   const handleServiceToggle = (service: Service) => {
     if (isRepeatServiceMode) return;
+    
     setSelectedServices(prev => {
       const exists = prev.find(s => s.id === service.id);
       if (exists) {
+        // Remove custom values when service is deselected
+        setCustomServiceValues(prevValues => {
+          const newValues = { ...prevValues };
+          delete newValues[service.id];
+          return newValues;
+        });
         return prev.filter(s => s.id !== service.id);
       } else {
+        // Initialize custom values with default values when service is selected
+        if (shouldHaveCustomInputs(service)) {
+          setCustomServiceValues(prevValues => ({
+            ...prevValues,
+            [service.id]: { price: service.price, duration: service.duration }
+          }));
+        }
         return [...prev, service];
       }
     });
   };
+  
+  // Handle custom price change
+  const handleCustomPriceChange = (serviceId: string, value: string) => {
+    const numericValue = value === '' ? 0 : parseInt(value, 10);
+    if (!isNaN(numericValue)) {
+      setCustomServiceValues(prev => ({
+        ...prev,
+        [serviceId]: { ...prev[serviceId], price: numericValue }
+      }));
+    }
+  };
+  
+  // Handle custom duration change
+  const handleCustomDurationChange = (serviceId: string, value: string) => {
+    setCustomServiceValues(prev => ({
+      ...prev,
+      [serviceId]: { ...prev[serviceId], duration: value }
+    }));
+  };
 
   const calculateTotal = () => {
-    return selectedServices.reduce((total, service) => total + service.price, 0);
+    return selectedServices.reduce((total, service) => {
+      // Use custom price if available, otherwise use default price
+      const price = customServiceValues[service.id]?.price ?? service.price;
+      return total + price;
+    }, 0);
   };
 
   const getServiceIcon = (service: Service) => {
@@ -356,22 +410,28 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     return <ComingSoon title={comingSoonTitle} />;
   }
 
-  if (showPaymentPage && selectedUser) {
-    return (
-      <PaymentPage
-        bookingData={{
-          selectedUser,
-          selectedServices,
-          scheduledDate,
-          scheduledTime,
-          customerData,
-          totalPrice: calculateTotal()
-        }}
-        onPaymentComplete={handlePaymentComplete}
-        onBack={handleBackFromPayment}
-      />
-    );
-  }
+  // ... existing code ...
+if (showPaymentPage && selectedUser) {
+  return (
+    <PaymentPage
+      bookingData={{
+        selectedUser,
+        selectedServices: selectedServices.map(service => ({
+          ...service,
+          price: customServiceValues[service.id]?.price ?? service.price,
+          duration: customServiceValues[service.id]?.duration ?? service.duration
+        })),
+        scheduledDate,
+        scheduledTime,
+        customerData,
+        totalPrice: calculateTotal()
+      }}
+      onPaymentComplete={handlePaymentComplete}
+      onBack={handleBackFromPayment}
+    />
+  );
+}
+// ... existing code ...
 
   return (
     <motion.div 
@@ -785,8 +845,8 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 return (
                   <motion.div
                     key={service.id}
-                    onClick={() => handleServiceToggle(service)}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                    onClick={() => !shouldHaveCustomInputs(service) && handleServiceToggle(service)}
+                    className={`p-4 border rounded-lg transition-all duration-200 ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
@@ -807,15 +867,72 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                           </div>
                           <p className="text-sm text-gray-600 mt-1">{service.description}</p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
-                            <span className="flex items-center">
-                              <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-1" />
-                              {service.duration}
-                            </span>
-                            <span className="font-semibold text-blue-600">₹{service.price}</span>
+                            {shouldHaveCustomInputs(service) && isSelected ? (
+                              <div className="flex flex-col space-y-2 w-full">
+                                <div className="flex items-center space-x-2">
+                                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4" />
+                                  <input
+                                    type="text"
+                                    value={customServiceValues[service.id]?.duration || ''}
+                                    onChange={(e) => handleCustomDurationChange(service.id, e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    placeholder="Duration"
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm w-24"
+                                  />
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <span>₹</span>
+                                  <input
+                                    type="number"
+                                    value={customServiceValues[service.id]?.price || ''}
+                                    onChange={(e) => handleCustomPriceChange(service.id, e.target.value)}
+                                    onClick={(e) => e.stopPropagation()}
+                                    placeholder="Price"
+                                    className="border border-gray-300 rounded px-2 py-1 text-sm w-24"
+                                  />
+                                </div>
+                                {!isSelected && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleServiceToggle(service);
+                                    }}
+                                    className="mt-2 bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                                  >
+                                    Add Service
+                                  </button>
+                                )}
+                              </div>
+                            ) : (
+                              <>
+                                <span className="flex items-center">
+                                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-1" />
+                                  {customServiceValues[service.id]?.duration || service.duration}
+                                </span>
+                                <span className="font-semibold text-blue-600">₹{customServiceValues[service.id]?.price || service.price}</span>
+                              </>
+                            )}
                           </div>
+                          {shouldHaveCustomInputs(service) && !isSelected && (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleServiceToggle(service);
+                              }}
+                              className="mt-2 bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600 transition-colors"
+                            >
+                              Add Service
+                            </button>
+                          )}
                         </div>
                       </div>
-                      <motion.div whileHover={{ scale: isRepeatServiceMode ? 1 : 1.2 }}>
+                      <motion.div 
+                        whileHover={{ scale: isRepeatServiceMode ? 1 : 1.2 }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!isRepeatServiceMode) handleServiceToggle(service);
+                        }}
+                      >
                         {isSelected ? (
                           <Minus className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-blue-600" />
                         ) : (
@@ -840,12 +957,15 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               >
                 <h4 className="font-semibold text-blue-900 mb-2">{t('selected_services')} ({selectedServices.length})</h4>
                 <div className="space-y-1 text-sm text-blue-800">
-                  {selectedServices.map((service) => (
-                    <div key={service.id} className="flex justify-between">
-                      <span>{service.name}</span>
-                      <span>₹{service.price}</span>
-                    </div>
-                  ))}
+                  {selectedServices.map((service) => {
+                    const customPrice = customServiceValues[service.id]?.price;
+                    return (
+                      <div key={service.id} className="flex justify-between">
+                        <span>{service.name}</span>
+                        <span>₹{customPrice !== undefined ? customPrice : service.price}</span>
+                      </div>
+                    );
+                  })}
                 </div>
                 <div className="border-t border-blue-200 mt-2 pt-2 font-bold text-blue-900">
                   {t('total')}: ₹{calculateTotal()}

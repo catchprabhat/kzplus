@@ -1305,7 +1305,7 @@ function App() {
                 <h4 className="font-semibold mb-4">Contact</h4>
                 <ul className="space-y-2 text-gray-400 text-sm">
                   <li>1-800-DRIVE-EASY</li>
-                  <li>support@driveeasy.com</li>
+                  <li>support@aplusautocare.com</li>
                   <li>Available 24/7</li>
                 </ul>
               </div>
