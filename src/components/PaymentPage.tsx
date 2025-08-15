@@ -4,6 +4,7 @@ import { CreditCard, Smartphone, DollarSign, ArrowLeft, CheckCircle, Lock } from
 import { Service, ServiceBooking as ServiceBookingType } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import axios from 'axios';
+import { API_BASE_URL } from '../services/api';
 
 interface PaymentPageProps {
   bookingData: {
@@ -126,7 +127,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
         price: service.price
       }));
 
-      const response = await axios.post('http://localhost:5000/api/bookings', {
+      const response = await axios.post(`${API_BASE_URL}/bookings`, {
         userId: bookingData.selectedUser.id,
         scheduledDate: bookingData.scheduledDate,
         scheduledTime: bookingData.scheduledTime,
@@ -524,4 +525,4 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
       </motion.div>
     </PaymentPageErrorBoundary>
   );
-};  
+};
