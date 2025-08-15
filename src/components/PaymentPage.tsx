@@ -495,7 +495,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               transition={{ duration: 0.3 }}
             >
               <div className="flex items-center">
-                <DollarSign className="w-5 h-5 text-yellow-600 mr-2" />
+                <IndianRupee className="w-5 h-5 text-yellow-600 mr-2" />
                 <div>
                   <h4 className="font-medium text-yellow-800">Pay at Service Location</h4>
                   <p className="text-sm text-yellow-700">You can pay when our team arrives for the service. Cash and digital payments accepted.</p>
