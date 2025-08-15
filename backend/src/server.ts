@@ -11,6 +11,7 @@ import userRoutes from './routes/users';
 import serviceRoutes from './routes/services';
 import bookingRoutes from './routes/bookings';
 import adminRoutes from './routes/admin';
+import vehiclesRoutes from './routes/vehicles'; // Add this import
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/vehicles', vehiclesRoutes); // Add this line to register the vehicles routes
 
 app.use('*', (_req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });
