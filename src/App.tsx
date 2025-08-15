@@ -573,7 +573,7 @@ function App() {
                   alt="A Plus Auto Care" 
                   className="w-20 h-30 mr-3" 
                 />
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">DriveEasy</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">A plus auto care</h1>
               </div>
               
               {/* Desktop Header Info & Auth */}
@@ -1052,7 +1052,7 @@ function App() {
               {/* Features Section */}
               <section className="py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-dark-800 dark:to-dark-700 rounded-2xl sm:rounded-3xl transition-colors duration-300">
                 <div className="text-center mb-12 sm:mb-16 px-4">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Why Choose DriveEasy?</h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Why Choose A plus auto care?</h2>
                   <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                     We're committed to providing exceptional automotive solutions with unmatched service quality
                   </p>
@@ -1098,7 +1098,7 @@ function App() {
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-white">
                   <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Get Started?</h2>
                   <p className="text-lg sm:text-xl mb-6 sm:mb-8 opacity-90">
-                    Join thousands of satisfied customers who trust DriveEasy for their automotive needs
+                    Join thousands of satisfied customers who trust A plus auto care for their automotive needs
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
@@ -1270,7 +1270,7 @@ function App() {
               <div className="col-span-2 md:col-span-1">
                 <div className="flex items-center mb-4">
                   <CarIcon className="w-6 h-6 mr-2" />
-                  <span className="text-xl font-bold">DriveEasy</span>
+                  <span className="text-xl font-bold">A plus auto care</span>
                 </div>
                 <p className="text-gray-400 text-sm">
                   Your trusted partner for premium self-drive car rentals, professional car services, and automotive marketplace solutions.
@@ -1311,7 +1311,7 @@ function App() {
               </div>
             </div>
             <div className="border-t border-gray-800 dark:border-dark-700 mt-8 pt-8 text-center text-gray-400">
-              <p>© 2025 DriveEasy. All rights reserved.</p>
+              <p>© 2025 A plus auto care. All rights reserved.</p>
             </div>
           </div>
         </footer>
