@@ -23,7 +23,7 @@ const allowedOrigins = [
   'http://localhost:5173',  // Local frontend
   'http://127.0.0.1:5173',  // Alternative local frontend
   'https://kzplus.vercel.app',  // Production frontend
-  'https://kzplus.vercel.app', // Add your actual deployed frontend URL
+  'https://kzplus-7p4c.vercel.app', // Add your actual deployed frontend URL
   process.env.VITE_FRONTEND_URL || 'http://localhost:5173'  // From environment variable
 ];
 
