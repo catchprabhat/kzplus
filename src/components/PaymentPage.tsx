@@ -123,6 +123,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
       // Create the booking after successful payment
       const servicesPayload = bookingData.selectedServices.map(service => ({
         id: service.id,
+
+
         name: service.name,
         price: service.price // This will now use the custom price we passed from ServiceBooking
       }));
