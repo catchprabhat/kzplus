@@ -149,7 +149,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     try {
       setCustomerFormLoading(true);
 
-      const response = await axios.post('http://localhost:5000/api/users/register', {
+      const response = await axios.post(`${API_BASE_URL}/users/register`, {
         name: formData.name,
         email: formData.email,
         phone: formData.phone,
