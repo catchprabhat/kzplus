@@ -24,6 +24,7 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',  // Alternative local frontend
   'https://kzplus.vercel.app',  // Production frontend
   'https://aplusautocare.vercel.app', // Another production frontend
+  'https://kzplusautocare.in', // Your custom domain
   process.env.VITE_FRONTEND_URL || 'http://localhost:5173'  // From environment variable
 ];
 
