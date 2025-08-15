@@ -23,7 +23,7 @@ const allowedOrigins = [
   'http://localhost:5173',  // Local frontend
   'http://127.0.0.1:5173',  // Alternative local frontend
   'https://kzplus.vercel.app',  // Production frontend
-  'https://kzplus-7p4c.vercel.app', // Add your actual deployed frontend URL
+  'https://aplusautocare.vercel.app', // Another production frontend
   process.env.VITE_FRONTEND_URL || 'http://localhost:5173'  // From environment variable
 ];
 
@@ -39,6 +39,8 @@ app.use(
       return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
   })
 );
 app.use(morgan('combined'));

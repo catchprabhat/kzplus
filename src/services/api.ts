@@ -179,7 +179,7 @@ export const bookingApi = {
 const API_BASE_URL = import.meta.env.VITE_API_URL || (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? 'http://localhost:5000/api'  // Local development
-    : 'https://kzplus-7p4c.vercel.app/api'  // Production
+    : 'https://kzplus-7p4c.vercel.app/api'  // Production backend
 );
 
 // Export it so other components can use it
