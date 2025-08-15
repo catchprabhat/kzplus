@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
-import { CreditCard, Smartphone, DollarSign, ArrowLeft, CheckCircle, Lock } from 'lucide-react';
+import { CreditCard, Smartphone, DollarSign, ArrowLeft, CheckCircle, Lock, IndianRupee } from 'lucide-react';
 import { Service, ServiceBooking as ServiceBookingType } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import axios from 'axios';
@@ -363,7 +363,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <span className="w-6 h-6 mx-auto mb-2 text-xl font-bold">₹</span>
+              <IndianRupee className="w-6 h-6 mx-auto mb-2" />
               <span className="text-sm font-medium">Pay at Service</span>
             </motion.button>
           </div>
