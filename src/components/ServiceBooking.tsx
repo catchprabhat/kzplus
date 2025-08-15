@@ -1015,9 +1015,10 @@ if (showPaymentPage && selectedUser) {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:shadow-md focus:shadow-lg"
                   whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 >
-                  {Array.from({ length: 10 }, (_, i) => {
-                    const hour = 9 + i;
-                    const time = `${hour.toString().padStart(2, '0')}:00`;
+                  {Array.from({ length: 26 }, (_, i) => {
+                    const hour = 9 + Math.floor(i/2);
+                    const minute = i % 2 === 0 ? '00' : '30';
+                    const time = `${hour.toString().padStart(2, '0')}:${minute}`;
                     const displayTime = new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
                       hour: 'numeric',
                       minute: '2-digit',
@@ -1028,7 +1029,6 @@ if (showPaymentPage && selectedUser) {
                         key={time}
                         value={time}
                         variants={cardVariants}
-                        custom={i}
                       >
                         {displayTime}
                       </motion.option>

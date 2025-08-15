@@ -363,7 +363,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <DollarSign className="w-6 h-6 mx-auto mb-2" />
+              <span className="w-6 h-6 mx-auto mb-2 text-xl font-bold">₹</span>
               <span className="text-sm font-medium">Pay at Service</span>
             </motion.button>
           </div>
