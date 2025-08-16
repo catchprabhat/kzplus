@@ -45,7 +45,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected }) =
           </div>
           <div className="flex items-center text-blue-600 dark:text-blue-400">
             <Zap className="w-4 h-4 mr-2" />
-            <span className="text-sm font-semibold">${car.pricePerDay}/day</span>
+            <span className="text-sm font-semibold">Rs {car.pricePerDay}/day</span>
           </div>
         </div>
         
