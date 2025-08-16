@@ -68,7 +68,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
         if (formData.email === 'demo@example.com' && formData.password === 'demo123') {
           const user = {
             id: 'user-1',
-            name: 'John Doe',
+            name: 'Guest',
             email: formData.email,
             phone: '+1-555-0123'
           };

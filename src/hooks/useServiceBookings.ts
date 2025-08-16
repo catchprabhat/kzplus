@@ -9,7 +9,7 @@ const mockServiceBookings: ServiceBooking[] = [
     vehicleNumber: 'ABC123',
     vehicleName: 'Honda Civic',
     vehicleType: 'Sedan',
-    customerName: 'John Doe',
+    customerName: 'Guest',
     customerPhone: '+1-555-0123',
     customerEmail: 'john@example.com',
     services: [
