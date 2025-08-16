@@ -30,7 +30,7 @@ export const cars: Car[] = [
   },
   {
     id: '3',
-    name: 'Duster 2023',
+    name: 'Duster',
     image: dusterKA,
     type: 'SUV',
     seats: 5,
