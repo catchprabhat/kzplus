@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
 
 interface VehicleFinderProps {
@@ -15,8 +15,52 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Initialize phone input with +91 when switching to phone search type
+  useEffect(() => {
+    if (searchType === 'phone') {
+      setSearchValue('+91');
+    } else {
+      setSearchValue('');
+    }
+  }, [searchType]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    
+    if (searchType === 'phone') {
+      // For phone input, we need to handle the prefix specially
+      if (value === '') {
+        // If user clears the field, reset to just the prefix
+        setSearchValue('+91');
+        return;
+      }
+      
+      // If user is typing directly, ensure the prefix is maintained
+      if (!value.startsWith('+91')) {
+        // If they're typing a number without the prefix, add it
+        const digitsOnly = value.replace(/\D/g, '');
+        setSearchValue('+91' + digitsOnly);
+        return;
+      }
+      
+      // Limit to +91 + 10 digits (total 13 characters)
+      if (value.length > 13) {
+        setSearchValue(value.slice(0, 13));
+        return;
+      }
+      
+      // Only allow numbers after +91
+      const phoneDigits = value.slice(3);
+      if (phoneDigits && !/^\d*$/.test(phoneDigits)) {
+        return; // Don't update if non-numeric characters after +91
+      }
+    }
+    
+    setSearchValue(value);
+  };
+
   const handleSearch = async () => {
-    if (!searchValue.trim()) {
+    if (!searchValue.trim() || (searchType === 'phone' && searchValue === '+91')) {
       setError('Please enter a search value');
       return;
     }
@@ -29,7 +73,12 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
       if (searchType === 'vehicle') {
         result = await apiService.searchVehicleByNumber(searchValue.trim().toUpperCase());
       } else {
-        result = await apiService.searchUserByPhone(searchValue.trim());
+        // For phone search, ensure the +91 prefix is present
+        let phoneNumber = searchValue.trim();
+        if (!phoneNumber.startsWith('+91')) {
+          phoneNumber = '+91' + phoneNumber;
+        }
+        result = await apiService.searchUserByPhone(phoneNumber);
       }
 
       if (result) {
@@ -41,6 +90,13 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
       setError((err as Error).message);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Prevent backspace from deleting the +91 prefix
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (searchType === 'phone' && e.key === 'Backspace' && searchValue.length <= 3) {
+      e.preventDefault();
     }
   };
 
@@ -73,17 +129,26 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
       </div>
 
       {/* Search Input */}
-      <div className="mb-4">
+      <div className="mb-4 relative">
+        {searchType === 'phone' && (
+          <div className="absolute left-3 top-1/2 transform -translate-y-1/2 font-bold text-gray-700">
+            +91
+          </div>
+        )}
         <input
           type="text"
-          value={searchValue}
-          onChange={(e) => setSearchValue(e.target.value)}
-          placeholder={
-            searchType === 'vehicle'
-              ? 'Enter vehicle number (e.g., ABC123)'
-              : 'Enter phone number'
-          }
-          className="w-full border rounded px-3 py-2"
+          value={searchType === 'phone' ? searchValue.substring(3) : searchValue}
+          onChange={(e) => {
+            if (searchType === 'phone') {
+              // When in phone mode, prepend +91 to whatever the user types
+              setSearchValue('+91' + e.target.value.replace(/\D/g, ''));
+            } else {
+              setSearchValue(e.target.value);
+            }
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={searchType === 'vehicle' ? 'Enter vehicle number (e.g., ABC123)' : 'Enter 10-digit number'}
+          className={`w-full border rounded px-3 py-2 ${searchType === 'phone' ? 'pl-10' : ''}`}
           onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
         />
       </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { User, Phone, Shield, Clock, RefreshCw, UserPlus, LogIn } from 'lucide-react';
+import { User, Mail, Shield, Clock, RefreshCw, UserPlus, LogIn } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
-import { phoneOtpService } from '../services/phoneOtpService';
+import { emailOtpService } from '../services/emailOtpService';
 
 interface OTPLoginFormProps {
   onLogin: (user: { id: string; name: string; email: string; phone: string; token?: string }) => void;
@@ -10,10 +10,10 @@ interface OTPLoginFormProps {
 
 export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = false }) => {
   const [isLogin, setIsLogin] = useState(true);
-  const [step, setStep] = useState<'phone' | 'otp' | 'register'>('phone');
+  const [step, setStep] = useState<'email' | 'otp' | 'register'>('email');
   const [formData, setFormData] = useState({
     name: '',
-    phone: '+91',
+    email: '',
     otp: ''
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -46,19 +46,19 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
     };
   }, [otpExpiresAt, countdown]);
 
-  const validatePhone = (phone: string) => {
-    // Basic validation - can be enhanced with more sophisticated validation
-    return /^\+?[1-9]\d{1,14}$/.test(phone.replace(/\s+/g, ''));
+  const validateEmail = (email: string) => {
+    // Basic email validation
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
 
-    if (step === 'phone' || step === 'register') {
-      if (!formData.phone) {
-        newErrors.phone = 'Phone number is required';
-      } else if (!validatePhone(formData.phone)) {
-        newErrors.phone = 'Phone number is invalid';
+    if (step === 'email' || step === 'register') {
+      if (!formData.email) {
+        newErrors.email = 'Email address is required';
+      } else if (!validateEmail(formData.email)) {
+        newErrors.email = 'Email address is invalid';
       }
     }
 
@@ -87,7 +87,10 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
       setOtpLoading(true);
       setErrors({});
 
-      const response = await phoneOtpService.sendOTP(formData.phone);
+      // Use simulated backend for local testing if enabled
+      const response = emailOtpService.simulateBackend
+        ? await emailOtpService.simulateSendOTP(formData.email)
+        : await emailOtpService.sendOTP(formData.email);
       
       if (response.success) {
         setOtpSent(true);
@@ -96,10 +99,10 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
         setOtpExpiresAt(expiresAt);
         setCountdown(response.expiresIn || 600);
       } else {
-        setErrors({ phone: response.message });
+        setErrors({ email: response.message });
       }
     } catch (error) {
-      setErrors({ phone: 'Failed to send verification code. Please try again.' });
+      setErrors({ email: 'Failed to send verification code. Please try again.' });
     } finally {
       setOtpLoading(false);
     }
@@ -110,7 +113,10 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
       setResendLoading(true);
       setErrors({});
 
-      const response = await phoneOtpService.resendOTP(formData.phone);
+      // Use simulated backend for local testing if enabled
+      const response = emailOtpService.simulateBackend
+        ? await emailOtpService.simulateResendOTP(formData.email)
+        : await emailOtpService.resendOTP(formData.email);
       
       if (response.success) {
         const expiresAt = new Date(Date.now() + (response.expiresIn || 600) * 1000);
@@ -134,7 +140,10 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
       setAuthLoading(true);
       setErrors({});
 
-      const response = await phoneOtpService.verifyOTP(formData.phone, formData.otp);
+      // Use simulated backend for local testing if enabled
+      const response = emailOtpService.simulateBackend
+        ? await emailOtpService.simulateVerifyOTP(formData.email, formData.otp)
+        : await emailOtpService.verifyOTP(formData.email, formData.otp);
       
       if (response.success) {
         if (response.isNewUser) {
@@ -145,7 +154,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
           // Existing user, complete login
           onLogin({
             ...response.user,
-            email: response.user.email || '' // Ensure email is included even if undefined
+            phone: response.user.phone || '' // Ensure phone is included even if undefined
           });
         }
       } else {
@@ -165,12 +174,15 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
       setAuthLoading(true);
       setErrors({});
 
-      const response = await phoneOtpService.register(formData.name, formData.phone);
+      // Use simulated backend for local testing if enabled
+      const response = emailOtpService.simulateBackend
+        ? await emailOtpService.simulateRegister(formData.name, formData.email)
+        : await emailOtpService.register(formData.name, formData.email);
       
       if (response.success && response.user) {
         onLogin({
           ...response.user,
-          email: response.user.email || '' // Ensure email is included even if undefined
+          phone: response.user.phone || '' // Ensure phone is included even if undefined
         });
       } else {
         setErrors({ general: response.message || 'Registration failed. Please try again.' });
@@ -185,7 +197,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (step === 'phone') {
+    if (step === 'email') {
       await handleSendOTP();
     } else if (step === 'otp') {
       await handleVerifyOTP();
@@ -195,21 +207,6 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
   };
 
   const handleInputChange = (field: string, value: string) => {
-    if (field === 'phone') {
-      // Ensure +91 prefix is always present
-      if (!value.startsWith('+91')) {
-        value = '+91' + value.replace(/^\+91/, '');
-      }
-      // Limit to +91 + 10 digits
-      if (value.length > 13) {
-        value = value.slice(0, 13);
-      }
-      // Only allow numbers after +91
-      const phoneDigits = value.slice(3);
-      if (phoneDigits && !/^\d*$/.test(phoneDigits)) {
-        return; // Don't update if non-numeric characters after +91
-      }
-    }
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -225,11 +222,11 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
   const resetForm = () => {
     setFormData({
       name: '',
-      phone: '',
+      email: '',
       otp: ''
     });
     setErrors({});
-    setStep('phone');
+    setStep('email');
     setOtpSent(false);
     setOtpExpiresAt(null);
     setCountdown(0);
@@ -256,7 +253,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               {step === 'otp' 
-                ? 'Verify Your Phone' 
+                ? 'Verify Your Email' 
                 : step === 'register'
                 ? 'Complete Registration'
                 : isLogin 
@@ -266,23 +263,23 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             </h1>
             <p className="text-gray-600">
               {step === 'otp' 
-                ? `Enter the 6-digit code sent to ${formData.phone}`
+                ? `Enter the 6-digit code sent to ${formData.email}`
                 : step === 'register'
                 ? 'Please provide your full name to complete registration'
                 : isLogin 
-                ? 'Sign in with phone verification for secure access' 
-                : 'Join A+ Auto Care with secure phone verification'
+                ? 'Sign in with email verification for secure access' 
+                : 'Join A+ Auto Care with secure email verification'
               }
             </p>
           </div>
 
           {/* Demo Notice */}
-          {step === 'phone' && (
+          {step === 'email' && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h4 className="font-semibold text-blue-900 mb-2">🔐 Secure Phone OTP Login</h4>
+              <h4 className="font-semibold text-blue-900 mb-2">🔐 Secure Email OTP Login</h4>
               <div className="text-sm text-blue-800 space-y-1">
-                <div>• Enter your phone number with country code</div>
-                <div>• You'll receive a 6-digit verification code via SMS</div>
+                <div>• Enter your email address</div>
+                <div>• You'll receive a 6-digit verification code via email</div>
                 <div>• Code expires in 10 minutes</div>
                 <div>• Maximum 3 attempts per code</div>
               </div>
@@ -301,186 +298,169 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
                   {formatTime(countdown)}
                 </span>
               </div>
-              <p className="text-green-700 text-sm mt-2">
-                Check your SMS messages for the verification code
-              </p>
-            </div>
-          )}
-
-          {/* Error Message */}
-          {errors.general && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-red-800 text-sm">{errors.general}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {step === 'register' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <User className="w-4 h-4 inline mr-1" />
-                  Full Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Enter your full name"
-                  disabled={authLoading || otpLoading}
-                />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
-              </div>
-            )}
-
-            {(step === 'phone' || step === 'register') && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Phone className="w-4 h-4 inline mr-1" />
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="+91 Enter 10 digit number"
-                  disabled={authLoading || otpLoading || step === 'register'}
-                />
-                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
-              </div>
-            )}
-
-            {step === 'otp' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  <Shield className="w-4 h-4 inline mr-1" />
-                  Verification Code
-                </label>
-                <input
-                  type="text"
-                  value={formData.otp}
-                  onChange={(e) => handleInputChange('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center text-2xl font-mono tracking-widest ${
-                    errors.otp ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="000000"
-                  maxLength={6}
-                  disabled={authLoading}
-                />
-                {errors.otp && <p className="text-red-500 text-sm mt-1">{errors.otp}</p>}
-                
-                {/* Resend OTP */}
-                <div className="mt-4 text-center">
-                  <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
-                  <button
-                    type="button"
-                    onClick={handleResendOTP}
-                    disabled={resendLoading || countdown > 540} // Allow resend in last 60 seconds
-                    className="text-blue-600 hover:text-blue-700 font-medium text-sm disabled:text-gray-400 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
-                  >
-                    {resendLoading ? (
-                      <LoadingSpinner size="sm" />
-                    ) : (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-1" />
-                        Resend Code
-                      </>
-                    )}
-                  </button>
+          <form onSubmit={handleSubmit}>
+            {/* Step 1: Email Input */}
+            {step === 'email' && (
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <Mail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.email ? 'border-red-300' : 'border-gray-300'}`}
+                      placeholder="your.email@example.com"
+                      disabled={authLoading || otpLoading}
+                    />
+                  </div>
+                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
                 </div>
-              </div>
-            )}
 
-            <button
-              type="submit"
-              disabled={authLoading || otpLoading || resendLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white py-3 px-6 rounded-lg font-semibold transition-all flex items-center justify-center"
-            >
-              {(authLoading || otpLoading) ? (
-                <LoadingSpinner size="sm" />
-              ) : (
-                <>
-                  {step === 'otp' ? (
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center disabled:bg-blue-300"
+                  disabled={authLoading || otpLoading}
+                >
+                  {otpLoading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
                     <>
                       <Shield className="w-5 h-5 mr-2" />
-                      Verify Code
+                      Send Verification Code
                     </>
-                  ) : step === 'register' ? (
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Step 2: OTP Verification */}
+            {step === 'otp' && (
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
+                    Verification Code
+                  </label>
+                  <input
+                    id="otp"
+                    type="text"
+                    value={formData.otp}
+                    onChange={(e) => handleInputChange('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center text-2xl font-mono tracking-widest ${errors.otp ? 'border-red-300' : 'border-gray-300'}`}
+                    placeholder="000000"
+                    maxLength={6}
+                    disabled={authLoading}
+                  />
+                  {errors.otp && <p className="text-red-500 text-sm mt-1">{errors.otp}</p>}
+                  
+                  {/* Resend OTP */}
+                  <div className="mt-4 text-center">
+                    <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
+                    <button
+                      type="button"
+                      onClick={handleResendOTP}
+                      disabled={resendLoading || countdown > 540} // Allow resend in last 60 seconds
+                      className="text-blue-600 hover:text-blue-700 font-medium text-sm disabled:text-gray-400 disabled:cursor-not-allowed flex items-center justify-center mx-auto"
+                    >
+                      {resendLoading ? (
+                        <LoadingSpinner size="sm" />
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Resend Code
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center disabled:bg-blue-300"
+                  disabled={authLoading}
+                >
+                  {authLoading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
+                    <>
+                      <LogIn className="w-5 h-5 mr-2" />
+                      Verify & Continue
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {/* Step 3: Registration (for new users) */}
+            {step === 'register' && (
+              <div className="space-y-6">
+                <div>
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    Full Name
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.name ? 'border-red-300' : 'border-gray-300'}`}
+                      placeholder="Your full name"
+                      disabled={authLoading}
+                    />
+                  </div>
+                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                </div>
+
+                {errors.general && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                    {errors.general}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-colors flex items-center justify-center disabled:bg-blue-300"
+                  disabled={authLoading}
+                >
+                  {authLoading ? (
+                    <LoadingSpinner size="sm" />
+                  ) : (
                     <>
                       <UserPlus className="w-5 h-5 mr-2" />
                       Complete Registration
                     </>
-                  ) : (
-                    <>
-                      <Phone className="w-5 h-5 mr-2" />
-                      Send Verification Code
-                    </>
                   )}
-                </>
-              )}
-            </button>
+                </button>
+              </div>
+            )}
           </form>
 
-          {/* Back Button for OTP and Register steps */}
-          {(step === 'otp' || step === 'register') && (
-            <div className="mt-4">
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-600">
+              {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button
-                onClick={() => {
-                  setStep('phone');
-                  setFormData(prev => ({ ...prev, otp: '', name: '' }));
-                  setErrors({});
-                  setIsNewUser(false);
-                }}
-                className="w-full text-gray-600 hover:text-gray-800 py-2 text-sm"
-                disabled={authLoading}
+                type="button"
+                onClick={toggleMode}
+                className="ml-1 text-blue-600 hover:text-blue-700 font-medium"
               >
-                ← Back to phone number
+                {isLogin ? "Sign Up" : "Sign In"}
               </button>
-            </div>
-          )}
-
-          {/* Toggle Form */}
-          {step === 'phone' && (
-            <div className="mt-6 text-center">
-              <p className="text-gray-600">
-                {isLogin ? "Don't have an account?" : "Already have an account?"}
-                <button
-                  onClick={toggleMode}
-                  className="ml-2 text-blue-600 hover:text-blue-700 font-semibold"
-                  disabled={authLoading || otpLoading}
-                >
-                  {isLogin ? 'Sign Up' : 'Sign In'}
-                </button>
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Security Features */}
-        <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Shield className="w-4 h-4 text-blue-600" />
-            </div>
-            <p className="text-xs text-gray-600">Phone OTP</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <LogIn className="w-4 h-4 text-green-600" />
-            </div>
-            <p className="text-xs text-gray-600">Secure Login</p>
-          </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Clock className="w-4 h-4 text-purple-600" />
-            </div>
-            <p className="text-xs text-gray-600">10 Min Expiry</p>
+            </p>
           </div>
         </div>
       </div>
