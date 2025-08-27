@@ -11,6 +11,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useBookings } from '../hooks/useBookings';
 import { useTranslation } from 'react-i18next';
 import { ComingSoon } from './ComingSoon';
+import { OTPLoginForm } from './OTPLoginForm';
 import { API_BASE_URL } from '../services/api';
 
 interface User {
@@ -56,7 +57,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [showPaymentPage, setShowPaymentPage] = useState(false);
   const [vehicleCategory, setVehicleCategory] = useState<keyof typeof servicesByCategory>('Small Car');
   const [filteredServices, setFilteredServices] = useState<Service[]>(services);
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon'>('services');
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login'>('services');
   const [comingSoonTitle, setComingSoonTitle] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customServiceValues, setCustomServiceValues] = useState<Record<string, { price: number, duration: string }>>({});
@@ -279,7 +280,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     
     return (
       <div 
-        className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 rounded-full" 
+        className="w-5 h-5 rounded-full" 
         style={{ backgroundColor: bgColor }}
       ></div>
     );
@@ -356,7 +357,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     }
   };
 
-  const handleTabChange = (tab: 'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin') => {
+  const handleTabChange = (tab: 'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login') => {
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
       if (tab === 'book' || tab === 'bookings' || tab === 'contact') {
@@ -410,28 +411,30 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     return <ComingSoon title={comingSoonTitle} />;
   }
 
-  // ... existing code ...
-if (showPaymentPage && selectedUser) {
-  return (
-    <PaymentPage
-      bookingData={{
-        selectedUser,
-        selectedServices: selectedServices.map(service => ({
-          ...service,
-          price: customServiceValues[service.id]?.price ?? service.price,
-          duration: customServiceValues[service.id]?.duration ?? service.duration
-        })),
-        scheduledDate,
-        scheduledTime,
-        customerData,
-        totalPrice: calculateTotal()
-      }}
-      onPaymentComplete={handlePaymentComplete}
-      onBack={handleBackFromPayment}
-    />
-  );
-}
-// ... existing code ...
+  if (activeTab === 'login') {
+    return <OTPLoginForm onLogin={login} />;
+  }
+
+  if (showPaymentPage && selectedUser) {
+    return (
+      <PaymentPage
+        bookingData={{
+          selectedUser,
+          selectedServices: selectedServices.map(service => ({
+            ...service,
+            price: customServiceValues[service.id]?.price ?? service.price,
+            duration: customServiceValues[service.id]?.duration ?? service.duration
+          })),
+          scheduledDate,
+          scheduledTime,
+          customerData,
+          totalPrice: calculateTotal()
+        }}
+        onPaymentComplete={handlePaymentComplete}
+        onBack={handleBackFromPayment}
+      />
+    );
+  }
 
   return (
     <motion.div 
@@ -523,7 +526,7 @@ if (showPaymentPage && selectedUser) {
                       </button>
                     </>
                   ) : (
-                    <button onClick={() => handleAuthAction('login')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                    <button onClick={() => handleTabChange('login')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
                       <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                       Login
                     </button>
@@ -1134,7 +1137,7 @@ if (showPaymentPage && selectedUser) {
             }`}
           >
             <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-blue-600 dark:text-blue-400 mb-1" />
-            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('book_car')}</span>
+            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('selfdrive')}</span>
           </button>
           <button
             onClick={() => handleServiceNavigation('car-services')}
@@ -1176,7 +1179,7 @@ if (showPaymentPage && selectedUser) {
             <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('contact')}</span>
           </button>
           <button
-            onClick={() => setMobileMenuOpen(true)}
+            onClick={() => handleTabChange('login')}
             className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
               activeTab === 'profile'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-orange-600 dark:text-orange-400'
