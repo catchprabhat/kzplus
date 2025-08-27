@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { fas, faCar } from '@fortawesome/free-solid-svg-icons';
+import { fas } from '@fortawesome/free-solid-svg-icons';
 import { CarCard } from './components/CarCard';
 import { DatePicker } from './components/DatePicker';
 import { BookingForm } from './components/BookingForm';
@@ -13,7 +14,7 @@ import { ServiceBookingList } from './components/ServiceBookingList';
 import { NotificationSettings } from './components/NotificationSettings';
 import { OTPLoginForm } from './components/OTPLoginForm';
 import { UserProfile } from './components/UserProfile';
-import { ContactUs } from './components/ContactUs';
+import { ContactPage } from './components/ContactPage';
 import { TermsAndConditions } from './components/TermsAndConditions';
 import { SalePurchase } from './components/SalePurchase';
 import { AdminPage } from './components/AdminPage';
@@ -32,266 +33,265 @@ library.add(fas);
 // Custom service icons
 const serviceIcons = [
   {
-  id: 'Body Wash',
-  name: 'Body Wash',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/one.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Body Wash',
+    name: 'Body Wash',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/one.svg"
+          alt="Body Wash Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Full Wash',
-  name: 'Full Wash',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/two.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Full Wash',
+    name: 'Full Wash',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/two.svg"
+          alt="Full Wash Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Diesel Wash',
-  name: 'Diesel Wash',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/three.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Diesel Wash',
+    name: 'Diesel Wash',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/three.svg"
+          alt="Diesel Wash Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Hard Water Removal',
-  name: 'Hard Water Removal',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/four.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Hard Water Removal',
+    name: 'Hard Water Removal',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/four.svg"
+          alt="Hard Water Removal Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Head Light Restoration',
-  name: 'Head Light Restoration',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/five.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Head Light Restoration',
+    name: 'Head Light Restoration',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/five.svg"
+          alt="Head Light Restoration Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Wax Polish',
-  name: 'Wax Polish',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/six.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Wax Polish',
+    name: 'Wax Polish',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/six.svg"
+          alt="Wax Polish Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: '3 Step Polish',
-  name: '3 Step Polish',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/seven.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: '3 Step Polish',
+    name: '3 Step Polish',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/seven.svg"
+          alt="3 Step Polish Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Cermaic',
-  name: 'Cermaic',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/eigth.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Cermaic',
+    name: 'Cermaic',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/eigth.svg"
+          alt="Cermaic Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Graphene',
-  name: 'Graphene',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/nine.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Graphene',
+    name: 'Graphene',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/nine.svg"
+          alt="Graphene Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'PPF',
-  name: 'PPF',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/ten.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'PPF',
+    name: 'PPF',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/ten.svg"
+          alt="PPF Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Periodic Maintenance',
-  name: 'Periodic Maintenance',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/eleven.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Periodic Maintenance',
+    name: 'Periodic Maintenance',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/eleven.svg"
+          alt="Periodic Maintenance Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Mechanic Work',
-  name: 'Mechanic Work',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/twelve.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Mechanic Work',
+    name: 'Mechanic Work',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/twelve.svg"
+          alt="Mechanic Work Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Tyre Change',
-  name: 'Tyre Change',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/thirteen.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Tyre Change',
+    name: 'Tyre Change',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/thirteen.svg"
+          alt="Tyre Change Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Rim Restoration',
-  name: 'Rim Restoration',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/fourteen.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Rim Restoration',
+    name: 'Rim Restoration',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/fourteen.svg"
+          alt="Rim Restoration Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Dent & Paint',
-  name: 'Dent & Paint',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/fifteen.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Dent & Paint',
+    name: 'Dent & Paint',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/fifteen.svg"
+          alt="Dent & Paint Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Seat Cover',
-  name: 'Seat Cover',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/sixteen.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Seat Cover',
+    name: 'Seat Cover',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/sixteen.svg"
+          alt="Seat Cover Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Ac vent Cleaning',
-  name: 'Ac vent Cleaning',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/seventeen.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Ac vent Cleaning',
+    name: 'Ac vent Cleaning',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/seventeen.svg"
+          alt="Ac vent Cleaning Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Interior Cleaning',
-  name: 'Interior Cleaning',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/eighteen.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Interior Cleaning',
+    name: 'Interior Cleaning',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/eighteen.svg"
+          alt="Interior Cleaning Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Accessories',
-  name: 'Accessories',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/nineteen.svg"
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-},
+    id: 'Accessories',
+    name: 'Accessories',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/nineteen.svg"
+          alt="Accessories Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  },
   {
-  id: 'Others',
-  name: 'Others',
-  icon: (
-    <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
-      <img
-        src="/images/twenty.svg"
-
-        alt="Body Wash Icon"
-        className="w-12 h-12 text-blue-600 dark:text-blue-400"
-      />
-    </div>
-  )
-}
+    id: 'Others',
+    name: 'Others',
+    icon: (
+      <div className="w-16 h-16 mx-auto mb-2 flex items-center justify-center">
+        <img
+          src="/images/twenty.svg"
+          alt="Others Icon"
+          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+        />
+      </div>
+    )
+  }
 ];
 
 function App() {
@@ -310,8 +310,6 @@ function App() {
 
   // Authentication
   const { user, loading: authLoading, isAuthenticated, login, logout, updateProfile } = useAuth();
-
-  
 
   const { 
     bookings, 
@@ -452,9 +450,9 @@ function App() {
     // For mobile view, handle specific tabs differently
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
-      // Remove the condition for 'book' so it navigates directly to the book page
-      if (tab === 'bookings' || tab === 'contact') {
-        setComingSoonTitle(tab === 'bookings' ? 'My Bookings' : 'Contact Us');
+      // Only redirect 'bookings' to coming-soon
+      if (tab === 'bookings') {
+        setComingSoonTitle('My Bookings');
         setActiveTab('coming-soon');
         setMobileMenuOpen(false);
         setShowServicesOverlay(false);
@@ -579,7 +577,7 @@ function App() {
                   alt="A Plus Auto Care" 
                   className="w-20 h-30 mr-3" 
                 />
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">A plus auto care</h1>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">A plus auto care</h1>
               </div>
               
               {/* Desktop Header Info & Auth */}
@@ -889,8 +887,7 @@ function App() {
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 block sm:inline"> Car Solution</span>
                   </h1>
                   <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto">
-                    From premium self-drive rentals to professional car services and seamless buying/selling - 
-                    everything you need for your automotive journey.
+                    From premium self-drive rentals to professional car services and seamless buying/selling - everything you need for your automotive journey.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2 sm:px-4">
                     <button
@@ -1058,7 +1055,7 @@ function App() {
               {/* Features Section */}
               <section className="py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-dark-800 dark:to-dark-700 rounded-2xl sm:rounded-3xl transition-colors duration-300">
                 <div className="text-center mb-12 sm:mb-16 px-4">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Why Choose A plus auto care?</h2>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Why Choose A plus auto care?</h2>
                   <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                     We're committed to providing exceptional automotive solutions with unmatched service quality
                   </p>
@@ -1104,7 +1101,7 @@ function App() {
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl sm:rounded-3xl p-8 sm:p-12 text-white">
                   <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to Get Started?</h2>
                   <p className="text-lg sm:text-xl mb-6 sm:mb-8 opacity-90">
-                    Join thousands of satisfied customers who trust A plus auto care for their automotive needs
+                    Join thousands of satisfied customers who trust A plus auto care for their automotive needs
                   </p>
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <button
@@ -1234,7 +1231,7 @@ function App() {
 
           {activeTab === 'sale-purchase' && <SalePurchase />}
 
-          {activeTab === 'contact' && <ContactUs />}
+          {activeTab === 'contact' && <ContactPage />}
 
           {activeTab === 'terms' && <TermsAndConditions />}
 
@@ -1276,7 +1273,7 @@ function App() {
               <div className="col-span-2 md:col-span-1">
                 <div className="flex items-center mb-4">
                   <CarIcon className="w-6 h-6 mr-2" />
-                  <span className="text-xl font-bold">A plus auto care</span>
+                  <span className="text-xl font-bold">A plus auto care</span>
                 </div>
                 <p className="text-gray-400 text-sm">
                   Your trusted partner for premium self-drive car rentals, professional car services, and automotive marketplace solutions.
@@ -1295,7 +1292,14 @@ function App() {
                 <h4 className="font-semibold mb-4">Support</h4>
                 <ul className="space-y-2 text-gray-400 text-sm">
                   <li>Help Center</li>
-                  <li>Contact Us</li>
+                  <li>
+                    <button 
+                      onClick={() => handleTabChange('contact')}
+                      className="hover:text-white transition-colors"
+                    >
+                      Contact Us
+                    </button>
+                  </li>
                   <li>
                     <button 
                       onClick={() => handleTabChange('terms')}
@@ -1314,18 +1318,17 @@ function App() {
                   <li>+918050922920 - Tyre care and mechanic work</li>
                   <li>+918123540767 - Others</li>
                   <li>
-  <a href="https://maps.app.goo.gl/auGNQh4kqViej7Hr5?g_st=aw" target="_blank">
-    Click here for Location
-  </a>
-</li>
-
+                    <a href="https://maps.app.goo.gl/auGNQh4kqViej7Hr5?g_st=aw" target="_blank" rel="noopener noreferrer">
+                      Click here for Location
+                    </a>
+                  </li>
                   <li>kzplusmotors@gmail.com</li>
                   <li>Available 24/7</li>
                 </ul>
               </div>
             </div>
             <div className="border-t border-gray-800 dark:border-dark-700 mt-8 pt-8 text-center text-gray-400">
-              <p>© 2025 A plus auto care. All rights reserved.</p>
+              <p>© 2025 A plus auto care. All rights reserved.</p>
             </div>
           </div>
         </footer>

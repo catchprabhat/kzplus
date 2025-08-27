@@ -12,6 +12,7 @@ import { useBookings } from '../hooks/useBookings';
 import { useTranslation } from 'react-i18next';
 import { ComingSoon } from './ComingSoon';
 import { OTPLoginForm } from './OTPLoginForm';
+import { ContactPage } from './ContactPage';
 import { API_BASE_URL } from '../services/api';
 
 interface User {
@@ -57,12 +58,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [showPaymentPage, setShowPaymentPage] = useState(false);
   const [vehicleCategory, setVehicleCategory] = useState<keyof typeof servicesByCategory>('Small Car');
   const [filteredServices, setFilteredServices] = useState<Service[]>(services);
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login'>('services');
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'terms' | 'admin' | 'coming-soon' | 'login' | 'contact'>('services');
   const [comingSoonTitle, setComingSoonTitle] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customServiceValues, setCustomServiceValues] = useState<Record<string, { price: number, duration: string }>>({});
 
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, logout } = useAuth();
   const { bookings } = useBookings();
   const { t, i18n } = useTranslation();
 
@@ -81,12 +82,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     'Luxury': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
     'Yellow Board': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others']
   };
-  
+
   // Check if a service should have custom inputs
   const shouldHaveCustomInputs = (service: Service) => {
     return customizableServices[vehicleCategory as keyof typeof customizableServices]?.includes(service.name);
   };
-  
+
   useEffect(() => {
     console.log('ServiceBooking mounted');
     window.scrollTo(0, 0);
@@ -236,7 +237,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       }
     });
   };
-  
+
   // Handle custom price change
   const handleCustomPriceChange = (serviceId: string, value: string) => {
     const numericValue = value === '' ? 0 : parseInt(value, 10);
@@ -247,7 +248,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       }));
     }
   };
-  
+
   // Handle custom duration change
   const handleCustomDurationChange = (serviceId: string, value: string) => {
     setCustomServiceValues(prev => ({
@@ -258,22 +259,20 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   const calculateTotal = () => {
     return selectedServices.reduce((total, service) => {
-      // Use custom price if available, otherwise use default price
       const price = customServiceValues[service.id]?.price ?? service.price;
       return total + price;
     }, 0);
   };
 
   const getServiceIcon = (service: Service) => {
-    // Map color names to their hex values
     const colorMap: Record<string, string> = {
-      'blue': '#3b82f6',    // blue-500
-      'green': '#22c55e',   // green-500
-      'indigo': '#6366f1',  // indigo-500
-      'orange': '#f97316',  // orange-500
-      'yellow': '#eab308',  // yellow-500
-      'purple': '#a855f7',  // purple-500
-      'red': '#ef4444',     // red-500
+      'blue': '#3b82f6',
+      'green': '#22c55e',
+      'indigo': '#6366f1',
+      'orange': '#f97316',
+      'yellow': '#eab308',
+      'purple': '#a855f7',
+      'red': '#ef4444',
     };
     
     const bgColor = colorMap[service.color || 'blue'] || '#3b82f6';
@@ -345,18 +344,23 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     }, 500);
   };
 
-  const handleTabChange = (tab: 'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login') => {
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      if (tab === 'bookings' || tab === 'contact') {
-        setComingSoonTitle(tab === 'bookings' ? 'My Bookings' : 'Contact Us');
-        setActiveTab('coming-soon');
-        return;
-      }
+  const handleTabChange = (tab: 'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'terms' | 'admin' | 'coming-soon' | 'login' | 'contact') => {
+    const protectedRoutes = ['bookings', 'calendar', 'service-bookings', 'settings', 'profile'];
+    if (protectedRoutes.includes(tab) && !isAuthenticated) {
+      setActiveTab('login');
+      return;
     }
+
+    const isMobile = window.innerWidth < 768;
+    if (isMobile && tab === 'bookings') {
+      setComingSoonTitle('My Bookings');
+      setActiveTab('coming-soon');
+      setMobileMenuOpen(false);
+      return;
+    }
+
     setActiveTab(tab);
     if (tab === 'book') {
-      // Reset state to mimic fresh booking page load
       setSearchQuery('');
       setSelectedUser(null);
       setSelectedServices([]);
@@ -379,7 +383,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       setMobileMenuOpen(true);
       setActiveTab('login');
     } else {
+      logout();
       setActiveTab('home');
+      setMobileMenuOpen(false);
     }
   };
 
@@ -419,6 +425,10 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   if (activeTab === 'login') {
     return <OTPLoginForm onLogin={login} />;
+  }
+
+  if (activeTab === 'contact') {
+    return <ContactPage />;
   }
 
   if (showPaymentPage && selectedUser) {
@@ -479,60 +489,156 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               )}
               
               <nav className="space-y-2">
-                <button onClick={() => handleTabChange('home')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                <button 
+                  onClick={() => handleTabChange('home')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'home'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
                   <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Home
                 </button>
-                <button onClick={() => handleTabChange('book')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                <button 
+                  onClick={() => handleTabChange('book')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'book'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
                   <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Book a Car
                 </button>
-                <button onClick={() => handleTabChange('calendar')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                <button 
+                  onClick={() => handleTabChange('calendar')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'calendar'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : isAuthenticated
+                      ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                      : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  }`}
+                  disabled={!isAuthenticated}
+                >
                   <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Calendar
                 </button>
-                <button onClick={() => handleTabChange('bookings')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                <button 
+                  onClick={() => handleTabChange('bookings')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab == 'bookings'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : isAuthenticated
+                      ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                      : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  }`}
+                  disabled={!isAuthenticated}
+                >
                   <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   My Bookings
                 </button>
-                <button onClick={() => handleTabChange('services')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 dark:border-blue-400">
+                <button 
+                  onClick={() => handleTabChange('services')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'services'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 dark:border-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
                   <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Car Services
                 </button>
-                <button onClick={() => handleTabChange('service-bookings')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                <button 
+                  onClick={() => handleTabChange('service-bookings')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'service-bookings'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : isAuthenticated
+                      ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                      : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  }`}
+                  disabled={!isAuthenticated}
+                >
                   <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Service Bookings
                 </button>
-                <button onClick={() => handleTabChange('sale-purchase')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                <button 
+                  onClick={() => handleTabChange('sale-purchase')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'sale-purchase'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
                   <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Sale/Purchase
                 </button>
-                <button onClick={() => handleTabChange('contact')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                <button 
+                  onClick={() => handleTabChange('contact')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'contact'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
                   <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Contact Us
                 </button>
-                <button onClick={() => handleTabChange('terms')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                <button 
+                  onClick={() => handleTabChange('terms')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'terms'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                  }`}
+                >
+                  <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Terms & Conditions
                 </button>
-                <button onClick={() => handleTabChange('settings')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
-                  <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
+                <button 
+                  onClick={() => handleTabChange('settings')} 
+                  className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                    activeTab === 'settings'
+                      ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                      : isAuthenticated
+                      ? 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                      : 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                  }`}
+                  disabled={!isAuthenticated}
+                >
+                  <Clock className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                   Settings
                 </button>
                 <div className="border-t dark:border-dark-600 pt-4 mt-4">
                   {isAuthenticated ? (
                     <>
-                      <button onClick={() => handleTabChange('profile')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors">
+                      <button 
+                        onClick={() => handleTabChange('profile')} 
+                        className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                          activeTab === 'profile'
+                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                        }`}
+                        disabled={!isAuthenticated}
+                      >
                         <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                         Profile
                       </button>
-                      <button onClick={() => handleAuthAction('logout')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors">
+                      <button 
+                        onClick={() => handleAuthAction('logout')} 
+                        className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                      >
                         <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                         Logout
                       </button>
                     </>
                   ) : (
-                    <button onClick={() => handleAuthAction('login')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                    <button 
+                      onClick={() => handleAuthAction('login')} 
+                      className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                    >
                       <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                       Login
                     </button>
