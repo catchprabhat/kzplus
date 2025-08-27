@@ -298,7 +298,7 @@ function App() {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [pickupDate, setPickupDate] = useState('');
   const [dropDate, setDropDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login'>('home');
   const [comingSoonTitle, setComingSoonTitle] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [latestBooking, setLatestBooking] = useState<Booking | null>(null);
@@ -352,6 +352,11 @@ function App() {
   // Show admin page if admin tab is active
   if (activeTab === 'admin') {
     return <AdminPage onBackToHome={() => setActiveTab('home')} />;
+  }
+  
+  // Show login form if activeTab is 'login' and user is not authenticated
+  if (activeTab === 'login' && !isAuthenticated) {
+    return <OTPLoginForm onLogin={login} />;
   }
 
   // Show login form if not authenticated and trying to access protected routes
@@ -447,8 +452,9 @@ function App() {
     // For mobile view, handle specific tabs differently
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
-      if (tab === 'book' || tab === 'bookings' || tab === 'contact') {
-        setComingSoonTitle(tab === 'book' ? 'Book a Car' : tab === 'bookings' ? 'My Bookings' : 'Contact Us');
+      // Remove the condition for 'book' so it navigates directly to the book page
+      if (tab === 'bookings' || tab === 'contact') {
+        setComingSoonTitle(tab === 'bookings' ? 'My Bookings' : 'Contact Us');
         setActiveTab('coming-soon');
         setMobileMenuOpen(false);
         setShowServicesOverlay(false);
@@ -569,7 +575,7 @@ function App() {
             <div className="flex justify-between items-center py-4">
               <div className="flex items-center cursor-pointer" onClick={() => handleTabChange('home')}>
                 <img 
-                  src="/images/logo/icon.png" 
+                  src="/images/logo/iconn.png" 
                   alt="A Plus Auto Care" 
                   className="w-20 h-30 mr-3" 
                 />
@@ -858,7 +864,7 @@ function App() {
                 <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Contact</span>
               </button>
               <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                onClick={() => isAuthenticated ? setMobileMenuOpen(!mobileMenuOpen) : setActiveTab('login')}
                 className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
               >
                 <User className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
