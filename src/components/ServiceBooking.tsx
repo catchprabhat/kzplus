@@ -345,33 +345,39 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
     }, 500);
   };
 
-  const handleServiceNavigation = (service: string) => {
-    const tabMap: { [key: string]: 'book' | 'services' | 'sale-purchase' } = {
-      'self-drive': 'book',
-      'car-services': 'services',
-      'sale-purchase': 'sale-purchase'
-    };
-    const tab = tabMap[service];
-    if (tab) {
-      setActiveTab(tab);
-    }
-  };
-
   const handleTabChange = (tab: 'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login') => {
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
-      if (tab === 'book' || tab === 'bookings' || tab === 'contact') {
-        setComingSoonTitle(tab === 'book' ? 'Book a Car' : tab === 'bookings' ? 'My Bookings' : 'Contact Us');
+      if (tab === 'bookings' || tab === 'contact') {
+        setComingSoonTitle(tab === 'bookings' ? 'My Bookings' : 'Contact Us');
         setActiveTab('coming-soon');
         return;
       }
     }
     setActiveTab(tab);
+    if (tab === 'book') {
+      // Reset state to mimic fresh booking page load
+      setSearchQuery('');
+      setSelectedUser(null);
+      setSelectedServices([]);
+      setScheduledDate('');
+      setScheduledTime('09:00');
+      setCustomerData({ name: '', email: '', phone: '', notes: '' });
+      setSearchAttempted(false);
+      setSearchError(null);
+      setShowCustomerForm(false);
+      setIsRepeatServiceMode(false);
+      setShowPaymentPage(false);
+      setShowSuccess(false);
+      window.scrollTo(0, 0);
+    }
+    setMobileMenuOpen(false);
   };
 
   const handleAuthAction = (action: 'login' | 'logout') => {
     if (action === 'login') {
       setMobileMenuOpen(true);
+      setActiveTab('login');
     } else {
       setActiveTab('home');
     }
@@ -526,7 +532,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                       </button>
                     </>
                   ) : (
-                    <button onClick={() => handleTabChange('login')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
+                    <button onClick={() => handleAuthAction('login')} className="w-full flex items-center px-4 py-3 rounded-lg font-medium text-left bg-blue-600 dark:bg-blue-500 text-white hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors">
                       <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-3" />
                       Login
                     </button>
@@ -1129,7 +1135,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
         <div className="grid grid-cols-5 gap-1 p-2">
           <button
-            onClick={() => handleServiceNavigation('self-drive')}
+            onClick={() => handleTabChange('book')}
             className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
               activeTab === 'book'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
@@ -1140,7 +1146,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
             <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('selfdrive')}</span>
           </button>
           <button
-            onClick={() => handleServiceNavigation('car-services')}
+            onClick={() => handleTabChange('services')}
             className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
               activeTab === 'services'
                 ? 'bg-blue-50 dark:bg-blue-900/20 text-green-600 dark:text-green-400'

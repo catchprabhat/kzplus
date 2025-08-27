@@ -1310,7 +1310,15 @@ function App() {
               <div>
                 <h4 className="font-semibold mb-4">Contact</h4>
                 <ul className="space-y-2 text-gray-400 text-sm">
-                  <li>+918123540767</li>
+                  <li>+917735537655 - Self drive</li>
+                  <li>+918050922920 - Tyre care and mechanic work</li>
+                  <li>+918123540767 - Others</li>
+                  <li>
+  <a href="https://maps.app.goo.gl/auGNQh4kqViej7Hr5?g_st=aw" target="_blank">
+    Click here for Location
+  </a>
+</li>
+
                   <li>kzplusmotors@gmail.com</li>
                   <li>Available 24/7</li>
                 </ul>
