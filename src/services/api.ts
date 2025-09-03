@@ -1,4 +1,5 @@
 // Mock API service - replace with your actual API endpoints
+// Remove these lines:
 const NETLIFY_DATABASE_URL='postgresql://neondb_owner:npg_c2IJw9LjlbpE@ep-cold-lab-a56reurn-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require'; 
 import { neon } from '@netlify/neon';
 const sql = neon(NETLIFY_DATABASE_URL); // automatically uses env NETLIFY_DATABASE_URL
@@ -78,15 +79,40 @@ export const bookingApi = {
   // Fetch all bookings
   async getBookings(): Promise<ApiBooking[]> {
     try {
-      const response = await sql`SELECT * FROM CarBookings`
+      const response = await fetch(`${API_BASE_URL}/car-bookings`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch bookings');
+      }
+
+      const bookings = await response.json();
+      console.log('Raw bookings from API:', bookings);
       
-      // For demo purposes, return mock data
-      // Replace with actual API call:
-      // const response = await fetch(`${API_BASE_URL}/bookings`);
-      // if (!response.ok) throw new Error('Failed to fetch bookings');
-      return await response.json();
-      console.log(booking);
-      return booking as ApiBooking[];
+      // Map the database field names to the API field names
+      const mappedBookings = bookings.map((booking: any) => ({
+        id: booking.id.toString(),
+        carId: booking.car_id,
+        carName: booking.car_name,
+        carType: booking.car_type,
+        carSeats: booking.car_seats || 0,
+        pickupDate: booking.pickup_date,
+        dropDate: booking.drop_date,
+        totalDays: booking.total_days,
+        totalPrice: booking.total_price,
+        customerName: booking.user_name,
+        customerEmail: booking.user_email,
+        customerPhone: booking.user_phone,
+        status: booking.status,
+        createdAt: booking.created_at
+      }));
+      
+      console.log('Mapped bookings:', mappedBookings);
+      return mappedBookings;
     } catch (error) {
       console.error('Error fetching bookings:', error);
       throw new Error('Failed to fetch bookings');
@@ -155,19 +181,17 @@ export const bookingApi = {
   // Delete a booking
   async deleteBooking(id: string): Promise<void> {
     try {
-      await delay(300);
+      const response = await fetch(`${API_BASE_URL}/car-bookings/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
       
-      // For demo purposes, remove from mock data
-      // Replace with actual API call:
-      // const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
-      //   method: 'DELETE',
-      // });
-      // if (!response.ok) throw new Error('Failed to delete booking');
-
-      const bookingIndex = mockBookings.findIndex(b => b.id === id);
-      if (bookingIndex === -1) throw new Error('Booking not found');
-      
-      mockBookings.splice(bookingIndex, 1);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete booking');
+      }
     } catch (error) {
       console.error('Error deleting booking:', error);
       throw new Error('Failed to delete booking');
@@ -317,4 +341,52 @@ export const apiService = {
       bookings: await bookings.json(),
     };
   },
+};
+
+// Car booking interfaces
+export interface CarBookingData {
+  userName: string;
+  userEmail: string;
+  userPhone: string;
+  carId: string;
+  carName: string;
+  carType: string;
+  pickupLocation: string;
+  pickupDate: string;
+  dropDate: string;
+  totalHours: number;
+  totalDays: number;
+  totalPrice: number;
+  deliveryPickup?: boolean;
+}
+
+// Create car booking
+export const createCarBooking = async (bookingData: CarBookingData) => {
+  const response = await fetch(`${API_BASE_URL}/car-bookings`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(bookingData),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create booking');
+  }
+
+  return response.json();
+};
+
+// Get available cars
+export const getAvailableCars = async (pickupDate: string, dropDate: string) => {
+  const response = await fetch(
+    `${API_BASE_URL}/car-bookings/available-cars?pickupDate=${encodeURIComponent(pickupDate)}&dropDate=${encodeURIComponent(dropDate)}`
+  );
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch available cars');
+  }
+
+  return response.json();
 };

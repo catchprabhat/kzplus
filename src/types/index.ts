@@ -7,6 +7,7 @@ export interface Car {
   transmission: string;
   fuel: string;
   pricePerDay: number;
+  pricePerHour: number; // Add this new field
   features: string[];
   available: boolean;
   status?: 'pending' | 'approved' | 'rejected';
@@ -198,4 +199,32 @@ export interface SaleInquiry {
   status: 'new' | 'contacted' | 'interested' | 'negotiating' | 'closed';
   createdAt: Date;
   respondedAt?: Date;
+}
+
+
+export interface SelfDriveBooking {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  location: string;
+  tripStartDate: Date;
+  tripEndDate: Date;
+  startTime: string;
+  endTime: string;
+  deliveryPickup: boolean;
+  deliveryAddress?: string;
+  nearbyLocation?: string;
+  pincode?: string;
+  carId?: string;
+  carName?: string;
+  totalPrice: number;
+  status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+  createdAt: Date;
+}
+
+export interface TimeSlot {
+  hour: number;
+  minute: number;
+  period: 'AM' | 'PM';
 }

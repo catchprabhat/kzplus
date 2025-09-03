@@ -217,7 +217,7 @@ export const BookingList: React.FC<BookingListProps> = ({
                 </div>
                 <div className="flex items-center font-semibold text-blue-600">
                   <CreditCard className="w-4 h-4 mr-2" />
-                  ${booking.totalPrice}
+                  ₹{booking.totalPrice}
                 </div>
               </div>
             </div>

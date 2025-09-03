@@ -216,12 +216,12 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                   {booking.services.map((service, index) => (
                     <div key={index} className="flex justify-between">
                       <span>{service.name}</span>
-                      <span>${service.price}</span>
+                      <span>₹{service.price}</span>
                     </div>
                   ))}
                   <div className="flex justify-between font-semibold text-blue-600 border-t pt-1">
                     <span>Total:</span>
-                    <span>${booking.totalPrice}</span>
+                    <span>₹{booking.totalPrice}</span>
                   </div>
                 </div>
               </div>

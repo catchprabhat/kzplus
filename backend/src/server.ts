@@ -4,6 +4,7 @@ import cors from 'cors';
 // import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import carBookingsRouter from './routes/carBookings';
 
 // Import the route files
 import authRoutes from './routes/auth';
@@ -59,6 +60,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/vehicles', vehiclesRoutes); // Add this line to register the vehicles routes
+app.use('/api/car-bookings', carBookingsRouter);
 
 app.use('*', (_req: Request, res: Response) => {
   res.status(404).json({ error: 'Route not found' });

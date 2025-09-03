@@ -35,17 +35,54 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     return 0;
   };
 
+  const calculatePricingBreakdown = () => {
+    if (!selectedCar) return { days: 0, hours: 0, totalPrice: 0, billingDays: 0 };
+    
+    const totalHours = calculateTotalHours();
+    
+    // If exactly 24 hours or multiples of 24, use day pricing only
+    if (totalHours % 24 === 0) {
+      const days = totalHours / 24;
+      return {
+        days: days,
+        hours: 0,
+        totalPrice: days * selectedCar.pricePerDay,
+        billingDays: days
+      };
+    }
+    
+    // If less than 24 hours, use hourly pricing only
+    if (totalHours < 24) {
+      return {
+        days: 0,
+        hours: totalHours,
+        totalPrice: Math.ceil(totalHours) * selectedCar.pricePerHour,
+        billingDays: 0
+      };
+    }
+    
+    // Mixed pricing: days + additional hours
+    const fullDays = Math.floor(totalHours / 24);
+    const remainingHours = totalHours % 24;
+    const dayPrice = fullDays * selectedCar.pricePerDay;
+    const hourPrice = Math.ceil(remainingHours) * selectedCar.pricePerHour;
+    
+    return {
+      days: fullDays,
+      hours: remainingHours,
+      totalPrice: dayPrice + hourPrice,
+      billingDays: fullDays
+    };
+  };
+
   const calculateTotalDays = () => {
-    const hours = calculateTotalHours();
-    return Math.ceil(hours / 24); // Round up to next day for pricing
+    const breakdown = calculatePricingBreakdown();
+    return breakdown.billingDays;
   };
 
   const calculateTotalPrice = () => {
-    if (selectedCar) {
-      const days = calculateTotalDays();
-      return days * selectedCar.pricePerDay;
-    }
-    return 0;
+    const breakdown = calculatePricingBreakdown();
+    return breakdown.totalPrice;
   };
 
   const formatDuration = () => {
@@ -98,17 +135,19 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   const isFormValid = selectedCar && pickupDate && dropDate && customerData.name && customerData.email && customerData.phone;
 
+  const pricingBreakdown = calculatePricingBreakdown();
+
   return (
     <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-black mb-6 flex items-center">
         <User className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
         Booking Details
       </h3>
 
       {selectedCar && pickupDate && dropDate && (
         <div className="mb-6 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg">
-          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Booking Summary</h4>
-          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+          <h4 className="font-semibold text-gray-900 dark:text-black mb-2">Booking Summary</h4>
+          <div className="space-y-2 text-sm text-black-700 dark:text-black-300">
             <div className="flex justify-between">
               <span>Car:</span>
               <span className="font-medium">{selectedCar.name}</span>
@@ -121,20 +160,38 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <span>Duration:</span>
               <span className="font-medium">{formatDuration()}</span>
             </div>
-            <div className="flex justify-between">
-              <span>Billing Days:</span>
-              <span className="font-medium">{calculateTotalDays()} day{calculateTotalDays() !== 1 ? 's' : ''}</span>
-            </div>
+            {pricingBreakdown.days > 0 && (
+              <div className="flex justify-between">
+                <span>Billing Days:</span>
+                <span className="font-medium">{pricingBreakdown.days} day{pricingBreakdown.days !== 1 ? 's' : ''}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span>Rate:</span>
-              <span className="font-medium">${selectedCar.pricePerDay}/day</span>
+              <div className="text-right">
+                <div className="font-medium">₹{selectedCar.pricePerDay}/day</div>
+                <div className="font-medium text-xs">₹{selectedCar.pricePerHour}/hour</div>
+              </div>
             </div>
+            {/* Pricing breakdown */}
+            {pricingBreakdown.days > 0 && pricingBreakdown.hours > 0 && (
+              <div className="text-xs text-black-500 dark:text-black-400 space-y-1">
+                <div className="flex justify-between">
+                  <span>{pricingBreakdown.days} day{pricingBreakdown.days !== 1 ? 's' : ''}:</span>
+                  <span>₹{pricingBreakdown.days * selectedCar.pricePerDay}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>{Math.ceil(pricingBreakdown.hours)} hour{Math.ceil(pricingBreakdown.hours) !== 1 ? 's' : ''}:</span>
+                  <span>₹{Math.ceil(pricingBreakdown.hours) * selectedCar.pricePerHour}</span>
+                </div>
+              </div>
+            )}
             <div className="flex justify-between border-t dark:border-dark-600 pt-2 font-bold text-blue-900 dark:text-blue-300">
               <span>Total:</span>
-              <span>${calculateTotalPrice()}</span>
+              <span>₹{calculateTotalPrice()}</span>
             </div>
           </div>
-          <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
+          <div className="mt-3 text-xs text-black-500 dark:text-black-400">
             <div>Pickup: {new Date(pickupDate).toLocaleDateString('en-US', { 
               weekday: 'short', 
               month: 'short', 
@@ -159,7 +216,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-black-700 dark:text-black-300 mb-2">
             <User className="w-4 h-4 inline mr-1" />
             Full Name
           </label>
@@ -167,7 +224,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="text"
             value={customerData.name}
             onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your full name"
             required
             disabled={loading}
@@ -175,7 +232,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-black-700 dark:text-black-300 mb-2">
             <Mail className="w-4 h-4 inline mr-1" />
             Email Address
           </label>
@@ -183,7 +240,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="email"
             value={customerData.email}
             onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your email"
             required
             disabled={loading}
@@ -191,7 +248,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-black-700 dark:text-black-300 mb-2">
             <Phone className="w-4 h-4 inline mr-1" />
             Phone Number
           </label>
@@ -199,7 +256,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="tel"
             value={customerData.phone}
             onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your phone number"
             required
             disabled={loading}

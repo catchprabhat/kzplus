@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -26,6 +25,8 @@ import { Car, Booking, ServiceBooking as ServiceBookingType } from './types';
 import { useBookings } from './hooks/useBookings';
 import { useServiceBookings } from './hooks/useServiceBookings';
 import { useAuth } from './hooks/useAuth';
+import { SelfDriveBooking } from './components/SelfDriveBooking';
+import { getAvailableCars, createCarBooking } from './services/api';
 
 // Initialize FontAwesome library
 library.add(fas);
@@ -307,6 +308,21 @@ function App() {
   const [serviceBookingLoading, setServiceBookingLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showServicesOverlay, setShowServicesOverlay] = useState(false);
+  const [availableCars, setAvailableCars] = useState<Car[]>(cars);
+  const [bookedCarIds, setBookedCarIds] = useState<string[]>([]);
+
+  // Add new state for self-drive booking data
+  const [selfDriveBookingData, setSelfDriveBookingData] = useState({
+    location: 'Bangalore',
+    tripStartDate: null as Date | null,
+    tripEndDate: null as Date | null,
+    startTime: { hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' },
+    endTime: { hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' },
+    deliveryPickup: false,
+    deliveryAddress: '',
+    nearbyLocation: '',
+    pincode: ''
+  });
 
   // Authentication
   const { user, loading: authLoading, isAuthenticated, login, logout, updateProfile } = useAuth();
@@ -337,6 +353,33 @@ function App() {
   const handleUpdateServiceBookingStatus = async (id: string, status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled'): Promise<void> => {
     await updateServiceBookingStatus(id, status);
   };
+
+  // Function to calculate total hours
+  const calculateTotalHours = (start: Date, end: Date) => {
+    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 3600));
+  };
+
+  // Function to fetch available cars
+  const fetchAvailableCars = async (pickupDate: string, dropDate: string) => {
+    try {
+      const result = await getAvailableCars(pickupDate, dropDate);
+      setBookedCarIds(result.bookedCarIds);
+      
+      // Filter out booked cars
+      const available = cars.filter(car => !result.bookedCarIds.includes(car.id));
+      setAvailableCars(available);
+    } catch (error) {
+      console.error('Error fetching available cars:', error);
+      setAvailableCars(cars); // Fallback to all cars
+    }
+  };
+
+  // Update the effect when selfDriveBookingData changes
+  useEffect(() => {
+    if (selfDriveBookingData.tripStartDate && selfDriveBookingData.tripEndDate) {
+      fetchAvailableCars(selfDriveBookingData.tripStartDate.toISOString(), selfDriveBookingData.tripEndDate.toISOString());
+    }
+  }, [selfDriveBookingData]);
 
   // Show loading spinner while checking authentication
   if (authLoading) {
@@ -369,23 +412,70 @@ function App() {
     setSelectedCar(selectedCar?.id === car.id ? null : car);
   };
 
+  // Helper function to format date without timezone conversion
+  const formatDateForDatabase = (date: Date | string): string => {
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    const seconds = String(d.getSeconds()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+  };
+
   const handleBookingComplete = async (booking: Booking) => {
     try {
       setBookingLoading(true);
       
       // Find the selected car to get its type and seats
       const car = cars.find(c => c.id === booking.carId);
+      
+      // Ensure dates are properly formatted as ISO strings
+
+      // Helper function to format pickup location based on delivery option
+      const formatPickupLocation = () => {
+        if (selfDriveBookingData.deliveryPickup && selfDriveBookingData.deliveryAddress) {
+          // Combine all address components when delivery is selected
+          const addressParts = [
+            selfDriveBookingData.deliveryAddress,
+            selfDriveBookingData.nearbyLocation,
+            selfDriveBookingData.pincode
+          ].filter(part => part && part.trim() !== ''); // Remove empty parts
+          
+          return addressParts.length > 0 ? addressParts.join(', ') : selfDriveBookingData.location || 'Bangalore';
+        }
+        return selfDriveBookingData.location || 'Bangalore';
+      };
+
       const enhancedBooking = {
         ...booking,
         carType: car?.type || 'Unknown',
-        carSeats: car?.seats || 0
+        carSeats: car?.seats || 0,
+        pickupLocation: formatPickupLocation(),
+        deliveryPickup: selfDriveBookingData.deliveryPickup || false,
+        totalHours: calculateTotalHours(new Date(booking.pickupDate), new Date(booking.dropDate)),
+        pickupDate: formatDateForDatabase(booking.pickupDate),
+        dropDate: formatDateForDatabase(booking.dropDate),
+        // Map customer fields to user fields expected by the backend
+        userName: booking.customerName,
+        userEmail: booking.customerEmail,
+        userPhone: booking.customerPhone
       };
       
-      // Create booking via API (notifications are sent automatically)
-      const createdBooking = await createBooking(enhancedBooking);
+      // Use createCarBooking instead of createBooking
+      const createdBooking = await createCarBooking(enhancedBooking);
       setLatestBooking(createdBooking);
       setLatestServiceBooking(null); // Clear service booking
       setShowConfirmation(true);
+      
+      // Refresh bookings list
+      fetchBookings();
+
+      // Refresh available cars before resetting dates
+      if (pickupDate && dropDate) {
+        fetchAvailableCars(pickupDate, dropDate);
+      }
       
       // Reset form
       setSelectedCar(null);
@@ -397,7 +487,8 @@ function App() {
         setShowConfirmation(false);
       }, 5000);
     } catch (error) {
-      console.error('Failed to create booking:', error);
+      console.error('Error creating booking:', error);
+      // Handle error (show error message to user)
     } finally {
       setBookingLoading(false);
     }
@@ -430,7 +521,7 @@ function App() {
         setActiveTab('services');
         break;
       case 'self-drive':
-        setActiveTab('book');
+        setActiveTab('self-drive');
         break;
       case 'sale-purchase':
         setActiveTab('sale-purchase');
@@ -475,6 +566,39 @@ function App() {
     }
     setMobileMenuOpen(false);
     setShowServicesOverlay(false); // Close services overlay on auth action
+  };
+
+  // Add handler for self-drive booking data
+  const handleSelfDriveBookingData = (bookingData: any) => {
+    setSelfDriveBookingData(bookingData);
+    
+    // Convert dates to the format expected by BookingForm
+    if (bookingData.tripStartDate && bookingData.tripEndDate) {
+      const startDateTime = new Date(bookingData.tripStartDate);
+      startDateTime.setHours(
+        bookingData.startTime.period === 'PM' && bookingData.startTime.hour !== 12 
+          ? bookingData.startTime.hour + 12 
+          : bookingData.startTime.hour === 12 && bookingData.startTime.period === 'AM'
+          ? 0
+          : bookingData.startTime.hour,
+        bookingData.startTime.minute
+      );
+      
+      const endDateTime = new Date(bookingData.tripEndDate);
+      endDateTime.setHours(
+        bookingData.endTime.period === 'PM' && bookingData.endTime.hour !== 12 
+          ? bookingData.endTime.hour + 12 
+          : bookingData.endTime.hour === 12 && bookingData.endTime.period === 'AM'
+          ? 0
+          : bookingData.endTime.hour,
+        bookingData.endTime.minute
+      );
+      
+      setPickupDate(startDateTime.toISOString());
+      setDropDate(endDateTime.toISOString());
+    }
+    
+    setActiveTab('book');
   };
 
   const navigationItems = [
@@ -785,7 +909,7 @@ function App() {
                     >
                       <Icon className="w-4 h-4 mr-2" />
                       {label}
-                      {isProtected && !isAuthenticated && (
+                     {isProtected && !isAuthenticated && (
                         <span className="ml-2 text-xs bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
                           Login Required
                         </span>
@@ -1125,49 +1249,74 @@ function App() {
           )}
 
           {activeTab === 'book' && (
-            <div className="space-y-8">
-              {/* Hero Section */}
-              <div className="text-center mb-12">
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-                  Find Your Perfect Ride
-                </h2>
-                <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                  Choose from our premium fleet of self-drive cars and experience the freedom of the road
+            <div>
+              <div className="text-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">Choose Your Car</h2>
+                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+                  Select from our premium fleet of self-drive cars
                 </p>
+                {/* Show booking summary */}
+                {selfDriveBookingData.tripStartDate && selfDriveBookingData.tripEndDate && (
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-dark-700 rounded-lg inline-block">
+                    <p className="text-sm text-black-700 dark:text-black-300">  
+                      <strong>Trip:</strong> {selfDriveBookingData.location}  
+                      {selfDriveBookingData.tripStartDate.toLocaleDateString()} {selfDriveBookingData.startTime.hour}:{selfDriveBookingData.startTime.minute.toString().padStart(3, '0')} {selfDriveBookingData.startTime.period} - 
+                      {selfDriveBookingData.tripEndDate.toLocaleDateString()} {selfDriveBookingData.endTime.hour}:{selfDriveBookingData.endTime.minute.toString().padStart(3, '0')} {selfDriveBookingData.endTime.period}
+                    </p>
+                  </div>
+                )}
               </div>
-
-              {/* Car Selection */}
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Choose Your Car</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {cars.map(car => (
-                    <CarCard
-                      key={car.id}
-                      car={car}
-                      onSelect={handleCarSelect}
-                      isSelected={selectedCar?.id === car.id}
-                    />
-                  ))}
+              <div className="space-y-8">
+                {/* Car Selection */}
+                <div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    {availableCars.map(car => (
+                      <CarCard
+                        key={car.id}
+                        car={car}
+                        onSelect={handleCarSelect}
+                        isSelected={selectedCar?.id === car.id}
+                      />
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Booking Section */}
-              <div className="grid lg:grid-cols-2 gap-8">
-                <DatePicker
-                  pickupDate={pickupDate}
-                  dropDate={dropDate}
-                  onPickupDateChange={setPickupDate}
-                  onDropDateChange={setDropDate}
-                />
-                <BookingForm
-                  selectedCar={selectedCar}
-                  pickupDate={pickupDate}
-                  dropDate={dropDate}
-                  onBookingComplete={handleBookingComplete}
-                  loading={bookingLoading}
-                />
+                {/* Show Booking Form only when car is selected and dates are available */}
+                {selectedCar && pickupDate && dropDate && (
+                  <div className="max-w-md mx-auto">
+                    <BookingForm
+                      selectedCar={selectedCar}
+                      pickupDate={pickupDate}
+                      dropDate={dropDate}
+                      onBookingComplete={handleBookingComplete}
+                      loading={bookingLoading}
+                    />
+                  </div>
+                )}
+                
+                {/* Show message if no dates selected */}
+                {(!pickupDate || !dropDate) && (
+                  <div className="text-center p-8 bg-gray-50 dark:bg-dark-700 rounded-lg">
+                    <p className="text-gray-600 dark:text-gray-300">
+                      Please select your trip dates from the booking page first.
+                    </p>
+                    <button
+                      onClick={() => setActiveTab('self-drive')}
+                      className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+                    >
+                      Go to Booking Page
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
+          )}
+
+          {activeTab === 'self-drive' && (
+            <SelfDriveBooking 
+              onBookingComplete={handleBookingComplete}
+              onNavigateToCarSelection={handleSelfDriveBookingData}
+            />
           )}
 
           {activeTab === 'calendar' && (
@@ -1191,8 +1340,8 @@ function App() {
           {activeTab === 'bookings' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">My Bookings</h2>
-                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">My Bookings</h2>
+                <p className="text-base sm:text-lg text-gray-600 dark:text-black-300">
                   Manage and view all your car reservations
                 </p>
               </div>
