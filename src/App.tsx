@@ -539,17 +539,17 @@ function App() {
     }
     
     // For mobile view, handle specific tabs differently
+       // For mobile view, handle specific tabs differently
     const isMobile = window.innerWidth < 768;
     if (isMobile) {
-      // Only redirect 'bookings' to coming-soon
-      if (tab === 'bookings') {
-        setComingSoonTitle('My Bookings');
-        setActiveTab('coming-soon');
-        setMobileMenuOpen(false);
-        setShowServicesOverlay(false);
-        return;
-      }
+      // Remove the special handling for 'bookings' tab
+      // This will allow mobile users to see the actual bookings page
+      // instead of the "Coming Soon" page
     }
+    
+    setActiveTab(tab);
+    setMobileMenuOpen(false); // Close mobile menu when changing tabs
+    setShowServicesOverlay(false); // Close services overlay when changing tabs
     
     setActiveTab(tab);
     setMobileMenuOpen(false); // Close mobile menu when changing tabs
