@@ -311,7 +311,7 @@ This is an automated security message.
         });
       };
 
-      const subject = '🚗🎉 Your Booking is Confirmed - A+ Auto Care';
+      const subject = 'Your Booking is Confirmed - A+ Auto Care';
 
       const html = `
         <!DOCTYPE html>
@@ -335,7 +335,7 @@ This is an automated security message.
         </head>
         <body>
           <div class="header">
-            <h1>🚗 A+ Auto Care</h1>
+            <h1>A+ Auto Care</h1>
             <h2>Your Booking is Confirmed! 🎉</h2>
             <p>Thank you for choosing A+ Auto Care</p>
           </div>
@@ -381,7 +381,7 @@ This is an automated security message.
             </div>
             
             <div class="total-price">
-              <h3 style="margin: 0; color: #059669;">💰 Total Price: ₹${totalPrice}</h3>
+              <h3 style="margin: 0; color: #059669;">Total Price: ₹${totalPrice}</h3>
             </div>
             
             <div class="contact-info">
