@@ -321,7 +321,8 @@ function App() {
     deliveryPickup: false,
     deliveryAddress: '',
     nearbyLocation: '',
-    pincode: ''
+    pincode: '',
+    googleMapsLocation: ''
   });
 
   // Authentication
@@ -440,7 +441,8 @@ function App() {
           const addressParts = [
             selfDriveBookingData.deliveryAddress,
             selfDriveBookingData.nearbyLocation,
-            selfDriveBookingData.pincode
+            selfDriveBookingData.pincode,
+            selfDriveBookingData.googleMapsLocation,
           ].filter(part => part && part.trim() !== ''); // Remove empty parts
           
           return addressParts.length > 0 ? addressParts.join(', ') : selfDriveBookingData.location || 'Bangalore';
@@ -533,28 +535,26 @@ function App() {
   };
 
   const handleTabChange = (tab: any) => {
-    // Check if user needs to be authenticated for this tab
-    if (protectedRoutes.includes(tab) && !isAuthenticated) {
-      return; // This will trigger the login form
-    }
-    
-    // For mobile view, handle specific tabs differently
-       // For mobile view, handle specific tabs differently
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-      // Remove the special handling for 'bookings' tab
-      // This will allow mobile users to see the actual bookings page
-      // instead of the "Coming Soon" page
-    }
-    
-    setActiveTab(tab);
-    setMobileMenuOpen(false); // Close mobile menu when changing tabs
-    setShowServicesOverlay(false); // Close services overlay when changing tabs
-    
-    setActiveTab(tab);
-    setMobileMenuOpen(false); // Close mobile menu when changing tabs
-    setShowServicesOverlay(false); // Close services overlay when changing tabs
-  };
+  // Check if user needs to be authenticated for this tab
+  if (protectedRoutes.includes(tab) && !isAuthenticated) {
+    return; // This will trigger the login form
+  }
+  
+  // For mobile view, handle specific tabs differently
+  const isMobile = window.innerWidth < 768;
+  if (isMobile) {
+    // Remove the special handling for 'bookings' tab
+    // This will allow mobile users to see the actual bookings page
+    // instead of the "Coming Soon" page
+  }
+  
+  setActiveTab(tab);
+  setMobileMenuOpen(false); // Close mobile menu when changing tabs
+  setShowServicesOverlay(false); // Close services overlay when changing tabs
+
+  // Scroll to top of the page
+  window.scrollTo(0, 0);
+};
 
   const handleAuthAction = (action: 'login' | 'logout') => {
     if (action === 'login') {
@@ -1025,7 +1025,7 @@ function App() {
                     </button>
                     <button
                       onClick={() => setShowServicesOverlay(true)}
-                      className="bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-dark-500 px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-medium sm:font-semibold text-sm xs:text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                      className="bg-white dark:bg-dark-700 hover:bg-gray-50 dark:hover:bg-dark-600 text-gray-900 dark:text-black border-2 border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-dark-500 px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-medium sm:font-semibold text-sm xs:text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
                     >
                       <Wrench className="w-4 xs:w-5 sm:w-6 h-4 xs:h-5 sm:h-6 mr-1.5 sm:mr-2" />
                       <span className="hidden xs:inline">View All Car Services</span>
@@ -1290,6 +1290,7 @@ function App() {
                       dropDate={dropDate}
                       onBookingComplete={handleBookingComplete}
                       loading={bookingLoading}
+                      onNavigate={handleTabChange}
                     />
                   </div>
                 )}

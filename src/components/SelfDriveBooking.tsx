@@ -22,7 +22,9 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [nearbyLocation, setNearbyLocation] = useState('');
   const [pincode, setPincode] = useState('');
+  const [googleMapsLocation, setGoogleMapsLocation] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -101,7 +103,9 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
       deliveryPickup,
       deliveryAddress,
       nearbyLocation,
-      pincode
+      pincode,
+      googleMapsLocation
+
     };
     
     if (onNavigateToCarSelection) {
@@ -231,6 +235,18 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                   placeholder="Enter pincode"
                 />
               </div>
+              <div>
+    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      Google Maps Location
+    </label>
+    <input
+      type="text"
+      value={googleMapsLocation}
+      onChange={(e) => setGoogleMapsLocation(e.target.value)}
+      className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black"
+      placeholder="Enter your Google Maps location link"
+    />
+  </div>
             </motion.div>
           )}
         </AnimatePresence>

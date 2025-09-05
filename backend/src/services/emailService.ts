@@ -274,6 +274,177 @@ This is an automated security message.
       }
     }
   }
+
+  // Send booking confirmation email
+  async sendBookingConfirmation(bookingDetails: {
+    userEmail: string;
+    userName: string;
+    userPhone: string;
+    carName: string;
+    pickupDate: string;
+    dropDate: string;
+    totalPrice: number;
+    pickupLocation: string;
+  }): Promise<{ success: boolean; message: string }> {
+    try {
+      const {
+        userEmail,
+        userName,
+        userPhone,
+        carName,
+        pickupDate,
+        dropDate,
+        totalPrice,
+        pickupLocation
+      } = bookingDetails;
+
+      // Format dates for better readability
+      const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      };
+
+      const subject = '🚗🎉 Your Booking is Confirmed - A+ Auto Care';
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Booking Confirmation - A+ Auto Care</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+            .booking-card { background: white; padding: 25px; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+            .detail-label { font-weight: bold; color: #374151; }
+            .detail-value { color: #1f2937; }
+            .total-price { background: #ecfdf5; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 30px; padding: 20px; color: #6b7280; font-size: 14px; }
+            .contact-info { background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>🚗 A+ Auto Care</h1>
+            <h2>Your Booking is Confirmed! 🎉</h2>
+            <p>Thank you for choosing A+ Auto Care</p>
+          </div>
+          
+          <div class="content">
+            <div class="booking-card">
+              <h3 style="margin-top: 0; color: #1f2937; text-align: center;">Booking Details</h3>
+              
+              <div class="detail-row">
+                <span class="detail-label">👤 Full Name:</span>
+                <span class="detail-value">${userName}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">📧 Email Address:</span>
+                <span class="detail-value">${userEmail}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">📱 Phone Number:</span>
+                <span class="detail-value">${userPhone}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">🚗 Car Name:</span>
+                <span class="detail-value">${carName}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">📍 Pickup Location:</span>
+                <span class="detail-value">${pickupLocation}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">📅 Pickup Date & Time:</span>
+                <span class="detail-value">${formatDate(pickupDate)}</span>
+              </div>
+              
+              <div class="detail-row" style="border-bottom: none;">
+                <span class="detail-label">📅 Drop Date & Time:</span>
+                <span class="detail-value">${formatDate(dropDate)}</span>
+              </div>
+            </div>
+            
+            <div class="total-price">
+              <h3 style="margin: 0; color: #059669;">💰 Total Price: ₹${totalPrice}</h3>
+            </div>
+            
+            <div class="contact-info">
+              <h4 style="margin-top: 0; color: #1e40af;">📞 Need Help?</h4>
+              <p style="margin: 5px 0;">📧 Email: kzplusmotors@gmail.com</p>
+              <p style="margin: 5px 0;">📱 Phone: +91-7735537655</p>
+              <p style="margin: 5px 0; font-size: 14px; color: #6b7280;">Our team is here to assist you 24/7</p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>A+ Auto Care - Your Trusted Car Rental Partner</strong></p>
+            <p style="font-size: 12px; color: #9ca3af;">
+              This is an automated confirmation email. Please save this for your records.
+            </p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      const text = `
+A+ Auto Care - Booking Confirmation
+
+Your Booking is Confirmed! 🚗🎉
+
+Booking Details:
+- Full Name: ${userName}
+- Email: ${userEmail}
+- Phone: ${userPhone}
+- Car: ${carName}
+- Pickup Location: ${pickupLocation}
+- Pickup: ${formatDate(pickupDate)}
+- Drop: ${formatDate(dropDate)}
+- Total Price: ₹${totalPrice}
+
+Thank you for choosing A+ Auto Care!
+
+Need help? Contact us at support@aplusautocare.com
+      `;
+
+      // Send email using Resend
+      const data = await this.resend.emails.send({
+        from: 'A+ Auto Care <support@kzplusautocare.in>',
+        to: userEmail,
+        subject: subject,
+        html: html,
+        text: text,
+      });
+
+      console.log('Booking confirmation email sent successfully:', data);
+      
+      return {
+        success: true,
+        message: 'Booking confirmation email sent successfully'
+      };
+    } catch (error) {
+      console.error('Failed to send booking confirmation email:', error);
+      return {
+        success: false,
+        message: 'Failed to send booking confirmation email'
+      };
+    }
+  }
 }
 
 // Create and export email service instance

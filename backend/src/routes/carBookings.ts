@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
+import { emailService } from '../services/emailService';
 
 const router = express.Router();
 
@@ -108,6 +109,29 @@ router.post('/', async (req: Request, res: Response) => {
     console.log('Insert result:', bookingResult);
     await sql`COMMIT`;
     console.log('Transaction committed');
+
+    // Send booking confirmation email
+    try {
+      const emailResult = await emailService.sendBookingConfirmation({
+        userEmail,
+        userName,
+        userPhone,
+        carName,
+        pickupDate,
+        dropDate,
+        totalPrice,
+        pickupLocation
+      });
+      
+      if (emailResult.success) {
+        console.log('Booking confirmation email sent successfully');
+      } else {
+        console.error('Failed to send booking confirmation email:', emailResult.message);
+      }
+    } catch (emailError) {
+      console.error('Error sending booking confirmation email:', emailError);
+      // Don't fail the booking if email sending fails
+    }
 
     res.status(201).json({
       message: 'Car booked successfully',

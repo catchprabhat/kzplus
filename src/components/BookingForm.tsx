@@ -9,6 +9,7 @@ interface BookingFormProps {
   dropDate: string;
   onBookingComplete: (booking: Booking) => void;
   loading?: boolean;
+  onNavigate?: (tab: string) => void;  // Add this for navigation
 }
 
 export const BookingForm: React.FC<BookingFormProps> = ({
@@ -16,7 +17,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   pickupDate,
   dropDate,
   onBookingComplete,
-  loading = false
+  loading = false,
+  onNavigate  // Add this to destructuring
 }) => {
   const [customerData, setCustomerData] = useState({
     name: '',
@@ -139,6 +141,12 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   return (
     <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
+      <p 
+        className="text-center text-blue-600 hover:text-blue-800 cursor-pointer mb-4 font-medium"
+        onClick={() => onNavigate?.('calendar')}
+      >
+        See calendar view of booked vehicles
+      </p>
       <h3 className="text-xl font-bold text-gray-900 dark:text-black mb-6 flex items-center">
         <User className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
         Booking Details

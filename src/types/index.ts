@@ -216,6 +216,8 @@ export interface SelfDriveBooking {
   deliveryAddress?: string;
   nearbyLocation?: string;
   pincode?: string;
+  googleMapsLocation?: string;
+
   carId?: string;
   carName?: string;
   totalPrice: number;
