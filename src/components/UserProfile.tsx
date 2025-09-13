@@ -140,7 +140,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
         {/* Profile Image Section */}
         <div className="mb-8">
           <div className="text-center mb-6">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center justify-center">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-black mb-4 flex items-center justify-center">
               <Camera className="w-5 h-5 mr-2" />
               Profile Picture
             </h4>
@@ -164,7 +164,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <User className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+                      <User className="w-12 h-12 text-gray-400 dark:text-gray-600" />
                     </div>
                   )}
                 </div>
@@ -181,7 +181,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
         {/* Profile Information */}
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-2">
               <User className="w-4 h-4 inline mr-1" />
               Full Name
             </label>
@@ -191,7 +191,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                   type="text"
                   value={editData.name}
                   onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all dark:bg-dark-700 dark:text-white ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all dark:bg-dark-700 dark:text-black ${
                     errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
                   placeholder="Enter your full name"
@@ -200,14 +200,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                 {errors.name && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>}
               </div>
             ) : (
-              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-white">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-gray-500">
                 {user.name}
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-2">
               <Mail className="w-4 h-4 inline mr-1" />
               Email Address
             </label>
@@ -217,7 +217,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                   type="email"
                   value={editData.email}
                   onChange={(e) => setEditData({ ...editData, email: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all dark:bg-dark-700 dark:text-white ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all dark:bg-dark-700 dark:text-black ${
                     errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
                   placeholder="Enter your email"
@@ -226,14 +226,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                 {errors.email && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>}
               </div>
             ) : (
-              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-white">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-gray-600">
                 {user.email}
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-2">
               <Phone className="w-4 h-4 inline mr-1" />
               Phone Number
             </label>
