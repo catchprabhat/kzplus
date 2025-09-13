@@ -81,7 +81,7 @@ router.post(
         if (user) {
           // User exists, generate token
           const token = jwt.sign(
-            { id: user.id, phone: user.phone },
+            { id: user.id, phone: user.phone, email: user.email || '' },
             JWT_SECRET,
             { expiresIn: '7d' }
           );
@@ -154,7 +154,7 @@ router.post(
         if (user) {
           // User exists, generate token
           const token = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: user.id, phone: user.phone || '', email: user.email },
             JWT_SECRET,
             { expiresIn: '7d' }
           );

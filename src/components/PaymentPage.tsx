@@ -123,12 +123,13 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
       // Create the booking after successful payment
       const servicesPayload = bookingData.selectedServices.map(service => ({
         id: service.id,
-
-
         name: service.name,
-        price: service.price // This will now use the custom price we passed from ServiceBooking
+        price: service.price
       }));
-
+  
+      // Get authentication token
+      const token = localStorage.getItem('driveEasyToken');
+  
       const response = await axios.post(`${API_BASE_URL}/bookings`, {
         userId: bookingData.selectedUser.id,
         scheduledDate: bookingData.scheduledDate,
@@ -138,8 +139,13 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
         notes: bookingData.customerData.notes,
         paymentMethod: paymentMethod,
         paymentStatus: paymentMethod === 'pay-at-service' ? 'pending' : 'completed'
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
       });
-
+  
       setTimeout(() => {
         setShowSuccess(false);
         const serviceBooking: ServiceBookingType = {
@@ -157,7 +163,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
           notes: bookingData.customerData.notes,
           createdAt: new Date(),
         };
-
+  
         onPaymentComplete(serviceBooking);
       }, 1000);
     } catch (error) {
@@ -262,7 +268,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
           </motion.p>
         </div>
 
-        {/* Booking Summary */}
+        {/*  */}
         <motion.div 
           className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
           variants={cardVariants}

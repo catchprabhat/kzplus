@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Booking } from '../types';
 import { bookingApi, ApiBooking } from '../services/api';
 import { notificationService } from '../services/notificationService';
+import { useAuth } from './useAuth'; // Add this import
 
 // Convert API booking to internal booking format
 const convertApiBooking = (apiBooking: ApiBooking): Booking => ({
@@ -31,13 +32,38 @@ export const useBookings = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { isAuthenticated, getAuthToken, user } = useAuth();
+
+  // Check if current user is admin
+  const isAdmin = user?.email === 'catchprabhat@gmail.com';
 
   // Fetch bookings from API
   const fetchBookings = async () => {
     try {
       setLoading(true);
       setError(null);
-      const apiBookings = await bookingApi.getBookings();
+      
+      let apiBookings;
+      
+      // If user is authenticated, fetch bookings based on user type
+      if (isAuthenticated) {
+        const token = getAuthToken();
+        if (token) {
+          // Admin sees all bookings, regular users see only their bookings
+          if (isAdmin) {
+            apiBookings = await bookingApi.getBookings();
+          } else {
+            apiBookings = await bookingApi.getUserBookings(token);
+          }
+        } else {
+          // Fallback to all bookings if token is missing
+          apiBookings = await bookingApi.getBookings();
+        }
+      } else {
+        // Fetch all bookings if not authenticated (for admin view)
+        apiBookings = await bookingApi.getBookings();
+      }
+      
       const convertedBookings = apiBookings.map(convertApiBooking);
       setBookings(convertedBookings);
     } catch (err) {
@@ -116,10 +142,19 @@ export const useBookings = () => {
     }
   };
 
-  // Load bookings on mount
+  // Load bookings on mount and when user changes
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (isAuthenticated) {
+      // Clear bookings immediately when user changes to prevent showing stale data
+      setBookings([]);
+      setLoading(true);
+      fetchBookings();
+    } else {
+      // Clear bookings when user logs out
+      setBookings([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated, user?.email]); // Keep user?.email in dependencies to refetch when user changes
 
   return {
     bookings,

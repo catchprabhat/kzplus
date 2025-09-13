@@ -275,7 +275,7 @@ This is an automated security message.
     }
   }
 
-  // Send booking confirmation email
+  // Send booking confirmation email to both user and admin
   async sendBookingConfirmation(bookingDetails: {
     userEmail: string;
     userName: string;
@@ -311,7 +311,8 @@ This is an automated security message.
         });
       };
 
-      const subject = 'Your Booking is Confirmed - A+ Auto Care';
+      const subject = '🚗🎉 Your Booking is Confirmed - A+ Auto Care';
+      const adminSubject = '🚗📋 New Car Booking Received - A+ Auto Care';
 
       const html = `
         <!DOCTYPE html>
@@ -335,7 +336,7 @@ This is an automated security message.
         </head>
         <body>
           <div class="header">
-            <h1>A+ Auto Care</h1>
+            <h1>🚗 A+ Auto Care</h1>
             <h2>Your Booking is Confirmed! 🎉</h2>
             <p>Thank you for choosing A+ Auto Care</p>
           </div>
@@ -381,13 +382,13 @@ This is an automated security message.
             </div>
             
             <div class="total-price">
-              <h3 style="margin: 0; color: #059669;">Total Price: ₹${totalPrice}</h3>
+              <h3 style="margin: 0; color: #059669;">💰 Total Price: ₹${totalPrice}</h3>
             </div>
             
             <div class="contact-info">
               <h4 style="margin-top: 0; color: #1e40af;">📞 Need Help?</h4>
-              <p style="margin: 5px 0;">📧 Email: kzplusmotors@gmail.com</p>
-              <p style="margin: 5px 0;">📱 Phone: +91-7735537655</p>
+              <p style="margin: 5px 0;">📧 Email: support@aplusautocare.com</p>
+              <p style="margin: 5px 0;">📱 Phone: +91-XXXXXXXXXX</p>
               <p style="margin: 5px 0; font-size: 14px; color: #6b7280;">Our team is here to assist you 24/7</p>
             </div>
           </div>
@@ -401,6 +402,15 @@ This is an automated security message.
         </body>
         </html>
       `;
+
+      // Admin email template with different header
+      const adminHtml = html.replace(
+        '<h2>Your Booking is Confirmed! 🎉</h2>',
+        '<h2>New Car Booking Received! 📋</h2>'
+      ).replace(
+        '<p>Thank you for choosing A+ Auto Care</p>',
+        '<p>A new booking has been made</p>'
+      );
 
       const text = `
 A+ Auto Care - Booking Confirmation
@@ -422,8 +432,16 @@ Thank you for choosing A+ Auto Care!
 Need help? Contact us at support@aplusautocare.com
       `;
 
-      // Send email using Resend
-      const data = await this.resend.emails.send({
+      const adminText = text.replace(
+        'Your Booking is Confirmed! 🚗🎉',
+        'New Car Booking Received! 📋🚗'
+      ).replace(
+        'Thank you for choosing A+ Auto Care!',
+        'Please review this booking in your admin dashboard.'
+      );
+
+      // Send email to user
+      const userEmailResult = await this.resend.emails.send({
         from: 'A+ Auto Care <support@kzplusautocare.in>',
         to: userEmail,
         subject: subject,
@@ -431,17 +449,28 @@ Need help? Contact us at support@aplusautocare.com
         text: text,
       });
 
-      console.log('Booking confirmation email sent successfully:', data);
+      console.log('User confirmation email sent successfully:', userEmailResult);
+
+      // Send email to admin
+      const adminEmailResult = await this.resend.emails.send({
+        from: 'A+ Auto Care <support@kzplusautocare.in>',
+        to: process.env.ADMIN_EMAIL || 'umrsjd123@gmail.com',
+        subject: adminSubject,
+        html: adminHtml,
+        text: adminText,
+      });
+
+      console.log('Admin notification email sent successfully:', adminEmailResult);
       
       return {
         success: true,
-        message: 'Booking confirmation email sent successfully'
+        message: 'Booking confirmation emails sent successfully to user and admin'
       };
     } catch (error) {
-      console.error('Failed to send booking confirmation email:', error);
+      console.error('Failed to send booking confirmation emails:', error);
       return {
         success: false,
-        message: 'Failed to send booking confirmation email'
+        message: 'Failed to send booking confirmation emails'
       };
     }
   }

@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
-import { authenticateAdmin } from '../middleware/auth';
+import { authenticateUser } from '../middleware/userAuth';
 
 const router = express.Router();
 
@@ -18,6 +18,7 @@ interface ServiceBooking {
 
 router.post(
   '/',
+  authenticateUser, // Add this middleware
   async (req: Request, res: Response) => {
     const {
       userId,
@@ -50,41 +51,93 @@ router.post(
         RETURNING *;
       ` as ServiceBooking[];
 
-      if (!bookingResult[0]) {
-        throw new Error('Failed to create booking');
-      }
-
-      const booking = bookingResult[0];
-
-      // No need to insert into booking_services as that table has been dropped
-
       await sql`COMMIT`;
 
-      res.status(201).json({ message: 'Service booked successfully', booking: { id: booking.id } });
-    } catch (error: unknown) {
+      res.status(201).json({
+        message: 'Service booking created successfully',
+        booking: bookingResult[0]
+      });
+    } catch (error) {
       await sql`ROLLBACK`;
-      console.error('Error booking service:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      res.status(500).json({ error: 'Internal server error', details: errorMessage });
+      console.error('Error creating service booking:', error);
+      res.status(500).json({ error: 'Internal server error' });
     }
   }
 );
 
 router.get(
-  '/',
-  authenticateAdmin,
-  async (_req: Request, res: Response) => {
+  '/user',
+  authenticateUser,
+  async (req: Request, res: Response) => {
     try {
-      // Updated query to not join with booking_services
-      const result = await sql`
-        SELECT sb.*
-        FROM service_bookings sb
-        ORDER BY sb.created_at DESC
-      ` as ServiceBooking[];
+      const userEmail = req.user?.email;
+      const userPhone = req.user?.phone;
+      
+      if (!userEmail && !userPhone) {
+        return res.status(400).json({ error: 'User identification required' });
+      }
 
-      res.status(200).json(result);
+      // Find user by email or phone
+      let user;
+      if (userEmail) {
+        const users = await sql`SELECT * FROM users WHERE email = ${userEmail}` as any[];
+        user = users[0];
+      } else if (userPhone) {
+        const users = await sql`SELECT * FROM users WHERE phone = ${userPhone}` as any[];
+        user = users[0];
+      }
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Check if user is admin
+      const isAdmin = user.email === 'catchprabhat@gmail.com';
+      
+      let result;
+      if (isAdmin) {
+        // Admin sees all bookings
+        result = await sql`
+          SELECT sb.*, u.name, u.email, u.phone, u.vehicle_number, u.vehicle_type
+          FROM service_bookings sb
+          LEFT JOIN users u ON sb.user_id = u.id
+          ORDER BY sb.created_at DESC
+        ` as any[];
+      } else {
+        // Regular user sees only their bookings
+        result = await sql`
+          SELECT sb.*, u.name, u.email, u.phone, u.vehicle_number, u.vehicle_type
+          FROM service_bookings sb
+          LEFT JOIN users u ON sb.user_id = u.id
+          WHERE sb.user_id = ${user.id}
+          ORDER BY sb.created_at DESC
+        ` as any[];
+      }
+
+      // Transform data to match frontend expectations
+      const transformedResult = result.map(booking => ({
+        id: booking.id,
+        vehicleNumber: booking.vehicle_number || 'N/A',
+        vehicleType: booking.vehicle_type || 'N/A',
+        vehicleName: booking.vehicle_type || 'N/A', // Add this field
+        customerName: booking.name || 'N/A',
+        customerPhone: booking.phone || 'N/A',
+        customerEmail: booking.email || 'N/A',
+        services: typeof booking.services === 'string' ? JSON.parse(booking.services) : booking.services || [],
+        totalPrice: booking.total_price || 0,
+        scheduledDate: booking.scheduled_date,
+        scheduledTime: booking.scheduled_time,
+        status: booking.status || 'pending',
+        notes: booking.notes || '',
+        createdAt: booking.created_at
+      }));
+      
+      console.log('Raw booking data from DB:', result);
+      console.log('Transformed service bookings:', transformedResult);
+      console.log('Number of bookings found:', transformedResult.length);
+      res.status(200).json(transformedResult);
     } catch (error) {
-      console.error('Error fetching bookings:', error);
+      console.error('Error fetching user service bookings:', error);
       res.status(500).json({ error: 'Internal server error' });
     }
   }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User } from 'lucide-react';
+import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, DollarSign } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -27,6 +27,10 @@ import { useServiceBookings } from './hooks/useServiceBookings';
 import { useAuth } from './hooks/useAuth';
 import { SelfDriveBooking } from './components/SelfDriveBooking';
 import { getAvailableCars, createCarBooking } from './services/api';
+
+// Add API_BASE_URL constant
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+
 
 // Initialize FontAwesome library
 library.add(fas);
@@ -429,11 +433,16 @@ function App() {
     try {
       setBookingLoading(true);
       
+      // Check if user is authenticated
+      if (!isAuthenticated) {
+        alert('Please log in to make a booking.');
+        setActiveTab('profile'); // Redirect to login
+        return;
+      }
+      
       // Find the selected car to get its type and seats
       const car = cars.find(c => c.id === booking.carId);
       
-      // Ensure dates are properly formatted as ISO strings
-
       // Helper function to format pickup location based on delivery option
       const formatPickupLocation = () => {
         if (selfDriveBookingData.deliveryPickup && selfDriveBookingData.deliveryAddress) {
@@ -459,13 +468,13 @@ function App() {
         totalHours: calculateTotalHours(new Date(booking.pickupDate), new Date(booking.dropDate)),
         pickupDate: formatDateForDatabase(booking.pickupDate),
         dropDate: formatDateForDatabase(booking.dropDate),
-        // Map customer fields to user fields expected by the backend
-        userName: booking.customerName,
-        userEmail: booking.customerEmail,
+        // Use authenticated user data
+        userName: user?.name || booking.customerName,
+        userEmail: user?.email || booking.customerEmail, // This ensures authenticated user's email is used
         userPhone: booking.customerPhone
       };
       
-      // Use createCarBooking instead of createBooking
+      // Use createCarBooking with authentication
       const createdBooking = await createCarBooking(enhancedBooking);
       setLatestBooking(createdBooking);
       setLatestServiceBooking(null); // Clear service booking
@@ -490,7 +499,14 @@ function App() {
       }, 5000);
     } catch (error) {
       console.error('Error creating booking:', error);
-      // Handle error (show error message to user)
+      
+      // Handle authentication errors specifically
+      if (error instanceof Error && error.message.includes('Authentication required')) {
+        alert('Please log in to make a booking.');
+        setActiveTab('profile');
+      } else {
+        alert('Failed to create booking. Please try again.');
+      }
     } finally {
       setBookingLoading(false);
     }
@@ -517,6 +533,44 @@ function App() {
     }
   };
 
+  const handleServiceBooking = async (bookingData: any) => {
+    if (!isAuthenticated || !user) {
+      alert('Please login to book a service');
+      return;
+    }
+
+    try {
+      // Find user in database to get user ID
+      const userResponse = await fetch(`${API_BASE_URL}/users/profile`, {
+        headers: {
+          'Authorization': `Bearer ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error('Failed to get user profile');
+      }
+
+      const userProfile = await userResponse.json();
+      
+      const serviceBookingData = {
+        userId: userProfile.id,
+        scheduledDate: bookingData.scheduledDate,
+        scheduledTime: bookingData.scheduledTime,
+        services: bookingData.services,
+        totalPrice: bookingData.totalPrice,
+        notes: bookingData.notes || ''
+      };
+
+      await createServiceBooking(serviceBookingData);
+      alert('Service booked successfully!');
+    } catch (error) {
+      console.error('Error booking service:', error);
+      alert('Failed to book service. Please try again.');
+    }
+  };
+
   const handleServiceNavigation = (service: string) => {
     switch (service) {
       case 'car-services':
@@ -537,7 +591,8 @@ function App() {
   const handleTabChange = (tab: any) => {
   // Check if user needs to be authenticated for this tab
   if (protectedRoutes.includes(tab) && !isAuthenticated) {
-    return; // This will trigger the login form
+    setActiveTab('login');
+    return;
   }
   
   // For mobile view, handle specific tabs differently
@@ -603,15 +658,11 @@ function App() {
 
   const navigationItems = [
     { key: 'home', label: 'Home', icon: CarIcon, protected: false },
-    { key: 'book', label: 'Book a Car', icon: CarIcon, protected: false },
-    { key: 'calendar', label: 'Calendar', icon: Calendar, protected: true },
-    { key: 'bookings', label: 'My Bookings', icon: Calendar, protected: true },
-    { key: 'services', label: 'Car Services', icon: Wrench, protected: false },
-    { key: 'service-bookings', label: 'Service Bookings', icon: Wrench, protected: true },
-    { key: 'sale-purchase', label: 'Sale/Purchase', icon: CarIcon, protected: false },
-    { key: 'contact', label: 'Contact Us', icon: MapPin, protected: false },
-    { key: 'terms', label: 'Terms & Conditions', icon: Shield, protected: false },
-    { key: 'settings', label: 'Settings', icon: Settings, protected: true }
+    { key: 'book', label: 'Self-Drive', icon: CarIcon, protected: false },
+    { key: 'calendar', label: 'Car Availability', icon: Calendar, protected: true },
+    { key: 'bookings', label: 'My Trips', icon: Calendar, protected: true },
+    { key: 'service-bookings', label: 'Scheduled Services', icon: Wrench, protected: true },
+    { key: 'sale-purchase', label: 'Buy and Sell History', icon: CarIcon, protected: false }
   ];
 
   return (
@@ -694,14 +745,14 @@ function App() {
         {/* Header */}
         <header className="bg-white dark:bg-dark-800 shadow-sm border-b dark:border-dark-700 sticky top-0 z-40 transition-colors duration-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-4">
+            <div className="flex justify-between items-center py-2">
               <div className="flex items-center cursor-pointer" onClick={() => handleTabChange('home')}>
                 <img 
                   src="/images/logo/iconn.png" 
                   alt="A Plus Auto Care" 
-                  className="w-20 h-30 mr-3" 
+                  className="w-20 h-20 mr-3" 
                 />
-                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">A plus auto care</h1>
+                <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">A plus auto care</h1>
               </div>
               
               {/* Desktop Header Info & Auth */}
@@ -743,21 +794,19 @@ function App() {
               </div>
 
               {/* Mobile Menu Button */}
-              {activeTab !== 'home' && (
-                <div className="md:hidden flex items-center space-x-2">
-                  <ThemeToggle />
-                  <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
-                  >
-                    {mobileMenuOpen ? (
-                      <X className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                    ) : (
-                      <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                    )}
-                  </button>
-                </div>
-              )}
+              <div className="md:hidden flex items-center space-x-2">
+                <ThemeToggle />
+                <button
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-dark-700 transition-colors"
+                >
+                  {mobileMenuOpen ? (
+                    <X className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  ) : (
+                    <Menu className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </header>
@@ -786,7 +835,7 @@ function App() {
         )}
 
         {/* Mobile Navigation Overlay */}
-        {mobileMenuOpen && activeTab !== 'home' && (
+        {mobileMenuOpen && (
           <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={() => setMobileMenuOpen(false)}>
             <div className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-dark-800 shadow-xl transform transition-transform duration-300 ease-in-out">
               <div className="p-6">
@@ -809,7 +858,7 @@ function App() {
                       </div>
                       <div>
                         <p className="font-semibold text-gray-900 dark:text-white">{user.name}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{user.email}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-600">{user.email}</p>
                       </div>
                     </div>
                   </div>
@@ -825,10 +874,10 @@ function App() {
                         disabled={isDisabled}
                         className={`w-full flex items-center px-4 py-3 rounded-lg font-medium text-left transition-colors ${
                           activeTab === key
-                            ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border-l-4 border-blue-600 dark:border-blue-400'
+                            ? 'bg-blue-50 dark:bg-blue-900/20 text-black-800 dark:text-blue-400 border-l-4 border-blue-600 dark:border-blue-400'
                             : isDisabled
-                            ? 'text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-700'
+                            ? 'text-gray-600 dark:text-gray-600 cursor-not-allowed'
+                            : 'text-gray-700 dark:text-gray-600 hover:bg-gray-50 dark:hover:bg-dark-700'
                         }`}
                       >
                         <Icon className="w-5 h-5 mr-3" />
@@ -891,7 +940,7 @@ function App() {
         {activeTab !== 'home' && (
           <nav className="bg-white dark:bg-dark-800 border-b dark:border-dark-700 hidden md:block transition-colors duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex space-x-8 overflow-x-auto">
+              <div className="flex justify-center space-x-8 overflow-x-auto">
                 {navigationItems.map(({ key, label, icon: Icon, protected: isProtected }) => {
                   const isDisabled = isProtected && !isAuthenticated;
                   return (
@@ -924,82 +973,57 @@ function App() {
                   );
                 })}
                 
-                {/* Profile Tab */}
-                {isAuthenticated && (
-                  <button
-                    onClick={() => handleTabChange('profile')}
-                    className={`flex items-center px-4 py-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
-                      activeTab === 'profile'
-                        ? 'border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-                        : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-dark-600'
-                    }`}
-                  >
-                    <User className="w-4 h-4 mr-2" />
-                    Profile
-                  </button>
-                )}
+                {/* Profile Tab removed from desktop navigation */}
               </div>
             </div>
           </nav>
         )}
 
-        {/* Mobile Tab Bar for Home */}
-        {activeTab === 'home' && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
-            <div className="grid grid-cols-5 gap-1 p-2 max-w-md mx-auto">
-              <button
-                onClick={() => handleTabChange('book')}
-                className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
-              >
-                <CarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
-                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Book Car</span>
-              </button>
-              <button
-                onClick={() => handleServiceNavigation('car-services')}
-                className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
-              >
-                <Wrench className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
-                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Services</span>
-              </button>
-              <button
-                onClick={() => handleTabChange('bookings')}
-                className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors relative"
-              >
-                <Calendar className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
-                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Bookings</span>
-                {!isAuthenticated && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    !
-                  </span>
-                )}
-                {isAuthenticated && bookings.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {bookings.length}
-                  </span>
-                )}
-              </button>
-              <button
-                onClick={() => handleTabChange('contact')}
-                className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
-              >
-                <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
-                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Contact</span>
-              </button>
-              <button
-                onClick={() => isAuthenticated ? setMobileMenuOpen(!mobileMenuOpen) : setActiveTab('login')}
-                className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
-              >
-                <User className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
-                <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-                  {isAuthenticated ? 'Profile' : 'Login'}
-                </span>
-              </button>
-            </div>
+        {/* Mobile Tab Bar - Always Visible */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
+          <div className="grid grid-cols-5 gap-0 max-w-md mx-auto">
+            <button
+              onClick={() => handleTabChange('book')}
+              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+            >
+              <CarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Self-Drive</span>
+            </button>
+            <button
+              onClick={() => handleServiceNavigation('car-services')}
+              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+            >
+              <Wrench className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Services</span>
+            </button>
+            <button
+              onClick={() => handleServiceNavigation('sale-purchase')}
+              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+            >
+              <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Sale & Purchase</span>
+            </button>
+            <button
+              onClick={() => handleTabChange('contact')}
+              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+            >
+              <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Contact</span>
+            </button>
+            <button
+              onClick={() => isAuthenticated ? handleTabChange('profile') : setActiveTab('login')}
+              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+            >
+              <User className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
+              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+                {isAuthenticated ? 'Profile' : 'Login'}
+              </span>
+            </button>
           </div>
-        )}
+        </div>
 
         {/* Main Content */}
-        <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 ${activeTab === 'home' ? 'pb-20 md:pb-8' : ''}`}>
+        <main className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pb-20 md:pb-8`}>
           {activeTab === 'home' && (
             <div className="space-y-12 sm:space-y-16">
               {/* Hero Section */}
@@ -1010,7 +1034,7 @@ function App() {
                     Your Complete
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 block sm:inline"> Car Solution</span>
                   </h1>
-                  <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto">
+                  <p className="text-base xs:text-lg sm:text-xl md:text-2xl text-gray-500 dark:text-gray-500 mb-4 sm:mb-6 md:mb-8 max-w-3xl mx-auto">
                     From premium self-drive rentals to professional car services and seamless buying/selling - everything you need for your automotive journey.
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-2 sm:px-4">
@@ -1019,8 +1043,8 @@ function App() {
                       className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-medium sm:font-semibold text-sm xs:text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
                     >
                       <CarIcon className="w-4 xs:w-5 sm:w-6 h-4 xs:h-5 sm:h-6 mr-1.5 sm:mr-2" />
-                      <span className="hidden xs:inline">Book Self-Drive Car</span>
-                      <span className="xs:hidden">Book Car</span>
+                      <span className="hidden xs:inline">Self-Drive Car</span>
+                      <span className="xs:hidden">Self-Drive Car</span>
                       <ArrowRight className="w-3.5 xs:w-4 sm:w-5 h-3.5 xs:h-4 sm:h-5 ml-1.5 sm:ml-2" />
                     </button>
                     <button
@@ -1031,15 +1055,24 @@ function App() {
                       <span className="hidden xs:inline">View All Car Services</span>
                       <span className="xs:hidden">Car Services</span>
                     </button>
+                    <button
+                      onClick={() => handleServiceNavigation('sale-purchase')}
+                      className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-medium sm:font-semibold text-sm xs:text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
+                    >
+                      <DollarSign className="w-4 xs:w-5 sm:w-6 h-4 xs:h-5 sm:h-6 mr-1.5 sm:mr-2" />
+                      <span className="hidden xs:inline">Car Sale & Purchase</span>
+                      <span className="xs:hidden">Car Sale & Purchase</span>
+                      <ArrowRight className="w-3.5 xs:w-4 sm:w-5 h-3.5 xs:h-4 sm:h-5 ml-1.5 sm:ml-2" />
+                    </button>
                   </div>
                 </div>
               </section>
-
+                                        
               {/* Services Section */}
               <section className="py-6 xs:py-8 sm:py-12 md:py-16">
                 <div className="text-center mb-8 sm:mb-12 md:mb-16">
-                  <h2 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Our Premium Services</h2>
-                  <p className="text-base xs:text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto px-3 sm:px-4">
+                  <h2 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 dark:text-black mb-3 sm:mb-4">Our Premium Services</h2>
+                  <p className="text-base xs:text-lg sm:text-xl text-gray-500 dark:text-gray-500 max-w-2xl mx-auto px-3 sm:px-4">
                     Comprehensive automotive solutions designed to meet all your car-related needs
                   </p>
                 </div>
@@ -1059,8 +1092,8 @@ function App() {
                       </div>
                     </div>
                     <div className="p-6 sm:p-8">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Car Services</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-black mb-4">Car Services</h3>
+                      <p className="text-gray-600 dark:text-gray-500 mb-6 text-sm sm:text-base">
                         Professional maintenance, detailing, and repair services for your vehicle. 
                         From basic wash to ceramic coating and mechanical repairs.
                       </p>
@@ -1102,8 +1135,8 @@ function App() {
                       </div>
                     </div>
                     <div className="p-6 sm:p-8">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Self-Drive Car Rental</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-black mb-4">Self-Drive Car Rental</h3>
+                      <p className="text-gray-600 dark:text-gray-500 mb-6 text-sm sm:text-base">
                         Premium fleet of well-maintained vehicles for your self-drive adventures. 
                         From economy to luxury cars, find the perfect ride for any occasion.
                       </p>
@@ -1125,7 +1158,7 @@ function App() {
                         onClick={() => handleServiceNavigation('self-drive')}
                         className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center group"
                       >
-                        Book Now
+                        Book Self-Drive
                         <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
@@ -1145,8 +1178,8 @@ function App() {
                       </div>
                     </div>
                     <div className="p-6 sm:p-8">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Sale / Purchase</h3>
-                      <p className="text-gray-600 dark:text-gray-300 mb-6 text-sm sm:text-base">
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-black mb-4">Sale / Purchase</h3>
+                      <p className="text-gray-600 dark:text-gray-500 mb-6 text-sm sm:text-base">
                         Seamless car buying and selling experience with verified listings, 
                         fair pricing, and complete documentation assistance.
                       </p>
@@ -1168,7 +1201,8 @@ function App() {
                         onClick={() => handleServiceNavigation('sale-purchase')}
                         className="w-full bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white py-3 px-6 rounded-xl font-semibold transition-all flex items-center justify-center group"
                       >
-                        Explore Marketplace
+                        Sale and purchase
+
                         <ArrowRight className="w-4 sm:w-5 h-4 sm:h-5 ml-2 group-hover:translate-x-1 transition-transform" />
                       </button>
                     </div>
@@ -1179,8 +1213,8 @@ function App() {
               {/* Features Section */}
               <section className="py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-dark-800 dark:to-dark-700 rounded-2xl sm:rounded-3xl transition-colors duration-300">
                 <div className="text-center mb-12 sm:mb-16 px-4">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Why Choose A plus auto care?</h2>
-                  <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-black mb-4">Why Choose A plus auto care?</h2>
+                  <p className="text-lg sm:text-xl text-gray-800 dark:text-gray-800 max-w-2xl mx-auto">
                     We're committed to providing exceptional automotive solutions with unmatched service quality
                   </p>
                 </div>
@@ -1190,32 +1224,32 @@ function App() {
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Trusted & Secure</h3>
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Fully verified services with comprehensive insurance coverage</p>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">Trusted & Secure</h3>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Fully verified services with comprehensive insurance coverage</p>
                   </div>
 
                   <div className="text-center p-4 sm:p-6">
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Clock className="w-6 sm:w-8 h-6 sm:h-8 text-green-600 dark:text-green-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">24/7 Support</h3>
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Round-the-clock customer support and roadside assistance</p>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">24/7 Support</h3>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Round-the-clock customer support and roadside assistance</p>
                   </div>
 
                   <div className="text-center p-4 sm:p-6">
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Star className="w-6 sm:w-8 h-6 sm:h-8 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Premium Quality</h3>
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">High-quality vehicles and professional service standards</p>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">Premium Quality</h3>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">High-quality vehicles and professional service standards</p>
                   </div>
 
                   <div className="text-center p-4 sm:p-6">
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Users className="w-6 sm:w-8 h-6 sm:h-8 text-yellow-600 dark:text-yellow-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Customer First</h3>
-                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">Personalized service tailored to your specific needs</p>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">Customer First</h3>
+                    <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Personalized service tailored to your specific needs</p>
                   </div>
                 </div>
               </section>
@@ -1251,18 +1285,27 @@ function App() {
           {activeTab === 'book' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">Choose Your Car</h2>
-                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
-                  Select from our premium fleet of self-drive cars
-                </p>
+                {/* Promotional Banner */}
+                <div className="bg-blue-500 text-white p-4 rounded-lg mb-4 mx-auto max-w-4xl">
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-4">
+                    🚗 Drive More, Save More! Enjoy 20% OFF exclusively for our regular customers
+                  </h2>
+                  <p className="text-lg sm:text-xl">
+                    🛣 Planning a Long Trip? Get 20% OFF on bookings over 3 consecutive days
+                  </p>
+                </div>
+                
                 {/* Show booking summary */}
                 {selfDriveBookingData.tripStartDate && selfDriveBookingData.tripEndDate && (
                   <div className="mt-4 p-4 bg-blue-50 dark:bg-dark-700 rounded-lg inline-block">
-                    <p className="text-sm text-black-700 dark:text-black-300">  
-                      <strong>Trip:</strong> {selfDriveBookingData.location}  
-                      {selfDriveBookingData.tripStartDate.toLocaleDateString()} {selfDriveBookingData.startTime.hour}:{selfDriveBookingData.startTime.minute.toString().padStart(3, '0')} {selfDriveBookingData.startTime.period} - 
-                      {selfDriveBookingData.tripEndDate.toLocaleDateString()} {selfDriveBookingData.endTime.hour}:{selfDriveBookingData.endTime.minute.toString().padStart(3, '0')} {selfDriveBookingData.endTime.period}
-                    </p>
+                    <div className="text-sm text-black-700 dark:text-black-300">
+                      <div className="font-bold mb-1">
+                        📍 <strong>Trip:</strong> {selfDriveBookingData.location}
+                      </div>
+                      <div>
+                        {selfDriveBookingData.tripStartDate.toLocaleDateString()} {selfDriveBookingData.startTime.hour}:{selfDriveBookingData.startTime.minute.toString().padStart(2, '0')} {selfDriveBookingData.startTime.period} - {selfDriveBookingData.tripEndDate.toLocaleDateString()} {selfDriveBookingData.endTime.hour}:{selfDriveBookingData.endTime.minute.toString().padStart(2, '0')} {selfDriveBookingData.endTime.period}
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1343,15 +1386,29 @@ function App() {
               <div className="text-center mb-8">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">My Bookings</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-black-300">
-                  Manage and view all your car reservations
+                  {isAuthenticated ? 'Manage and view your car reservations' : 'Please log in to view your bookings'}
                 </p>
               </div>
-              <BookingList 
-                bookings={bookings} 
-                loading={loading}
-                onUpdateStatus={handleUpdateBookingStatus}
-                onDelete={deleteBooking}
-              />
+              {!isAuthenticated ? (
+                <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                  <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 mb-2">Authentication Required</h3>
+                  <p className="text-gray-500 mb-4">Please log in to view your bookings.</p>
+                  <button
+                    onClick={() => handleTabChange('login')}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Log In
+                  </button>
+                </div>
+              ) : (
+                <BookingList 
+                  bookings={bookings} 
+                  loading={loading}
+                  onUpdateStatus={handleUpdateBookingStatus}
+                  onDelete={deleteBooking}
+                />
+              )}
             </div>
           )}
 
@@ -1365,7 +1422,7 @@ function App() {
           {activeTab === 'service-bookings' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Service Bookings</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-Grey mb-4">Service Bookings</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                   Manage and view all your car service appointments
                 </p>
@@ -1400,7 +1457,7 @@ function App() {
           {activeTab === 'profile' && isAuthenticated && user && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">User Profile</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">User Profile</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                   Manage your account information and preferences
                 </p>
@@ -1455,7 +1512,7 @@ function App() {
                       onClick={() => handleTabChange('terms')}
                       className="hover:text-white transition-colors"
                     >
-                      Terms of Service
+                      Terms & Conditions
                     </button>
                   </li>
                   <li>Privacy Policy</li>

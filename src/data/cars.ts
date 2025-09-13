@@ -80,7 +80,7 @@ export const cars: Car[] = [
     seats: 5,
     transmission: 'Automatic',
     fuel: 'Petrol',
-    pricePerDay: 3000,
+    pricePerDay: 4000,
     pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true

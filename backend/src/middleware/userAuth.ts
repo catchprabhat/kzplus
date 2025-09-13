@@ -4,8 +4,10 @@ import jwt from 'jsonwebtoken';
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 interface DecodedToken {
-  id: string;
-  phone: string;
+  id?: string;
+  phone?: string;
+  email?: string;
+  isTemporary?: boolean;
   iat: number;
   exp: number;
 }
@@ -28,6 +30,11 @@ export const authenticateUser = (req: Request, res: Response, next: NextFunction
     
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, JWT_SECRET) as DecodedToken;
+    
+    // Ensure we have either email or phone for user identification
+    if (!decoded.email && !decoded.phone) {
+      return res.status(401).json({ error: 'Invalid token: missing user identification' });
+    }
     
     req.user = decoded;
     next();

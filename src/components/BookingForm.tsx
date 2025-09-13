@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, CreditCard } from 'lucide-react';
 import { Car, Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
+import { useAuth } from '../hooks/useAuth'; // Add this import
 
 interface BookingFormProps {
   selectedCar: Car | null;
@@ -20,11 +21,24 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   loading = false,
   onNavigate  // Add this to destructuring
 }) => {
+  const { user, isAuthenticated } = useAuth(); // Add this hook
+  
   const [customerData, setCustomerData] = useState({
     name: '',
     email: '',
     phone: ''
   });
+
+  // Pre-fill form with authenticated user data
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setCustomerData({
+        name: user.name || '',
+        email: user.email || '',
+        phone: user.phone || ''
+      });
+    }
+  }, [isAuthenticated, user]);
 
   const calculateTotalHours = () => {
     if (pickupDate && dropDate) {
@@ -112,6 +126,12 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     
     if (!selectedCar || !pickupDate || !dropDate || loading) return;
 
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      alert('Please log in to make a booking.');
+      return;
+    }
+
     const booking: Booking = {
       id: Date.now().toString(),
       carId: selectedCar.id,
@@ -123,7 +143,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       totalDays: calculateTotalDays(),
       totalPrice: calculateTotalPrice(),
       customerName: customerData.name,
-      customerEmail: customerData.email,
+      customerEmail: customerData.email, // This will be the authenticated user's email
       customerPhone: customerData.phone,
       status: 'confirmed',
       createdAt: new Date()
@@ -134,6 +154,24 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     // Reset form
     setCustomerData({ name: '', email: '', phone: '' });
   };
+
+  // Show login prompt if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 text-center">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-black mb-4">Authentication Required</h3>
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Please log in to make a booking. This ensures your bookings are saved to your account.
+        </p>
+        <button 
+          onClick={() => onNavigate?.('profile')}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
 
   const isFormValid = selectedCar && pickupDate && dropDate && customerData.name && customerData.email && customerData.phone;
 
@@ -251,8 +289,14 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your email"
             required
-            disabled={loading}
+            disabled={loading || isAuthenticated} // Disable for authenticated users
+            readOnly={isAuthenticated} // Make read-only for authenticated users
           />
+          {isAuthenticated && (
+            <p className="text-xs text-gray-500 mt-1">
+              Using your logged-in account email
+            </p>
+          )}
         </div>
 
         <div>

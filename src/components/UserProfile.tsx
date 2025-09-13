@@ -133,7 +133,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
 
       <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">User Profile</h3>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-black mb-2">User Profile</h3>
           <p className="text-gray-600 dark:text-gray-300">Manage your account information and profile picture</p>
         </div>
 

@@ -119,6 +119,51 @@ export const bookingApi = {
     }
   },
 
+  // Fetch user-specific bookings
+  async getUserBookings(token: string): Promise<ApiBooking[]> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/car-bookings/user`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user bookings');
+      }
+
+      const data = await response.json();
+      
+      // Extract bookings array from the response object
+      const bookings = data.bookings || [];
+      
+      // Map the database field names to the API field names
+      const mappedBookings = bookings.map((booking: any) => ({
+        id: booking.id.toString(),
+        carId: booking.car_id,
+        carName: booking.car_name,
+        carType: booking.car_type,
+        carSeats: booking.car_seats || 0,
+        pickupDate: booking.pickup_date,
+        dropDate: booking.drop_date,
+        totalDays: booking.total_days,
+        totalPrice: booking.total_price,
+        customerName: booking.user_name,
+        customerEmail: booking.user_email,
+        customerPhone: booking.user_phone,
+        status: booking.status,
+        createdAt: booking.created_at
+      }));
+      
+      return mappedBookings;
+    } catch (error) {
+      console.error('Error fetching user bookings:', error);
+      throw new Error('Failed to fetch user bookings');
+    }
+  },
+
   // Create a new booking
   async createBooking(booking: Omit<ApiBooking, 'id' | 'createdAt'>): Promise<ApiBooking> {
     try {
@@ -362,10 +407,18 @@ export interface CarBookingData {
 
 // Create car booking
 export const createCarBooking = async (bookingData: CarBookingData) => {
-  const response = await fetch(`${API_BASE_URL}/car-bookings`, {
+  // Get authentication token
+  const token = localStorage.getItem('driveEasyToken');
+  
+  if (!token) {
+    throw new Error('Authentication required. Please log in to make a booking.');
+  }
+
+  const response = await fetch(`${API_BASE_URL}/car-bookings/authenticated`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
     },
     body: JSON.stringify(bookingData),
   });
@@ -389,4 +442,56 @@ export const getAvailableCars = async (pickupDate: string, dropDate: string) => 
   }
 
   return response.json();
+};
+
+import { ServiceBooking } from '../hooks/useServiceBookings';
+
+export const serviceBookingApi = {
+  // Get user-specific service bookings
+  getUserBookings: async (): Promise<ServiceBooking[]> => {
+    const token = localStorage.getItem('driveEasyToken');
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/bookings/user`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('API Error:', response.status, errorText);
+      throw new Error(`Failed to fetch service bookings: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Service bookings from API:', data);
+    return data;
+  },
+
+  // Create service booking
+  createBooking: async (bookingData: any): Promise<any> => {
+    const token = localStorage.getItem('driveEasyToken');
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/bookings`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(bookingData),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create service booking');
+    }
+
+    return response.json();
+  }
 };

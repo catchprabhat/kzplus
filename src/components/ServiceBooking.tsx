@@ -1238,73 +1238,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         </motion.div>
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
-        <div className="grid grid-cols-5 gap-1 p-2">
-          <button
-            onClick={() => handleTabChange('book')}
-            className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
-              activeTab === 'book'
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                : 'hover:bg-gray-50 dark:hover:bg-dark-700'
-            }`}
-          >
-            <Car className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-blue-600 dark:text-blue-400 mb-1" />
-            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('selfdrive')}</span>
-          </button>
-          <button
-            onClick={() => handleTabChange('services')}
-            className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
-              activeTab === 'services'
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-green-600 dark:text-green-400'
-                : 'hover:bg-gray-50 dark:hover:bg-dark-700'
-            }`}
-          >
-            <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-green-600 dark:text-green-400 mb-1" />
-            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('services')}</span>
-          </button>
-          <button
-            onClick={() => handleTabChange('bookings')}
-            className="flex flex-col items-center p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors relative"
-          >
-            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-purple-600 dark:text-purple-400 mb-1" />
-            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('bookings')}</span>
-            {!isAuthenticated && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                !
-              </span>
-            )}
-            {isAuthenticated && bookings.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                {bookings.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => handleTabChange('contact')}
-            className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
-              activeTab === 'contact'
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-indigo-600 dark:text-indigo-400'
-                : 'hover:bg-gray-50 dark:hover:bg-dark-700'
-            }`}
-          >
-            <MapPin className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
-            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">{t('contact')}</span>
-          </button>
-          <button
-            onClick={() => handleTabChange('login')}
-            className={`flex flex-col items-center p-3 rounded-lg transition-colors ${
-              activeTab === 'profile'
-                ? 'bg-blue-50 dark:bg-blue-900/20 text-orange-600 dark:text-orange-400'
-                : 'hover:bg-gray-50 dark:hover:bg-dark-700'
-            }`}
-          >
-            <User className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 text-orange-600 dark:text-orange-400 mb-1" />
-            <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
-              {isAuthenticated ? t('profile') : t('login')}
-            </span>
-          </button>
-        </div>
-      </div>
+    
     </motion.div>
   );
 };

@@ -185,7 +185,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
             <span className="text-gray-700 dark:text-black-300 font-medium">
-              Delivery & Pick-up, from anywhere
+              Home Delivery
             </span>
           </label>
         </div>

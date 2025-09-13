@@ -6,6 +6,7 @@ export interface User {
   email: string;
   phone: string;
   profileImage?: string;
+  token?: string; // Add token field
 }
 
 export const useAuth = () => {
@@ -17,12 +18,15 @@ export const useAuth = () => {
     const checkAuth = () => {
       try {
         const savedUser = localStorage.getItem('driveEasyUser');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
+        const savedToken = localStorage.getItem('driveEasyToken');
+        if (savedUser && savedToken) {
+          const userData = JSON.parse(savedUser);
+          setUser({ ...userData, token: savedToken });
         }
       } catch (error) {
         console.error('Failed to load user session:', error);
         localStorage.removeItem('driveEasyUser');
+        localStorage.removeItem('driveEasyToken');
       } finally {
         setLoading(false);
       }
@@ -35,6 +39,9 @@ export const useAuth = () => {
     try {
       setUser(userData);
       localStorage.setItem('driveEasyUser', JSON.stringify(userData));
+      if (userData.token) {
+        localStorage.setItem('driveEasyToken', userData.token);
+      }
     } catch (error) {
       console.error('Failed to save user session:', error);
     }
@@ -44,6 +51,7 @@ export const useAuth = () => {
     try {
       setUser(null);
       localStorage.removeItem('driveEasyUser');
+      localStorage.removeItem('driveEasyToken');
     } catch (error) {
       console.error('Failed to clear user session:', error);
     }
@@ -58,6 +66,10 @@ export const useAuth = () => {
     }
   };
 
+  const getAuthToken = () => {
+    return user?.token || localStorage.getItem('driveEasyToken');
+  };
+
   const isAuthenticated = !!user;
 
   return {
@@ -66,6 +78,7 @@ export const useAuth = () => {
     isAuthenticated,
     login,
     logout,
-    updateProfile
+    updateProfile,
+    getAuthToken
   };
 };
