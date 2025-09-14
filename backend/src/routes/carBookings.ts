@@ -52,6 +52,7 @@ router.post('/', async (req: Request, res: Response) => {
     }
 
     // Insert new booking using template literal syntax
+    // In the regular booking route (around line 62)
     const result = await sql`
       INSERT INTO car_bookings (
         car_id, car_name, car_type, pickup_location, pickup_date, drop_date,
@@ -60,11 +61,11 @@ router.post('/', async (req: Request, res: Response) => {
       ) VALUES (
         ${carId}, ${carName}, ${carType}, ${pickupLocation}, ${pickupDate}, ${dropDate},
         ${totalHours}, ${totalDays}, ${totalPrice}, ${userName}, ${userEmail}, ${userPhone},
-        ${deliveryPickup}, 'confirmed', NOW()
+        ${deliveryPickup}, 'pending', NOW()
       )
       RETURNING *
     ` as any[];
-
+    
     const booking = result[0];
     
     // Send confirmation email with correct property names
@@ -211,12 +212,25 @@ router.get('/user', authenticateUser, async (req, res) => {
 });
 
 // Update booking status
-router.patch('/:id/status', async (req: Request, res: Response) => {
+router.patch('/:id/status', authenticateUser, async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
 
   if (!status) {
     return res.status(400).json({ error: 'Status is required' });
+  }
+
+  // Validate status values
+  if (!['confirmed', 'pending', 'cancelled'].includes(status)) {
+    return res.status(400).json({ error: 'Invalid status value' });
+  }
+
+  // Check if user is admin (add admin check)
+  const userEmail = req.user?.email;
+  const adminEmail = process.env.ADMIN_EMAIL || 'catchprabhat@gmail.com';
+  
+  if (userEmail !== adminEmail) {
+    return res.status(403).json({ error: 'Admin access required' });
   }
 
   try {
@@ -339,7 +353,7 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
       ) VALUES (
         ${userName}, ${normalizedEmail}, ${userPhone}, ${carId}, ${carName}, ${carType},
         ${pickupLocation || 'Bangalore'}, ${pickupDate}, ${dropDate}, ${totalHours}, ${totalDays},
-        ${totalPrice}, ${deliveryPickup || false}, 'confirmed', ${new Date()}
+        ${totalPrice}, ${deliveryPickup || false}, 'pending', ${new Date()}
       )
       RETURNING *
     `;

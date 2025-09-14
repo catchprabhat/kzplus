@@ -18,10 +18,9 @@ interface ServiceBooking {
 
 router.post(
   '/',
-  authenticateUser, // Add this middleware
+  authenticateUser,
   async (req: Request, res: Response) => {
     const {
-      userId,
       scheduledDate,
       scheduledTime,
       services,
@@ -30,7 +29,7 @@ router.post(
     } = req.body;
 
     // Validate input
-    if (!userId || !scheduledDate || !scheduledTime || !services || !Array.isArray(services) || services.length === 0 || !totalPrice) {
+    if (!scheduledDate || !scheduledTime || !services || !Array.isArray(services) || services.length === 0 || !totalPrice) {
       return res.status(400).json({ error: 'Missing required fields or invalid services array' });
     }
 
@@ -42,12 +41,34 @@ router.post(
     }
 
     try {
+      // Get user information from the authenticated token
+      const userEmail = req.user?.email;
+      const userPhone = req.user?.phone;
+      
+      if (!userEmail && !userPhone) {
+        return res.status(400).json({ error: 'User identification required' });
+      }
+
+      // Find user by email or phone to get user ID
+      let user;
+      if (userEmail) {
+        const users = await sql`SELECT * FROM users WHERE email = ${userEmail}` as any[];
+        user = users[0];
+      } else if (userPhone) {
+        const users = await sql`SELECT * FROM users WHERE phone = ${userPhone}` as any[];
+        user = users[0];
+      }
+
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
       await sql`BEGIN`;
 
-      // Insert into service_bookings with user_id and services as JSONB
+      // Insert into service_bookings matching your exact schema
       const bookingResult = await sql`
-        INSERT INTO service_bookings (user_id, scheduled_date, scheduled_time, total_price, notes, services)
-        VALUES (${userId}, ${scheduledDate}, ${scheduledTime}, ${totalPrice}, ${notes || ''}, ${JSON.stringify(services)})
+        INSERT INTO service_bookings (user_id, scheduled_date, scheduled_time, total_price, status, notes, services)
+        VALUES (${user.id}, ${scheduledDate}, ${scheduledTime}, ${totalPrice}, 'pending', ${notes || ''}, ${JSON.stringify(services)})
         RETURNING *;
       ` as ServiceBooking[];
 
@@ -96,9 +117,23 @@ router.get(
       
       let result;
       if (isAdmin) {
-        // Admin sees all bookings
+        // Admin sees all bookings - match your exact schema
         result = await sql`
-          SELECT sb.*, u.name, u.email, u.phone, u.vehicle_number, u.vehicle_type
+          SELECT 
+            sb.id,
+            sb.user_id,
+            sb.scheduled_date,
+            sb.scheduled_time,
+            sb.total_price,
+            sb.status,
+            sb.notes,
+            sb.created_at,
+            sb.services,
+            u.name,
+            u.email,
+            u.phone,
+            u.vehicle_number,
+            u.vehicle_type
           FROM service_bookings sb
           LEFT JOIN users u ON sb.user_id = u.id
           ORDER BY sb.created_at DESC
@@ -106,7 +141,21 @@ router.get(
       } else {
         // Regular user sees only their bookings
         result = await sql`
-          SELECT sb.*, u.name, u.email, u.phone, u.vehicle_number, u.vehicle_type
+          SELECT 
+            sb.id,
+            sb.user_id,
+            sb.scheduled_date,
+            sb.scheduled_time,
+            sb.total_price,
+            sb.status,
+            sb.notes,
+            sb.created_at,
+            sb.services,
+            u.name,
+            u.email,
+            u.phone,
+            u.vehicle_number,
+            u.vehicle_type
           FROM service_bookings sb
           LEFT JOIN users u ON sb.user_id = u.id
           WHERE sb.user_id = ${user.id}
@@ -119,7 +168,7 @@ router.get(
         id: booking.id,
         vehicleNumber: booking.vehicle_number || 'N/A',
         vehicleType: booking.vehicle_type || 'N/A',
-        vehicleName: booking.vehicle_type || 'N/A', // Add this field
+        vehicleName: booking.vehicle_type || 'N/A',
         customerName: booking.name || 'N/A',
         customerPhone: booking.phone || 'N/A',
         customerEmail: booking.email || 'N/A',
@@ -132,9 +181,7 @@ router.get(
         createdAt: booking.created_at
       }));
       
-      console.log('Raw booking data from DB:', result);
-      console.log('Transformed service bookings:', transformedResult);
-      console.log('Number of bookings found:', transformedResult.length);
+      console.log('Service bookings found:', transformedResult.length);
       res.status(200).json(transformedResult);
     } catch (error) {
       console.error('Error fetching user service bookings:', error);

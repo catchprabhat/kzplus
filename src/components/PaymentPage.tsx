@@ -120,38 +120,17 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
       
       setShowSuccess(true);
       
-      // Create the booking after successful payment
-      const servicesPayload = bookingData.selectedServices.map(service => ({
-        id: service.id,
-        name: service.name,
-        price: service.price
-      }));
-  
-      // Get authentication token
-      const token = localStorage.getItem('driveEasyToken');
-  
-      const response = await axios.post(`${API_BASE_URL}/bookings`, {
-        userId: bookingData.selectedUser.id,
-        scheduledDate: bookingData.scheduledDate,
-        scheduledTime: bookingData.scheduledTime,
-        services: servicesPayload,
-        totalPrice: bookingData.totalPrice,
-        notes: bookingData.customerData.notes,
-        paymentMethod: paymentMethod,
-        paymentStatus: paymentMethod === 'pay-at-service' ? 'pending' : 'completed'
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-  
+      // Remove the direct API call - let App.tsx handle booking creation
+      // const response = await axios.post(`${API_BASE_URL}/bookings`, ...);
+      
       setTimeout(() => {
         setShowSuccess(false);
         const serviceBooking: ServiceBookingType = {
-          id: response.data.booking.id.toString(),
+          // Generate a temporary ID - the real one will come from the API
+          id: 'temp-' + Date.now(),
           vehicleNumber: bookingData.selectedUser.vehicleNumber,
           vehicleType: bookingData.selectedUser.vehicleType,
+          vehicleName: bookingData.selectedUser.vehicleType,
           customerName: bookingData.customerData.name,
           customerPhone: bookingData.customerData.phone,
           customerEmail: bookingData.customerData.email,
@@ -166,8 +145,9 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
   
         onPaymentComplete(serviceBooking);
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Payment failed:', error);
+      alert(`Payment failed: ${error.message}`);
       setProcessing(false);
     }
   };

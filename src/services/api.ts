@@ -1,5 +1,6 @@
 // Mock API service - replace with your actual API endpoints
-// Remove these lines:
+// Remove this entire mock data array:
+// const mockBookings: ApiBooking[] = [ ... ];
 const NETLIFY_DATABASE_URL='postgresql://neondb_owner:npg_c2IJw9LjlbpE@ep-cold-lab-a56reurn-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require'; 
 import { neon } from '@netlify/neon';
 const sql = neon(NETLIFY_DATABASE_URL); // automatically uses env NETLIFY_DATABASE_URL
@@ -165,61 +166,114 @@ export const bookingApi = {
   },
 
   // Create a new booking
+  // Create booking
   async createBooking(booking: Omit<ApiBooking, 'id' | 'createdAt'>): Promise<ApiBooking> {
     try {
-      await delay(800); // Simulate network delay
+      const response = await fetch(`${API_BASE_URL}/car-bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userName: booking.customerName,
+          userEmail: booking.customerEmail,
+          userPhone: booking.customerPhone,
+          carId: booking.carId,
+          carName: booking.carName,
+          carType: booking.carType,
+          pickupLocation: 'Default Location', // Add appropriate pickup location
+          pickupDate: booking.pickupDate,
+          dropDate: booking.dropDate,
+          totalHours: booking.totalDays * 24, // Convert days to hours
+          totalDays: booking.totalDays,
+          totalPrice: booking.totalPrice,
+          deliveryPickup: false
+        }),
+      });
       
-      const newBooking: ApiBooking = {
-        ...booking,
-        id: "car-04",
-        createdAt: new Date().toISOString()
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to create booking: ${response.statusText}`);
+      }
+      
+      const createdBooking = await response.json();
+      
+      // Transform backend response to match frontend interface
+      return {
+        id: createdBooking.id.toString(),
+        carId: createdBooking.car_id,
+        carName: createdBooking.car_name,
+        carType: createdBooking.car_type,
+        carSeats: createdBooking.car_seats || 5,
+        pickupDate: createdBooking.pickup_date,
+        dropDate: createdBooking.drop_date,
+        totalDays: createdBooking.total_days,
+        totalPrice: createdBooking.total_price,
+        customerName: createdBooking.user_name,
+        customerEmail: createdBooking.user_email,
+        customerPhone: createdBooking.user_phone,
+        status: createdBooking.status,
+        createdAt: createdBooking.created_at
       };
-
-      // For demo purposes, add to mock data
-      // Replace with actual API call:
-      // const response = await fetch(`${API_BASE_URL}/bookings`, {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(booking),
-      // });
-      // if (!response.ok) throw new Error('Failed to create booking');
-      // return await response.json();
-
-      mockBookings.unshift(newBooking);
-      return newBooking;
     } catch (error) {
       console.error('Error creating booking:', error);
-      throw new Error('Failed to create booking');
+      throw error;
     }
   },
 
   // Update booking status
   async updateBookingStatus(id: string, status: 'confirmed' | 'pending' | 'cancelled'): Promise<ApiBooking> {
     try {
-      await delay(300);
+      const token = localStorage.getItem('driveEasyToken');
       
-      // For demo purposes, update mock data
-      // Replace with actual API call:
-      // const response = await fetch(`${API_BASE_URL}/bookings/${id}`, {
-      //   method: 'PATCH',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ status }),
-      // });
-      // if (!response.ok) throw new Error('Failed to update booking');
-      // return await response.json();
-
-      const bookingIndex = mockBookings.findIndex(b => b.id === id);
-      if (bookingIndex === -1) throw new Error('Booking not found');
+      if (!token) {
+        throw new Error('Authentication required. Please log in as admin.');
+      }
       
-      mockBookings[bookingIndex].status = status;
-      return mockBookings[bookingIndex];
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      };
+  
+      const response = await fetch(`${API_BASE_URL}/car-bookings/${id}/status`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ status }),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.');
+        }
+        if (response.status === 403) {
+          throw new Error('Admin access required.');
+        }
+        throw new Error(errorData.error || `Failed to update booking: ${response.statusText}`);
+      }
+      
+      const updatedBooking = await response.json();
+      
+      // Transform backend response to match frontend interface
+      return {
+        id: updatedBooking.id,
+        carId: updatedBooking.car_id,
+        carName: updatedBooking.car_name,
+        carType: updatedBooking.car_type,
+        carSeats: updatedBooking.car_seats || 5,
+        pickupDate: updatedBooking.pickup_date,
+        dropDate: updatedBooking.drop_date,
+        totalDays: updatedBooking.total_days,
+        totalPrice: updatedBooking.total_price,
+        customerName: updatedBooking.user_name,
+        customerEmail: updatedBooking.user_email,
+        customerPhone: updatedBooking.user_phone,
+        status: updatedBooking.status,
+        createdAt: updatedBooking.created_at
+      };
     } catch (error) {
       console.error('Error updating booking:', error);
-      throw new Error('Failed to update booking');
+      throw error;
     }
   },
 
@@ -454,6 +508,8 @@ export const serviceBookingApi = {
       throw new Error('Authentication required');
     }
 
+    console.log('Fetching service bookings with token:', token ? 'Token exists' : 'No token');
+
     const response = await fetch(`${API_BASE_URL}/bookings/user`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -464,11 +520,20 @@ export const serviceBookingApi = {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('API Error:', response.status, errorText);
-      throw new Error(`Failed to fetch service bookings: ${response.status}`);
+      
+      // If unauthorized, clear the token and redirect to login
+      if (response.status === 401) {
+        localStorage.removeItem('driveEasyToken');
+        localStorage.removeItem('driveEasyUser');
+        throw new Error('Session expired. Please login again.');
+      }
+      
+      throw new Error(`Failed to fetch service bookings: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
     console.log('Service bookings from API:', data);
+    console.log('Number of service bookings:', Array.isArray(data) ? data.length : 0);
     return data;
   },
 
@@ -478,6 +543,8 @@ export const serviceBookingApi = {
     if (!token) {
       throw new Error('Authentication required');
     }
+
+    console.log('Creating booking with data:', bookingData);
 
     const response = await fetch(`${API_BASE_URL}/bookings`, {
       method: 'POST',
@@ -489,7 +556,9 @@ export const serviceBookingApi = {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create service booking');
+      const errorText = await response.text();
+      console.error('Create booking error:', response.status, errorText);
+      throw new Error(`Failed to create service booking: ${response.status} - ${errorText}`);
     }
 
     return response.json();

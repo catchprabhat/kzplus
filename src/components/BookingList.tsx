@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit } from 'lucide-react';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
+import { useAuth } from '../hooks/useAuth';
 
 interface BookingListProps {
   bookings: Booking[];
@@ -20,6 +21,10 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>(bookings);
   const [phoneFilter, setPhoneFilter] = useState('');
+  const { user } = useAuth();
+
+  // Check if current user is admin
+  const isAdmin = user?.email === 'catchprabhat@gmail.com';
 
   useEffect(() => {
     // Filter bookings based on phoneFilter
@@ -150,7 +155,8 @@ export const BookingList: React.FC<BookingListProps> = ({
 
                     {openDropdown === booking.id && (
                       <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                        {onUpdateStatus && (
+                        {/* Show status update options only for admin */}
+                        {onUpdateStatus && isAdmin && (
                           <>
                             <button
                               onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
@@ -175,9 +181,10 @@ export const BookingList: React.FC<BookingListProps> = ({
                             </button>
                           </>
                         )}
+                        {/* Show delete option for all users */}
                         {onDelete && (
                           <>
-                            {onUpdateStatus && <hr className="my-1" />}
+                            {onUpdateStatus && isAdmin && <hr className="my-1" />}
                             <button
                               onClick={() => handleDelete(booking.id)}
                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"

@@ -206,6 +206,57 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       }, 500);
     } catch (error: any) {
       console.error('Failed to register customer:', error);
+      
+      // If user already exists, try to update their profile
+      if (error.response?.status === 400 && error.response?.data?.error?.includes('already exists')) {
+        try {
+          // Search for existing user and update their vehicle info
+          const searchResponse = await axios.get(`${API_BASE_URL}/users/search/phone/${formData.phone}`);
+          const existingUser = searchResponse.data;
+          
+          // Update vehicle information
+          await axios.put(`${API_BASE_URL}/users/profile`, {
+            userId: existingUser.id,
+            vehicleNumber: formData.vehicleNumber,
+            vehicleType: formData.vehicleType,
+            address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.pincode}`
+          });
+          
+          // Set the updated user
+          setSelectedUser({
+            id: existingUser.id.toString(),
+            vehicleNumber: formData.vehicleNumber,
+            vehicleType: formData.vehicleType,
+            ownerName: existingUser.name,
+            ownerPhone: existingUser.phone,
+            ownerEmail: existingUser.email,
+            createdAt: new Date(existingUser.created_at),
+            lastServicedDate: existingUser.last_serviced_date,
+            lastServiceType: existingUser.last_service_type,
+          });
+          
+          setCustomerData({
+            name: existingUser.name,
+            email: existingUser.email,
+            phone: existingUser.phone,
+            notes: ''
+          });
+
+          setShowCustomerForm(false);
+          setSearchError(null);
+          setSearchAttempted(false);
+          setSearchQuery(formData.vehicleNumber);
+
+          setTimeout(() => {
+            document.getElementById('service-selection')?.scrollIntoView({ behavior: 'smooth' });
+          }, 500);
+          
+          return; // Success!
+        } catch (updateError) {
+          console.error('Failed to update existing user:', updateError);
+        }
+      }
+      
       setSearchError(error.response?.data?.error || 'Registration failed');
     } finally {
       setCustomerFormLoading(false);

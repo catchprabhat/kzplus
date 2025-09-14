@@ -823,7 +823,7 @@ function App() {
                 <p className="text-sm opacity-90">
                   {latestBooking 
                     ? `${latestBooking.carName} reserved for ${latestBooking.totalDays} day${latestBooking.totalDays !== 1 ? 's' : ''}`
-                    : `${latestServiceBooking?.services.length} service${latestServiceBooking?.services.length !== 1 ? 's' : ''} scheduled for ${latestServiceBooking?.vehicleNumber}`
+                    : `${latestServiceBooking?.services?.length || 0} service${(latestServiceBooking?.services?.length || 0) !== 1 ? 's' : ''} scheduled for ${latestServiceBooking?.vehicleNumber}`
                   }
                 </p>
                 <p className="text-xs opacity-75 mt-1">

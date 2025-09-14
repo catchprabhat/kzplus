@@ -168,4 +168,43 @@ router.get('/search/vehicle/:vehicleNumber', async (req: Request, res: Response)
   }
 });
 
+// Add this new endpoint after the existing routes
+router.put('/profile', async (req: Request, res: Response) => {
+  try {
+    const {
+      userId,
+      vehicleNumber,
+      vehicleType,
+      address
+    } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    // Update user profile with vehicle information
+    const result = await sql`
+      UPDATE users 
+      SET 
+        vehicle_number = ${vehicleNumber ? vehicleNumber.toUpperCase() : null},
+        vehicle_type = ${vehicleType || null},
+        address = ${address || ''}
+      WHERE id = ${userId}
+      RETURNING id, name, email, phone, vehicle_number, vehicle_type, address, created_at
+    ` as User[];
+
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      message: 'Profile updated successfully',
+      user: result[0]
+    });
+  } catch (error) {
+    console.error('Profile update error:', error);
+    res.status(500).json({ error: 'Profile update failed' });
+  }
+});
+
 export default router;

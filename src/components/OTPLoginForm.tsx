@@ -139,19 +139,15 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
     try {
       setAuthLoading(true);
       setErrors({});
-
+  
       // Use simulated backend for local testing if enabled
       const response = emailOtpService.simulateBackend
         ? await emailOtpService.simulateVerifyOTP(formData.email, formData.otp)
         : await emailOtpService.verifyOTP(formData.email, formData.otp);
       
       if (response.success) {
-        if (response.isNewUser) {
-          // New user needs to register
-          setIsNewUser(true);
-          setStep('register');
-        } else if (response.user) {
-          // Existing user, complete login
+        if (response.user) {
+          // Login both existing and new users directly
           onLogin({
             ...response.user,
             phone: response.user.phone || '' // Ensure phone is included even if undefined

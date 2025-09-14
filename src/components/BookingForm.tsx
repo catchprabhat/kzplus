@@ -132,6 +132,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       return;
     }
 
+    // In the handleSubmit function (around line 145)
     const booking: Booking = {
       id: Date.now().toString(),
       carId: selectedCar.id,
@@ -143,9 +144,9 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       totalDays: calculateTotalDays(),
       totalPrice: calculateTotalPrice(),
       customerName: customerData.name,
-      customerEmail: customerData.email, // This will be the authenticated user's email
+      customerEmail: customerData.email,
       customerPhone: customerData.phone,
-      status: 'confirmed',
+      status: 'pending', // Changed from 'confirmed' to 'pending'
       createdAt: new Date()
     };
 

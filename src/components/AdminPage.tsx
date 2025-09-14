@@ -22,7 +22,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToHome }) => {
   } = useCarSubmissions();
 
   // Check if user is admin (in real app, this would be based on user role)
-  const isAdmin = user?.email === 'admin@driveeasy.com';
+  const isAdmin = user?.email === 'catchprabhat@gmail.com'; // Update to match backend
 
   // Check authentication and admin access
   if (!isAuthenticated || !isAdmin) {

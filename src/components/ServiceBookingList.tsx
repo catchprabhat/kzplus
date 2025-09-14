@@ -82,6 +82,13 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
     }
   };
 
+  // Add debugging
+  console.log('ServiceBookingList received:', {
+    bookingsCount: bookings.length,
+    loading,
+    bookings: bookings
+  });
+
   if (loading) {
     return (
       <div className="bg-white rounded-xl shadow-lg p-8">
@@ -96,6 +103,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
         <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-600 mb-2">No Service Bookings Yet</h3>
         <p className="text-gray-500">Your car service bookings will appear here once you schedule a service.</p>
+        <p className="text-sm text-gray-400 mt-2">Debug: {bookings.length} bookings found</p>
       </div>
     );
   }

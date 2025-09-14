@@ -217,9 +217,6 @@ router.post(
       }
 
       const { name, phone } = req.body;
-
-      // We no longer require OTP verification for registration
-      // This allows registration to happen independently
       
       // Check if user already exists
       const existingUsers = await sql`SELECT * FROM users WHERE phone = ${phone}` as any[];
@@ -252,10 +249,10 @@ router.post(
         });
       }
 
-      // Create new user with default values for required fields
+      // Create new user WITHOUT default vehicle values
       const result = await sql`
-        INSERT INTO users (name, phone, email, vehicle_number, vehicle_type, address)
-        VALUES (${name}, ${phone}, '', 'PENDING', 'UNKNOWN', '')
+        INSERT INTO users (name, phone, email, address)
+        VALUES (${name}, ${phone}, '', '')
         RETURNING id, name, phone, email
       ` as any[];
 
@@ -301,42 +298,18 @@ router.post(
       }
 
       const { name, email } = req.body;
-      
+
       // Check if user already exists
       const existingUsers = await sql`SELECT * FROM users WHERE email = ${email}` as any[];
       
       if (existingUsers.length > 0) {
-        // If user exists, just update their name if it's empty
-        const user = existingUsers[0];
-        
-        if (!user.name || user.name === '') {
-          await sql`UPDATE users SET name = ${name} WHERE id = ${user.id}`;
-        }
-        
-        // Generate token
-        const token = jwt.sign(
-          { id: user.id, email: user.email },
-          JWT_SECRET,
-          { expiresIn: '7d' }
-        );
-        
-        return res.status(200).json({
-          success: true,
-          message: 'Profile updated successfully',
-          user: {
-            id: user.id,
-            name: name || user.name,
-            phone: user.phone || '',
-            email: user.email,
-            token
-          }
-        });
+        return res.status(400).json({ success: false, message: 'User already exists with this email' });
       }
 
-      // Create new user with default values for required fields
+      // Create new user with all required columns
       const result = await sql`
-        INSERT INTO users (name, email, phone, vehicle_number, vehicle_type, address)
-        VALUES (${name}, ${email}, '', 'PENDING', 'UNKNOWN', '')
+        INSERT INTO users (name, email, phone, address, vehicle_number, vehicle_type)
+        VALUES (${name}, ${email}, '', '', NULL, NULL)
         RETURNING id, name, email, phone
       ` as any[];
 
