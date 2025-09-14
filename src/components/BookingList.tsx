@@ -217,14 +217,34 @@ export const BookingList: React.FC<BookingListProps> = ({
                 </div>
               </div>
 
+              
               <div className="space-y-1">
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
                   {booking.totalDays} day{booking.totalDays !== 1 ? 's' : ''}
                 </div>
-                <div className="flex items-center font-semibold text-blue-600">
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  ₹{booking.totalPrice}
+                <div className="space-y-1">
+                  {booking.originalPrice && booking.discountAmount ? (
+                    <>
+                      <div className="flex items-center text-sm text-gray-500 line-through">
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        ₹{booking.originalPrice}
+                      </div>
+                      <div className="flex items-center text-sm text-green-600">
+                        <span className="mr-2">💰</span>
+                        Saved ₹{booking.discountAmount} {booking.couponCode && `(${booking.couponCode})`}
+                      </div>
+                      <div className="flex items-center font-semibold text-blue-600">
+                        <CreditCard className="w-4 h-4 mr-2" />
+                        ₹{booking.totalPrice}
+                      </div>
+                    </>
+                  ) : (
+                    <div className="flex items-center font-semibold text-blue-600">
+                      <CreditCard className="w-4 h-4 mr-2" />
+                      ₹{booking.totalPrice}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

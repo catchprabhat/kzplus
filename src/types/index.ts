@@ -18,6 +18,7 @@ export interface Car {
   rejectionReason?: string;
 }
 
+// Add to existing Booking interface
 export interface Booking {
   id: string;
   carId: string;
@@ -33,6 +34,9 @@ export interface Booking {
   customerPhone: string;
   status: 'confirmed' | 'pending' | 'cancelled';
   createdAt: Date;
+  couponCode?: string;
+  discountAmount?: number;
+  originalPrice?: number;
 }
 
 export interface CalendarDay {

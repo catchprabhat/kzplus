@@ -3,6 +3,7 @@ import { User, Mail, Phone, CreditCard } from 'lucide-react';
 import { Car, Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth'; // Add this import
+import { CouponInput } from './CouponInput';
 
 interface BookingFormProps {
   selectedCar: Car | null;
@@ -96,11 +97,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     return breakdown.billingDays;
   };
 
-  const calculateTotalPrice = () => {
-    const breakdown = calculatePricingBreakdown();
-    return breakdown.totalPrice;
-  };
-
+  // Add the missing formatDuration function
   const formatDuration = () => {
     if (pickupDate && dropDate) {
       const pickup = new Date(pickupDate);
@@ -121,18 +118,47 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     return '0 minutes';
   };
 
+  // Add these state variables after the existing useState declarations
+  const [couponDiscount, setCouponDiscount] = useState(0);
+  const [finalPrice, setFinalPrice] = useState(0);
+  
+  // Update the calculateTotalPrice function
+  const calculateTotalPrice = () => {
+    const breakdown = calculatePricingBreakdown();
+    return breakdown.totalPrice;
+  };
+  
+  // Add new function to get final price after discount
+  // Update the getFinalPrice function (around line 132)
+  const getFinalPrice = () => {
+    const originalPrice = calculateTotalPrice();
+    return originalPrice - couponDiscount;
+  };
+  
+  // Add coupon handlers
+  const handleCouponApplied = (discountAmount: number, finalAmount: number) => {
+    setCouponDiscount(discountAmount);
+    setFinalPrice(finalAmount);
+  };
+  
+  const handleCouponRemoved = () => {
+    setCouponDiscount(0);
+    setFinalPrice(0);
+  };
+  
+  // Update the handleSubmit function (around line 155)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!selectedCar || !pickupDate || !dropDate || loading) return;
-
+  
     // Check if user is authenticated
     if (!isAuthenticated) {
       alert('Please log in to make a booking.');
       return;
     }
-
-    // In the handleSubmit function (around line 145)
+  
+    // Only store the final discounted price in totalPrice
     const booking: Booking = {
       id: Date.now().toString(),
       carId: selectedCar.id,
@@ -142,18 +168,25 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       pickupDate: new Date(pickupDate),
       dropDate: new Date(dropDate),
       totalDays: calculateTotalDays(),
-      totalPrice: calculateTotalPrice(),
+      totalPrice: getFinalPrice(), 
       customerName: customerData.name,
       customerEmail: customerData.email,
       customerPhone: customerData.phone,
-      status: 'pending', // Changed from 'confirmed' to 'pending'
-      createdAt: new Date()
+      status: 'pending',
+      createdAt: new Date(),
+      // Optional: Store coupon info for reference
+      couponCode: couponDiscount > 0 ? 'ONAMDISC20' : undefined,
+      discountAmount: couponDiscount,
+      originalPrice: calculateTotalPrice() // Store original price for reference
     };
-
+  
     onBookingComplete(booking);
     
-    // Reset form
+    // Reset form but keep coupon state to maintain the display
     setCustomerData({ name: '', email: '', phone: '' });
+    // Remove these lines to keep the coupon discount displayed:
+    // setCouponDiscount(0);
+    // setFinalPrice(0);
   };
 
   // Show login prompt if not authenticated
@@ -233,9 +266,25 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                 </div>
               </div>
             )}
+            
+            {/* Original Total */}
+            <div className="flex justify-between border-t dark:border-dark-600 pt-2">
+              <span>Subtotal:</span>
+              <span>₹{calculateTotalPrice()}</span>
+            </div>
+            
+            {/* Discount */}
+            {couponDiscount > 0 && (
+              <div className="flex justify-between text-green-600">
+                <span>Discount:</span>
+                <span>-₹{couponDiscount}</span>
+              </div>
+            )}
+            
+            {/* Final Total */}
             <div className="flex justify-between border-t dark:border-dark-600 pt-2 font-bold text-blue-900 dark:text-blue-300">
               <span>Total:</span>
-              <span>₹{calculateTotalPrice()}</span>
+              <span>₹{getFinalPrice()}</span>
             </div>
           </div>
           <div className="mt-3 text-xs text-black-500 dark:text-black-400">
@@ -290,8 +339,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your email"
             required
-            disabled={loading || isAuthenticated} // Disable for authenticated users
-            readOnly={isAuthenticated} // Make read-only for authenticated users
+            disabled={loading || isAuthenticated}
+            readOnly={isAuthenticated}
           />
           {isAuthenticated && (
             <p className="text-xs text-gray-500 mt-1">
@@ -316,6 +365,33 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           />
         </div>
 
+        {/* Move CouponInput here - after phone number */}
+        <CouponInput
+          orderAmount={calculateTotalPrice()}
+          onCouponApplied={handleCouponApplied}
+          onCouponRemoved={handleCouponRemoved}
+          serviceType="car-booking"
+        />
+        
+        {/* Add Total Amount to be Paid section */}
+        {selectedCar && pickupDate && dropDate && (
+          <div className="mt-4 p-4 bg-white-50 dark:bg-white-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex justify-between items-center">
+              <span className="text-lg font-semibold text-black-900 dark:text-black-100">
+                Total amount to be paid:
+              </span>
+              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                ₹{getFinalPrice()}
+              </span>
+            </div>
+            
+          </div>
+        )}
+
+        {/* View terms and conditions */}
+        
+
+        {/* Complete Booking button moved to the end */}
         <button
           type="submit"
           disabled={!isFormValid || loading}
@@ -335,6 +411,6 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           )}
         </button>
       </form>
-    </div>
-  );
+      </div>
+    );
 };
