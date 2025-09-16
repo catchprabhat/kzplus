@@ -1,16 +1,16 @@
 import { Car } from '../types';
-import  greycrystaUP  from '../images/greycrysta-UP.png';
-import safariKA from '../images/safari-KA.png';
-import dusterKA from '../images/duster-KA.png';
+import safariKA from '../images/safari-KA.jpeg';
+import dusterKA from '../images/duster-KA.jpg';
 import baleno from '../images/balenoo.jpg';
 import Poloo from '../images/polo.jpg';
 import Glanzaa from '../images/GL_1.jpg';
+import Crysta from '../images/Innova.jpg';
 
 export const cars: Car[] = [
   {
     id: '1',
     name: 'Innova Crysta',
-    image: greycrystaUP,
+    image: Crysta,
     type: 'SUV',
     seats: 7,
     transmission: 'Automatic',
