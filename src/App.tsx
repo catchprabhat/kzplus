@@ -23,6 +23,7 @@ import { ComingSoon } from './components/ComingSoon';
 import { cars } from './data/cars';
 import { Car, Booking, ServiceBooking as ServiceBookingType } from './types';
 import { useBookings } from './hooks/useBookings';
+import { useCalendarBookings } from './hooks/useCalendarBookings';
 import { useServiceBookings } from './hooks/useServiceBookings';
 import { useAuth } from './hooks/useAuth';
 import { SelfDriveBooking } from './components/SelfDriveBooking';
@@ -303,7 +304,7 @@ function App() {
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [pickupDate, setPickupDate] = useState('');
   const [dropDate, setDropDate] = useState('');
-  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'book' | 'calendar' | 'bookings' | 'services' | 'service-bookings' | 'settings' | 'sale-purchase' | 'profile' | 'contact' | 'terms' | 'admin' | 'coming-soon' | 'login' | 'self-drive'>('home');
   const [comingSoonTitle, setComingSoonTitle] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [latestBooking, setLatestBooking] = useState<Booking | null>(null);
@@ -340,6 +341,12 @@ function App() {
     updateBookingStatus, 
     deleteBooking 
   } = useBookings();
+
+  // Add new hook for calendar that shows ALL bookings to everyone
+  const { 
+    bookings: calendarBookings, 
+    loading: calendarLoading 
+  } = useCalendarBookings();
 
   const {
     serviceBookings,
@@ -658,7 +665,7 @@ function App() {
 
   const navigationItems = [
     { key: 'home', label: 'Home', icon: CarIcon, protected: false },
-    { key: 'book', label: 'Self-Drive', icon: CarIcon, protected: false },
+    { key: 'self-drive', label: 'Self-Drive', icon: CarIcon, protected: false },
     { key: 'calendar', label: 'Car Availability', icon: Calendar, protected: true },
     { key: 'bookings', label: 'My Trips', icon: Calendar, protected: true },
     { key: 'service-bookings', label: 'Scheduled Services', icon: Wrench, protected: true },
@@ -983,7 +990,7 @@ function App() {
         <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
           <div className="grid grid-cols-5 gap-0 max-w-md mx-auto">
             <button
-              onClick={() => handleTabChange('book')}
+              onClick={() => handleTabChange('self-drive')}
               className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
             >
               <CarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
@@ -1371,12 +1378,12 @@ function App() {
                   View all car bookings in a monthly calendar format with color-coded vehicle types
                 </p>
               </div>
-              {loading ? (
+              {calendarLoading ? (
                 <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8">
                   <LoadingSpinner size="lg" text="Loading calendar..." />
                 </div>
               ) : (
-                <CalendarView bookings={bookings} />
+                <CalendarView bookings={calendarBookings} />
               )}
             </div>
           )}

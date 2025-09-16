@@ -243,7 +243,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                   type="tel"
                   value={editData.phone}
                   onChange={(e) => setEditData({ ...editData, phone: e.target.value })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all dark:bg-dark-700 dark:text-white ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all dark:bg-dark-700 dark:text-black ${
                     errors.phone ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
                   placeholder="Enter your phone number"
@@ -252,7 +252,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                 {errors.phone && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.phone}</p>}
               </div>
             ) : (
-              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-white">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-black">
                 {user.phone}
               </div>
             )}

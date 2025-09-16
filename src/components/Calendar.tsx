@@ -154,8 +154,6 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
     setCurrentDate(newDate);
   };
 
-  
-
   const days = getDaysInMonth(currentDate);
 
   return (
@@ -196,26 +194,35 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
         {days.map((day, index) => (
           <div
             key={index}
-            className={`min-h-[100px] p-2 border border-gray-100 ${
+            className={`min-h-[100px] p-2 border border-gray-100 relative ${
               day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
             } ${
               day.date.toDateString() === new Date().toDateString()
                 ? 'bg-blue-50 border-blue-200'
                 : ''
+            } ${
+              day.bookings.length > 0 ? 'backdrop-blur-sm bg-opacity-90' : ''
             }`}
           >
-            <div className={`text-sm mb-1 ${
+            {/* Add blur overlay for booked dates */}
+            {day.bookings.length > 0 && (
+              <div className="absolute inset-0 bg-gray-200 bg-opacity-80 backdrop-blur-[3px] rounded pointer-events-none"></div>
+            )}
+            
+            <div className={`text-sm mb-1 relative z-10 ${
               day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
             } ${
               day.date.toDateString() === new Date().toDateString()
                 ? 'font-bold text-blue-600'
                 : ''
+            } ${
+              day.bookings.length > 0 ? 'opacity-35' : ''
             }`}>
               {day.date.getDate()}
             </div>
             
             {day.bookings.length > 0 && (
-              <div className="space-y-1">
+              <div className="space-y-1 relative z-10">
                 {day.bookings.slice(0, 3).map((booking, bookingIndex) => {
                   const isPickup = isPickupDate(day.date, booking);
                   const isDrop = isDropDate(day.date, booking);
@@ -224,7 +231,7 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
                   return (
                     <div
                       key={bookingIndex}
-                      className={`text-xs px-1 py-0.5 rounded flex items-center justify-between border ${colorClass}`}
+                      className={`text-xs px-1 py-0.5 rounded flex items-center justify-between border ${colorClass} opacity-80`}
                       title={`${booking.carName} (${booking.carType}, ${booking.carSeats} seats) - ${booking.customerName}\nPickup: ${formatDateTime(booking.pickupDate)}\nDrop: ${formatDateTime(booking.dropDate)}`}
                     >
                       <div className="flex items-center min-w-0 flex-1">
@@ -246,7 +253,7 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
                   );
                 })}
                 {day.bookings.length > 3 && (
-                  <div className="text-xs text-gray-500 text-center">
+                  <div className="text-xs text-gray-500 text-center opacity-75">
                     +{day.bookings.length - 3} more
                   </div>
                 )}
