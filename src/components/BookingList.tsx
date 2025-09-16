@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit } from 'lucide-react';
+import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock } from 'lucide-react';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
@@ -42,6 +42,34 @@ export const BookingList: React.FC<BookingListProps> = ({
     });
   };
 
+  const formatTime = (date: Date) => {
+    return new Date(date.toString()).toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  const calculateDuration = (pickupDate: Date, dropDate: Date) => {
+    const pickup = new Date(pickupDate);
+    const drop = new Date(dropDate);
+    const diffTime = drop.getTime() - pickup.getTime();
+    const diffHours = Math.floor(diffTime / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+    const remainingHours = diffHours % 24;
+
+    if (diffDays === 0) {
+      // Same day booking - show only hours
+      return `${diffHours} hour${diffHours !== 1 ? 's' : ''}`;
+    } else if (remainingHours === 0) {
+      // Exact days - show only days
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
+    } else {
+      // Mixed duration - show days and hours
+      return `${diffDays} day${diffDays !== 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`;
+    }
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -57,13 +85,14 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   const handleStatusUpdate = async (id: string, status: 'confirmed' | 'pending' | 'cancelled') => {
     if (!onUpdateStatus) return;
-
+    
+    setActionLoading(id);
+    setOpenDropdown(null);
+    
     try {
-      setActionLoading(id);
       await onUpdateStatus(id, status);
-      setOpenDropdown(null);
     } catch (error) {
-      console.error('Failed to update booking status:', error);
+      console.error('Error updating booking status:', error);
     } finally {
       setActionLoading(null);
     }
@@ -71,14 +100,15 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   const handleDelete = async (id: string) => {
     if (!onDelete) return;
-
+    
     if (window.confirm('Are you sure you want to delete this booking?')) {
+      setActionLoading(id);
+      setOpenDropdown(null);
+      
       try {
-        setActionLoading(id);
         await onDelete(id);
-        setOpenDropdown(null);
       } catch (error) {
-        console.error('Failed to delete booking:', error);
+        console.error('Error deleting booking:', error);
       } finally {
         setActionLoading(null);
       }
@@ -87,16 +117,16 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8">
-        <LoadingSpinner size="lg" text="Loading bookings..." />
+      <div className="bg-white rounded-xl shadow-lg p-6 flex justify-center items-center h-64">
+        <LoadingSpinner />
       </div>
     );
   }
 
-  if (bookings.length === 0) {
+  if (filteredBookings.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      <div className="bg-white rounded-xl shadow-lg p-6 text-center">
+        <Calendar className="w-12 h-12 mx-auto text-gray-400 mb-4" />
         <h3 className="text-lg font-semibold text-gray-600 mb-2">No Bookings Yet</h3>
         <p className="text-gray-500">Your car bookings will appear here once you make a reservation.</p>
       </div>
@@ -217,12 +247,20 @@ export const BookingList: React.FC<BookingListProps> = ({
                 </div>
               </div>
 
-              
               <div className="space-y-1">
+                {/* Pickup and Drop Times */}
+                <div className="flex items-center text-sm text-gray-700">
+                  <Clock className="w-4 h-4 mr-2" />
+                  {formatTime(booking.pickupDate)} - {formatTime(booking.dropDate)}
+                </div>
+                
+                {/* Duration */}
                 <div className="flex items-center">
                   <Calendar className="w-4 h-4 mr-2" />
-                  {booking.totalDays} day{booking.totalDays !== 1 ? 's' : ''}
+                  {calculateDuration(booking.pickupDate, booking.dropDate)}
                 </div>
+                
+                {/* Price Section */}
                 <div className="space-y-1">
                   {booking.originalPrice && booking.discountAmount ? (
                     <>

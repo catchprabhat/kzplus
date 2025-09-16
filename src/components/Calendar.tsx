@@ -63,22 +63,43 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
 
   const getBookingsForDate = (date: Date): Booking[] => {
     return bookings.filter(booking => {
+      // Ensure dates are properly parsed as Date objects
       const bookingStart = new Date(booking.pickupDate);
       const bookingEnd = new Date(booking.dropDate);
       
-      // Check if the date falls within the booking period
-      return date >= bookingStart && date <= bookingEnd;
+      // Normalize all dates to start of day for comparison
+      const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const startDate = new Date(bookingStart.getFullYear(), bookingStart.getMonth(), bookingStart.getDate());
+      const endDate = new Date(bookingEnd.getFullYear(), bookingEnd.getMonth(), bookingEnd.getDate());
+      
+      // Check if the date falls within the booking period (inclusive)
+      return targetDate >= startDate && targetDate <= endDate;
     });
   };
 
   const isPickupDate = (date: Date, booking: Booking): boolean => {
     const pickupDate = new Date(booking.pickupDate);
-    return date.toDateString() === pickupDate.toDateString();
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const startDate = new Date(pickupDate.getFullYear(), pickupDate.getMonth(), pickupDate.getDate());
+    return targetDate.getTime() === startDate.getTime();
   };
 
   const isDropDate = (date: Date, booking: Booking): boolean => {
     const dropDate = new Date(booking.dropDate);
-    return date.toDateString() === dropDate.toDateString();
+    const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const endDate = new Date(dropDate.getFullYear(), dropDate.getMonth(), dropDate.getDate());
+    return targetDate.getTime() === endDate.getTime();
+  };
+
+  const formatDateTime = (dateInput: string | Date) => {
+    const date = new Date(dateInput);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
   };
 
   const getBookingColor = (booking: Booking): string => {
@@ -133,15 +154,7 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
     setCurrentDate(newDate);
   };
 
-  const formatDateTime = (date: Date) => {
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-  };
+  
 
   const days = getDaysInMonth(currentDate);
 

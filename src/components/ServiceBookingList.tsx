@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, Car, Phone, Mail, Clock, DollarSign, MoreVertical, Edit, Trash2, CheckCircle } from 'lucide-react';
+import { Calendar, User, Car, Phone, Mail, Clock, DollarSign, MoreVertical, Edit, Trash2, CheckCircle } from 'lucide-react';
 import { ServiceBooking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 
@@ -204,7 +204,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                 <h5 className="font-medium text-gray-900">Customer Details</h5>
                 <div className="space-y-1 text-sm text-gray-600">
                   <div className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2" />
+                    <User className="w-4 h-4 mr-2" />
                     {booking.customerName}
                   </div>
                   <div className="flex items-center">
