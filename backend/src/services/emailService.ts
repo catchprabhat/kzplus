@@ -336,9 +336,9 @@ This is an automated security message.
         </head>
         <body>
           <div class="header">
-            <h1>🚗 A+ Auto Care</h1>
+            <h1>🚗 JIXDRIVE</h1>
             <h2>Your Booking is Confirmed! 🎉</h2>
-            <p>Thank you for choosing A+ Auto Care</p>
+            <p>Thank you for choosing JIXDRIVE</p>
           </div>
           
           <div class="content">
@@ -394,7 +394,7 @@ This is an automated security message.
           </div>
           
           <div class="footer">
-            <p><strong>A+ Auto Care - Your Trusted Car Rental Partner</strong></p>
+            <p><strong>JIXDRIVE - Your Trusted Car Rental Partner</strong></p>
             <p style="font-size: 12px; color: #9ca3af;">
               This is an automated confirmation email. Please save this for your records.
             </p>
@@ -408,12 +408,12 @@ This is an automated security message.
         '<h2>Your Booking is Confirmed! 🎉</h2>',
         '<h2>New Car Booking Received! 📋</h2>'
       ).replace(
-        '<p>Thank you for choosing A+ Auto Care</p>',
+        '<p>Thank you for choosing JIXDRIVE</p>',
         '<p>A new booking has been made</p>'
       );
 
       const text = `
-A+ Auto Care - Booking Confirmation
+JIXDRIVE - Booking Confirmation
 
 Your Booking is Confirmed! 🚗🎉
 
@@ -427,7 +427,7 @@ Booking Details:
 - Drop: ${formatDate(dropDate)}
 - Total Price: ₹${totalPrice}
 
-Thank you for choosing A+ Auto Care!
+Thank you for choosing JIXDRIVE!
 
 Need help? Contact us at support@aplusautocare.com
       `;
@@ -436,13 +436,13 @@ Need help? Contact us at support@aplusautocare.com
         'Your Booking is Confirmed! 🚗🎉',
         'New Car Booking Received! 📋🚗'
       ).replace(
-        'Thank you for choosing A+ Auto Care!',
+        'Thank you for choosing JIXDRIVE!',
         'Please review this booking in your admin dashboard.'
       );
 
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
-        from: 'A+ Auto Care <support@kzplusautocare.in>',
+        from: 'JIXDRIVE <support@kzplusautocare.in>',
         to: userEmail,
         subject: subject,
         html: html,
@@ -453,7 +453,7 @@ Need help? Contact us at support@aplusautocare.com
 
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
-        from: 'A+ Auto Care <support@kzplusautocare.in>',
+        from: 'JIXDRIVE <support@kzplusautocare.in>',
         to: process.env.ADMIN_EMAIL || 'umrsjd123@gmail.com',
         subject: adminSubject,
         html: adminHtml,

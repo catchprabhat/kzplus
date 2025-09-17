@@ -1373,8 +1373,8 @@ function App() {
           {activeTab === 'calendar' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Booking Calendar</h2>
-                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">Booking Calendar</h2>
+                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-500">
                   View all car bookings in a monthly calendar format with color-coded vehicle types
                 </p>
               </div>

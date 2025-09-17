@@ -157,44 +157,50 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   const days = getDaysInMonth(currentDate);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-900 flex items-center">
-          <CalendarIcon className="w-5 h-5 mr-2 text-blue-600" />
-          Booking Calendar
+    <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6">
+      {/* Responsive header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <h3 className="text-lg sm:text-xl font-bold text-black-900 flex items-center">
+          <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
+          <span className="hidden sm:inline">Booking Calendar</span>
+          <span className="sm:hidden">Calendar</span>
         </h3>
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-between sm:justify-start">
           <button
             onClick={() => navigateMonth('prev')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
-          <span className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
+          <span className="text-base sm:text-lg font-semibold text-gray-900 text-center flex-1 sm:min-w-[200px]">
+            <span className="sm:hidden">{monthNames[currentDate.getMonth()].slice(0, 3)} {currentDate.getFullYear()}</span>
+            <span className="hidden sm:inline">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
           </span>
           <button
             onClick={() => navigateMonth('next')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 mb-2">
+      {/* Days of week header - responsive */}
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
         {daysOfWeek.map(day => (
-          <div key={day} className="p-3 text-center text-sm font-semibold text-gray-600">
-            {day}
+          <div key={day} className="p-1 sm:p-3 text-center text-xs sm:text-sm font-semibold text-gray-600">
+            <span className="sm:hidden">{day.slice(0, 1)}</span>
+            <span className="hidden sm:inline">{day}</span>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      {/* Calendar grid - responsive */}
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
         {days.map((day, index) => (
           <div
             key={index}
-            className={`min-h-[100px] p-2 border border-gray-100 relative ${
+            className={`min-h-[60px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border border-gray-100 relative ${
               day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
             } ${
               day.date.toDateString() === new Date().toDateString()
@@ -209,7 +215,7 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
               <div className="absolute inset-0 bg-gray-200 bg-opacity-80 backdrop-blur-[3px] rounded pointer-events-none"></div>
             )}
             
-            <div className={`text-sm mb-1 relative z-10 ${
+            <div className={`text-xs sm:text-sm mb-1 relative z-10 ${
               day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
             } ${
               day.date.toDateString() === new Date().toDateString()
@@ -222,8 +228,8 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
             </div>
             
             {day.bookings.length > 0 && (
-              <div className="space-y-1 relative z-10">
-                {day.bookings.slice(0, 3).map((booking, bookingIndex) => {
+              <div className="space-y-0.5 sm:space-y-1 relative z-10">
+                {day.bookings.slice(0, window.innerWidth < 640 ? 2 : 3).map((booking, bookingIndex) => {
                   const isPickup = isPickupDate(day.date, booking);
                   const isDrop = isDropDate(day.date, booking);
                   const colorClass = getPickupDropColor(booking, isPickup, isDrop);
@@ -231,30 +237,33 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
                   return (
                     <div
                       key={bookingIndex}
-                      className={`text-xs px-1 py-0.5 rounded flex items-center justify-between border ${colorClass} opacity-80`}
+                      className={`text-[10px] sm:text-xs px-0.5 sm:px-1 py-0.5 rounded flex items-center justify-between border ${colorClass} opacity-80`}
                       title={`${booking.carName} (${booking.carType}, ${booking.carSeats} seats) - ${booking.customerName}\nPickup: ${formatDateTime(booking.pickupDate)}\nDrop: ${formatDateTime(booking.dropDate)}`}
                     >
                       <div className="flex items-center min-w-0 flex-1">
-                        <Car className="w-3 h-3 mr-1 flex-shrink-0" />
-                        <span className="truncate">{booking.carName}</span>
+                        <Car className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 flex-shrink-0" />
+                        <span className="truncate text-[9px] sm:text-xs">
+                          <span className="sm:hidden">{booking.carName.slice(0, 4)}</span>
+                          <span className="hidden sm:inline">{booking.carName}</span>
+                        </span>
                       </div>
-                      <div className="flex items-center ml-1 flex-shrink-0">
+                      <div className="flex items-center ml-0.5 sm:ml-1 flex-shrink-0">
                         {isPickup && isDrop && (
-                          <span className="text-xs font-bold">P→D</span>
+                          <span className="text-[9px] sm:text-xs font-bold">P→D</span>
                         )}
                         {isPickup && !isDrop && (
-                          <span className="text-xs font-bold">P</span>
+                          <span className="text-[9px] sm:text-xs font-bold">P</span>
                         )}
                         {isDrop && !isPickup && (
-                          <span className="text-xs font-bold">D</span>
+                          <span className="text-[9px] sm:text-xs font-bold">D</span>
                         )}
                       </div>
                     </div>
                   );
                 })}
-                {day.bookings.length > 3 && (
-                  <div className="text-xs text-gray-500 text-center opacity-75">
-                    +{day.bookings.length - 3} more
+                {day.bookings.length > (window.innerWidth < 640 ? 2 : 3) && (
+                  <div className="text-[9px] sm:text-xs text-gray-500 text-center opacity-75">
+                    +{day.bookings.length - (window.innerWidth < 640 ? 2 : 3)} more
                   </div>
                 )}
               </div>
@@ -263,26 +272,28 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
         ))}
       </div>
 
-      <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600">
+      {/* Responsive legend */}
+      <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-green-100 border border-green-200 rounded mr-2"></div>
+          <div className="w-3 h-3 bg-green-100 border border-green-200 rounded mr-2 flex-shrink-0"></div>
           <span>Electric Vehicle</span>
         </div>
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-blue-100 border border-blue-200 rounded mr-2"></div>
+          <div className="w-3 h-3 bg-blue-100 border border-blue-200 rounded mr-2 flex-shrink-0"></div>
           <span>5-Seater Car</span>
         </div>
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-red-100 border border-red-200 rounded mr-2"></div>
+          <div className="w-3 h-3 bg-red-100 border border-red-200 rounded mr-2 flex-shrink-0"></div>
           <span>7-Seater Car</span>
         </div>
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-purple-100 border border-purple-200 rounded mr-2"></div>
+          <div className="w-3 h-3 bg-purple-100 border border-purple-200 rounded mr-2 flex-shrink-0"></div>
           <span>Same Day P→D</span>
         </div>
       </div>
 
-      <div className="mt-4 grid grid-cols-2 md:grid-cols-3 gap-4 text-xs text-gray-500">
+      {/* Responsive pickup/drop legend */}
+      <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500">
         <div className="flex items-center">
           <span className="font-bold mr-1">P</span>
           <span>= Pickup Day</span>
