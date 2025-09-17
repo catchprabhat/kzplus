@@ -755,9 +755,9 @@ function App() {
             <div className="flex justify-between items-center py-2">
               <div className="flex items-center cursor-pointer" onClick={() => handleTabChange('home')}>
                 <img 
-                  src="/images/logo/iconn.png" 
+                  src="/images/logo/iconnn.png" 
                   alt="A Plus Auto Care" 
-                  className="w-20 h-20 mr-3" 
+                  className="w-20 h-20 mr-5" 
                 />
                 <h1 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">A plus auto care</h1>
               </div>
