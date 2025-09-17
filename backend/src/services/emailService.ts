@@ -387,8 +387,8 @@ This is an automated security message.
             
             <div class="contact-info">
               <h4 style="margin-top: 0; color: #1e40af;">📞 Need Help?</h4>
-              <p style="margin: 5px 0;">📧 Email: support@aplusautocare.com</p>
-              <p style="margin: 5px 0;">📱 Phone: +91-XXXXXXXXXX</p>
+              <p style="margin: 5px 0;">📧 Email: jixdriveblr@gmail.com</p>
+              <p style="margin: 5px 0;">📱 Phone: +91-7735537655</p>
               <p style="margin: 5px 0; font-size: 14px; color: #6b7280;">Our team is here to assist you 24/7</p>
             </div>
           </div>
