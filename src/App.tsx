@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, DollarSign } from 'lucide-react';
+import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, IndianRupee } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -1007,7 +1007,7 @@ function App() {
               onClick={() => handleServiceNavigation('sale-purchase')}
               className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
             >
-              <DollarSign className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
+              <IndianRupee className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
               <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Sale & Purchase</span>
             </button>
             <button
@@ -1066,7 +1066,7 @@ function App() {
                       onClick={() => handleServiceNavigation('sale-purchase')}
                       className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-4 xs:px-5 sm:px-6 md:px-8 py-2.5 xs:py-3 sm:py-3.5 md:py-4 rounded-lg sm:rounded-xl font-medium sm:font-semibold text-sm xs:text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center justify-center"
                     >
-                      <DollarSign className="w-4 xs:w-5 sm:w-6 h-4 xs:h-5 sm:h-6 mr-1.5 sm:mr-2" />
+                      <IndianRupee className="w-4 xs:w-5 sm:w-6 h-4 xs:h-5 sm:h-6 mr-1.5 sm:mr-2" />
                       <span className="hidden xs:inline">Car Sale & Purchase</span>
                       <span className="xs:hidden">Car Sale & Purchase</span>
                       <ArrowRight className="w-3.5 xs:w-4 sm:w-5 h-3.5 xs:h-4 sm:h-5 ml-1.5 sm:ml-2" />
