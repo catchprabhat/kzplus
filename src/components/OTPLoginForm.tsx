@@ -235,19 +235,19 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-dark-800 rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
               {step === 'otp' ? (
-                <Shield className="w-8 h-8 text-blue-600" />
+                <Shield className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               ) : (
-                <User className="w-8 h-8 text-blue-600" />
+                <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
               )}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               {step === 'otp' 
                 ? 'Verify Your Email' 
                 : step === 'register'
@@ -257,7 +257,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
                 : 'Create Account'
               }
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               {step === 'otp' 
                 ? `Enter the 6-digit code sent to ${formData.email}`
                 : step === 'register'
@@ -271,9 +271,9 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
 
           {/* Demo Notice */}
           {step === 'email' && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h4 className="font-semibold text-blue-900 mb-2">🔐 Secure Email OTP Login</h4>
-              <div className="text-sm text-blue-800 space-y-1">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">🔐 Secure Email OTP Login</h4>
+              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                 <div>• Enter your email address</div>
                 <div>• You'll receive a 6-digit verification code via email</div>
                 <div>• Code expires in 10 minutes</div>
@@ -284,13 +284,13 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
 
           {/* OTP Status */}
           {step === 'otp' && otpExpiresAt && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <Clock className="w-5 h-5 text-green-600 mr-2" />
-                  <span className="text-green-800 font-medium">Code expires in:</span>
+                  <Clock className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
+                  <span className="text-green-800 dark:text-green-300 font-medium">Code expires in:</span>
                 </div>
-                <span className="text-green-900 font-bold text-lg">
+                <span className="text-green-900 dark:text-green-200 font-bold text-lg">
                   {formatTime(countdown)}
                 </span>
               </div>
@@ -303,24 +303,24 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             {step === 'email' && (
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Email Address
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Mail className="h-5 w-5 text-gray-400" />
+                      <Mail className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                     </div>
                     <input
                       id="email"
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.email ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'}`}
                       placeholder="your.email@example.com"
                       disabled={authLoading || otpLoading}
                     />
                   </div>
-                  {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+                  {errors.email && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>}
                 </div>
 
                 <button
@@ -344,7 +344,7 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             {step === 'otp' && (
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Verification Code
                   </label>
                   <input
@@ -352,16 +352,16 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
                     type="text"
                     value={formData.otp}
                     onChange={(e) => handleInputChange('otp', e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center text-2xl font-mono tracking-widest ${errors.otp ? 'border-red-300' : 'border-gray-300'}`}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-center text-2xl font-mono tracking-widest bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${errors.otp ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'}`}
                     placeholder="000000"
                     maxLength={6}
                     disabled={authLoading}
                   />
-                  {errors.otp && <p className="text-red-500 text-sm mt-1">{errors.otp}</p>}
+                  {errors.otp && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.otp}</p>}
                   
                   {/* Resend OTP */}
                   <div className="mt-4 text-center">
-                    <p className="text-sm text-gray-600 mb-2">Didn't receive the code?</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Didn't receive the code?</p>
                     <button
                       type="button"
                       onClick={handleResendOTP}
@@ -401,28 +401,28 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
             {step === 'register' && (
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Full Name
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <User className="h-5 w-5 text-gray-400" />
+                      <User className="h-5 w-5 text-gray-400 dark:text-gray-500" />
                     </div>
                     <input
                       id="name"
                       type="text"
                       value={formData.name}
                       onChange={(e) => handleInputChange('name', e.target.value)}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors.name ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'}`}
                       placeholder="Your full name"
                       disabled={authLoading}
                     />
                   </div>
-                  {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                  {errors.name && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>}
                 </div>
 
                 {errors.general && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg">
                     {errors.general}
                   </div>
                 )}
@@ -447,12 +447,12 @@ export const OTPLoginForm: React.FC<OTPLoginFormProps> = ({ onLogin, loading = f
 
           {/* Footer */}
           <div className="mt-8 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 dark:text-gray-400">
               {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button
                 type="button"
                 onClick={toggleMode}
-                className="ml-1 text-blue-600 hover:text-blue-700 font-medium"
+                className="ml-1 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
                 {isLogin ? "Sign Up" : "Sign In"}
               </button>

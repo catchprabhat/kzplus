@@ -101,18 +101,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <div className="bg-white dark:bg-dark-800 rounded-2xl shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <User className="w-8 h-8 text-blue-600" />
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <User className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
               {isLogin ? 'Welcome Back' : 'Create Account'}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-300">
               {isLogin 
                 ? 'Sign in to access your bookings and manage your account' 
                 : 'Join DriveEasy to start booking cars and services'
@@ -122,9 +122,9 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
 
           {/* Demo Credentials */}
           {isLogin && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-              <h4 className="font-semibold text-blue-900 mb-2">Demo Credentials</h4>
-              <div className="text-sm text-blue-800 space-y-1">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-6">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-300 mb-2">Demo Credentials</h4>
+              <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                 <div><strong>Email:</strong> demo@example.com</div>
                 <div><strong>Password:</strong> demo123</div>
               </div>
@@ -133,8 +133,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
 
           {/* Error Message */}
           {errors.general && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <p className="text-red-800 text-sm">{errors.general}</p>
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+              <p className="text-red-800 dark:text-red-300 text-sm">{errors.general}</p>
             </div>
           )}
 
@@ -142,7 +142,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <User className="w-4 h-4 inline mr-1" />
                   Full Name
                 </label>
@@ -150,18 +150,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${
+                    errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
                   placeholder="Enter your full name"
                   disabled={authLoading}
                 />
-                {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+                {errors.name && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Mail className="w-4 h-4 inline mr-1" />
                 Email Address
               </label>
@@ -169,36 +169,36 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                  errors.email ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${
+                  errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                 }`}
                 placeholder="Enter your email"
                 disabled={authLoading}
               />
-              {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+              {errors.email && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>}
             </div>
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Phone Number
                 </label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => handleInputChange('phone', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.phone ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${
+                    errors.phone ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
                   placeholder="Enter your phone number"
                   disabled={authLoading}
                 />
-                {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
+                {errors.phone && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.phone}</p>}
               </div>
             )}
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 <Lock className="w-4 h-4 inline mr-1" />
                 Password
               </label>
@@ -207,8 +207,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12 ${
-                    errors.password ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-12 bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${
+                    errors.password ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
                   placeholder="Enter your password"
                   disabled={authLoading}
@@ -216,18 +216,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                   disabled={authLoading}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
               </div>
-              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+              {errors.password && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.password}</p>}
             </div>
 
             {!isLogin && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <Lock className="w-4 h-4 inline mr-1" />
                   Confirm Password
                 </label>
@@ -235,13 +235,13 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                    errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-dark-700 text-gray-900 dark:text-white ${
+                    errors.confirmPassword ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
                   placeholder="Confirm your password"
                   disabled={authLoading}
                 />
-                {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
+                {errors.confirmPassword && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.confirmPassword}</p>}
               </div>
             )}
 
@@ -263,7 +263,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
 
           {/* Toggle Form */}
           <div className="mt-6 text-center">
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               {isLogin ? "Don't have an account?" : "Already have an account?"}
               <button
                 onClick={() => {
@@ -271,7 +271,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
                   setFormData({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
                   setErrors({});
                 }}
-                className="ml-2 text-blue-600 hover:text-blue-700 font-semibold"
+                className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold"
                 disabled={authLoading}
               >
                 {isLogin ? 'Sign Up' : 'Sign In'}
@@ -284,7 +284,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
             <div className="mt-4 text-center">
               <button
                 onClick={() => alert('Password reset functionality would be implemented here')}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
                 disabled={authLoading}
               >
                 Forgot your password?
@@ -295,23 +295,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin, loading = false }
 
         {/* Features */}
         <div className="mt-8 grid grid-cols-3 gap-4 text-center">
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <User className="w-4 h-4 text-blue-600" />
+          <div className="bg-white dark:bg-dark-800 rounded-lg p-4 shadow-sm">
+            <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+              <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             </div>
-            <p className="text-xs text-gray-600">Secure Account</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Secure Account</p>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Lock className="w-4 h-4 text-green-600" />
+          <div className="bg-white dark:bg-dark-800 rounded-lg p-4 shadow-sm">
+            <div className="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Lock className="w-4 h-4 text-green-600 dark:text-green-400" />
             </div>
-            <p className="text-xs text-gray-600">Data Protection</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Data Protection</p>
           </div>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
-              <Mail className="w-4 h-4 text-purple-600" />
+          <div className="bg-white dark:bg-dark-800 rounded-lg p-4 shadow-sm">
+            <div className="w-8 h-8 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-2">
+              <Mail className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             </div>
-            <p className="text-xs text-gray-600">Email Notifications</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">Email Notifications</p>
           </div>
         </div>
       </div>

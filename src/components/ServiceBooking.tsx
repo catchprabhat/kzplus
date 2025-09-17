@@ -505,7 +505,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   return (
     <motion.div 
-      className="min-h-screen bg-gray-100 space-y-6 sm:space-y-8 relative py-4 sm:py-6 px-3 sm:px-4 lg:px-8 pb-20 md:pb-8"
+      className="min-h-screen bg-gray-100 dark:bg-dark-900 space-y-6 sm:space-y-8 relative py-4 sm:py-6 px-3 sm:px-4 lg:px-8 pb-20 md:pb-8"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -740,7 +740,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           </motion.button>
         </motion.div>
         <motion.h2 
-          className="text-4xl font-bold text-gray-900 mb-4"
+          className="text-4xl font-bold text-gray-400 mb-4"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
@@ -748,7 +748,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           {t('title')}
         </motion.h2>
         <motion.p 
-          className="text-xl text-gray-600 max-w-2xl mx-auto mb-8"
+          className="text-xl text-gray-400 max-w-2xl mx-auto mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}
@@ -757,7 +757,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         </motion.p>
 
         <motion.div 
-          className="bg-white rounded-xl shadow-lg p-6 max-w-md mx-auto"
+          className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-md mx-auto"
           variants={cardVariants}
           custom={0}
         >
@@ -971,7 +971,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       <div className="grid lg:grid-cols-2 gap-8">
         <motion.div 
           id="service-selection" 
-          className={`bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:ml-auto lg:max-w-xl ${isRepeatServiceMode ? 'opacity-50 pointer-events-none blur-sm' : ''}`}
+          className={`bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6 lg:ml-auto lg:max-w-xl ${isRepeatServiceMode ? 'opacity-50 pointer-events-none blur-sm' : ''}`}
           variants={cardVariants}
           custom={1}
         >
@@ -988,7 +988,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               <select
                 value={vehicleCategory}
                 onChange={(e) => setVehicleCategory(e.target.value as keyof typeof servicesByCategory)}
-                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:shadow-md focus:shadow-lg appearance-none"
+                className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 text-gray-900 dark:text-white hover:shadow-md focus:shadow-lg appearance-none"
               >
                 {Object.keys(servicesByCategory).map((category) => (
                   <option key={category} value={category}>
@@ -1143,19 +1143,19 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
         <motion.div 
           id="booking-form" 
-          className="bg-white rounded-xl shadow-lg p-4 sm:p-6 lg:ml-auto lg:max-w-xl"
+          className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6 lg:ml-auto lg:max-w-xl"
           variants={cardVariants}
           custom={2}
         >
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-2 text-blue-600" />
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+            <Calendar className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-2 text-blue-600 dark:text-blue-400" />
             {t('schedule_service')}
           </h3>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1 sm:mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 sm:mb-2">
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('service_date')}
                 </label>
@@ -1164,21 +1164,21 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
                   min={today}
-                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                  className="w-full px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   required
                   whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('preferred_time')}
                 </label>
                 <motion.select
                   value={scheduledTime}
                   onChange={(e) => setScheduledTime(e.target.value)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:shadow-md focus:shadow-lg"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 >
                   {Array.from({ length: 26 }, (_, i) => {
@@ -1206,7 +1206,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <User className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('customer_name')}
                 </label>
@@ -1214,14 +1214,14 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   type="text"
                   value={customerData.name}
                   onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   required
                   whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <Phone className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('phone_number_form')}
                 </label>
@@ -1229,14 +1229,14 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   type="tel"
                   value={customerData.phone}
                   onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   required
                   whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   <Mail className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-1" />
                   {t('email')}
                 </label>
@@ -1244,19 +1244,19 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   type="email"
                   value={customerData.email}
                   onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                   whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">{t('additional_notes')}</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('additional_notes')}</label>
               <motion.textarea
                 value={customerData.notes}
                 onChange={(e) => setCustomerData({ ...customerData, notes: e.target.value })}
                 rows={4}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                 placeholder={t('notes_placeholder')}
                 whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
               />

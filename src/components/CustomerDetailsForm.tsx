@@ -129,21 +129,21 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <motion.div 
-        className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full relative overflow-hidden"
+        className="bg-white dark:bg-dark-800 rounded-2xl shadow-2xl max-w-4xl w-full relative overflow-hidden"
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, ease: 'easeOut' }}
       >
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-6">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 text-white p-6">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-2xl font-bold">Customer Registration</h2>
-              <p className="text-blue-100">Complete your profile to book car services</p>
+              <p className="text-blue-100 dark:text-blue-200">Complete your profile to book car services</p>
             </div>
             <button
               onClick={onCancel}
-              className="p-2 hover:bg-blue-500 rounded-full transition-all duration-200 transform hover:scale-110"
+              className="p-2 hover:bg-blue-500 dark:hover:bg-blue-600 rounded-full transition-all duration-200 transform hover:scale-110"
               disabled={loading}
             >
               <X className="w-6 h-6" />
@@ -168,7 +168,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
 
         {/* Content */}
         <motion.div 
-          className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]"
+          className="p-6 overflow-y-auto max-h-[calc(100vh-200px)] dark:bg-dark-800"
           variants={formVariants}
           initial="hidden"
           animate="visible"
@@ -182,24 +182,24 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ delay: 0.2, type: 'spring', stiffness: 120 }}
                 >
-                  <User className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <User className="w-8 h-8 text-blue-600 dark:text-blue-400 mx-auto mb-2" />
                 </motion.div>
-                <h3 className="text-lg font-semibold text-gray-900">Customer and Vehicle Information</h3>
-                <p className="text-sm text-gray-600">Tell us about yourself and your vehicle</p>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Customer and Vehicle Information</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-300">Tell us about yourself and your vehicle</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Personal Information */}
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Full Name *
                   </label>
                   <motion.input
                     type="text"
                     value={formData.name}
                     onChange={(e) => handleInputChange('name', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      errors.name ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-dark-700 dark:text-white ${
+                      errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="Enter your full name"
                     disabled={loading}
@@ -208,7 +208,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   <AnimatePresence>
                     {errors.name && (
                       <motion.p
-                        className="text-red-500 text-sm mt-1"
+                        className="text-red-500 dark:text-red-400 text-sm mt-1"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -220,15 +220,15 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Email Address *
                   </label>
                   <motion.input
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      errors.email ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-dark-700 dark:text-white ${
+                      errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="your.email@example.com"
                     disabled={loading}
@@ -237,7 +237,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   <AnimatePresence>
                     {errors.email && (
                       <motion.p
-                        className="text-red-500 text-sm mt-1"
+                        className="text-red-500 dark:text-red-400 text-sm mt-1"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -249,15 +249,15 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Phone Number *
                   </label>
                   <motion.input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => handleInputChange('phone', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      errors.phone ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-dark-700 dark:text-white ${
+                      errors.phone ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="+91 Enter 10 digit number"
                     disabled={loading}
@@ -266,7 +266,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   <AnimatePresence>
                     {errors.phone && (
                       <motion.p
-                        className="text-red-500 text-sm mt-1"
+                        className="text-red-500 dark:text-red-400 text-sm mt-1"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -278,14 +278,14 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Alternate Phone
                   </label>
                   <motion.input
                     type="tel"
                     value={formData.alternatePhone}
                     onChange={(e) => handleInputChange('alternatePhone', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
                     placeholder="+91 Enter 10 digit number"
                     disabled={loading}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
@@ -293,15 +293,15 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Address *
                   </label>
                   <motion.textarea
                     value={formData.address}
                     onChange={(e) => handleInputChange('address', e.target.value)}
                     rows={3}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      errors.address ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-dark-700 dark:text-white ${
+                      errors.address ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="Enter your complete address"
                     disabled={loading}
@@ -310,7 +310,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   <AnimatePresence>
                     {errors.address && (
                       <motion.p
-                        className="text-red-500 text-sm mt-1"
+                        className="text-red-500 dark:text-red-400 text-sm mt-1"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -322,41 +322,41 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     City *
                   </label>
                   <input
                     type="text"
                     value={formData.city}
                     readOnly
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-dark-600 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-all duration-200"
                     disabled
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     State *
                   </label>
                   <input
                     type="text"
                     value={formData.state}
                     readOnly
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-dark-600 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-all duration-200"
                     disabled
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Pincode *
                   </label>
                   <motion.input
                     type="text"
                     value={formData.pincode}
                     onChange={(e) => handleInputChange('pincode', e.target.value)}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      errors.pincode ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-dark-700 dark:text-white ${
+                      errors.pincode ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="123456"
                     maxLength={6}
@@ -366,7 +366,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   <AnimatePresence>
                     {errors.pincode && (
                       <motion.p
-                        className="text-red-500 text-sm mt-1"
+                        className="text-red-500 dark:text-red-400 text-sm mt-1"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -378,15 +378,15 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Vehicle Number *
                   </label>
                   <motion.input
                     type="text"
                     value={formData.vehicleNumber}
                     onChange={(e) => handleInputChange('vehicleNumber', e.target.value.toUpperCase())}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                      errors.vehicleNumber ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-dark-700 dark:text-white ${
+                      errors.vehicleNumber ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="KA01AB1234"
                     disabled={loading}
@@ -395,7 +395,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   <AnimatePresence>
                     {errors.vehicleNumber && (
                       <motion.p
-                        className="text-red-500 text-sm mt-1"
+                        className="text-red-500 dark:text-red-400 text-sm mt-1"
                         initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
@@ -407,13 +407,13 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Vehicle Type *
                   </label>
                   <motion.select
                     value={formData.vehicleType}
                     onChange={(e) => handleInputChange('vehicleType', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 dark:text-white hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
                     disabled={loading}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   >
@@ -425,6 +425,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                         initial="hidden"
                         animate="visible"
                         custom={index}
+                        className="dark:bg-dark-700 dark:text-white"
                       >
                         {type}
                       </motion.option>
@@ -437,19 +438,19 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
         </motion.div>
 
         {/* Footer */}
-        <div className="border-t bg-gray-50 p-1 pb-2 min-h-[60px] sticky bottom-0 z-10">
+        <div className="border-t border-gray-200 dark:border-dark-600 bg-gray-50 dark:bg-dark-700 p-1 pb-2 min-h-[60px] sticky bottom-0 z-10">
           <div className="flex justify-end space-x-4">
             <motion.button
               type="button"
               onClick={onCancel}
               disabled={loading}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg transition-all duration-200 hover:bg-gray-50 relative overflow-hidden"
+              className="px-6 py-3 border border-gray-300 dark:border-dark-600 text-gray-700 dark:text-gray-300 rounded-lg transition-all duration-200 hover:bg-gray-50 dark:hover:bg-dark-600 relative overflow-hidden"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <span className="relative z-10">Cancel</span>
               <motion.span
-                className="absolute inset-0 bg-gray-200 opacity-0"
+                className="absolute inset-0 bg-gray-200 dark:bg-dark-500 opacity-0"
                 whileTap={{ opacity: 0.3, scale: 2 }}
                 transition={{ duration: 0.2 }}
               />
@@ -458,7 +459,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
               type="submit"
               onClick={handleSubmit}
               disabled={loading}
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-all duration-200 flex items-center relative overflow-hidden"
+              className="px-6 py-3 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white rounded-lg transition-all duration-200 flex items-center relative overflow-hidden"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -473,7 +474,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 )}
               </span>
               <motion.span
-                className="absolute inset-0 bg-green-500 opacity-0"
+                className="absolute inset-0 bg-green-500 dark:bg-green-600 opacity-0"
                 whileTap={{ opacity: 0.3, scale: 2 }}
                 transition={{ duration: 0.2 }}
               />

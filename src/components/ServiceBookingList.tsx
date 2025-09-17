@@ -91,7 +91,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8">
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8">
         <LoadingSpinner size="lg" text="Loading service bookings..." />
       </div>
     );
@@ -99,32 +99,32 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 
   if (bookings.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-        <Car className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-gray-600 mb-2">No Service Bookings Yet</h3>
-        <p className="text-gray-500">Your car service bookings will appear here once you schedule a service.</p>
-        <p className="text-sm text-gray-400 mt-2">Debug: {bookings.length} bookings found</p>
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
+        <Car className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">No Service Bookings Yet</h3>
+        <p className="text-gray-500 dark:text-gray-400">Your car service bookings will appear here once you schedule a service.</p>
+        <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Debug: {bookings.length} bookings found</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-        <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+        <Calendar className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
         Service Bookings
       </h3>
       
       <div className="space-y-4">
         {bookings.map((booking) => (
-          <div key={booking.id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
+          <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-6 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
               <div>
-                <h4 className="font-semibold text-gray-900 flex items-center">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center">
                   <Car className="w-4 h-4 mr-2" />
                   {booking.vehicleName} ({booking.vehicleNumber})
                 </h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {formatDate(booking.scheduledDate)} at {formatTime(booking.scheduledTime)}
                 </p>
               </div>
@@ -202,7 +202,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
             <div className="grid md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <h5 className="font-medium text-gray-900">Customer Details</h5>
-                <div className="space-y-1 text-sm text-gray-600">
+                <div className="space-y-1 text-sm text-gray-400">
                   <div className="flex items-center">
                     <User className="w-4 h-4 mr-2" />
                     {booking.customerName}
@@ -220,7 +220,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
               
               <div className="space-y-2">
                 <h5 className="font-medium text-gray-900">Services & Pricing</h5>
-                <div className="space-y-1 text-sm text-gray-600">
+                <div className="space-y-1 text-sm text-gray-400">
                   {booking.services.map((service, index) => (
                     <div key={index} className="flex justify-between">
                       <span>{service.name}</span>

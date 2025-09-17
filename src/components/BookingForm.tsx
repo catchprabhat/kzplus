@@ -226,8 +226,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
       {selectedCar && pickupDate && dropDate && (
         <div className="mb-6 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg">
-          <h4 className="font-semibold text-gray-900 dark:text-black mb-2">Booking Summary</h4>
-          <div className="space-y-2 text-sm text-black-700 dark:text-black-300">
+          <h4 className="font-semibold text-gray-900 dark:text-white mb-2">Booking Summary</h4>
+          <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
             <div className="flex justify-between">
               <span>Car:</span>
               <span className="font-medium">{selectedCar.name}</span>
@@ -255,7 +255,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             </div>
             {/* Pricing breakdown */}
             {pricingBreakdown.days > 0 && pricingBreakdown.hours > 0 && (
-              <div className="text-xs text-black-500 dark:text-black-400 space-y-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                 <div className="flex justify-between">
                   <span>{pricingBreakdown.days} day{pricingBreakdown.days !== 1 ? 's' : ''}:</span>
                   <span>₹{pricingBreakdown.days * selectedCar.pricePerDay}</span>
@@ -267,27 +267,13 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               </div>
             )}
             
-            {/* Original Total */}
-            <div className="flex justify-between border-t dark:border-dark-600 pt-2">
-              <span>Subtotal:</span>
-              <span>₹{calculateTotalPrice()}</span>
-            </div>
-            
-            {/* Discount */}
-            {couponDiscount > 0 && (
-              <div className="flex justify-between text-green-600">
-                <span>Discount:</span>
-                <span>-₹{couponDiscount}</span>
-              </div>
-            )}
-            
             {/* Final Total */}
             <div className="flex justify-between border-t dark:border-dark-600 pt-2 font-bold text-blue-900 dark:text-blue-300">
               <span>Total:</span>
               <span>₹{getFinalPrice()}</span>
             </div>
           </div>
-          <div className="mt-3 text-xs text-black-500 dark:text-black-400">
+          <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
             <div>Pickup: {new Date(pickupDate).toLocaleDateString('en-US', { 
               weekday: 'short', 
               month: 'short', 
@@ -375,7 +361,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         
         {/* Add Total Amount to be Paid section */}
         {selectedCar && pickupDate && dropDate && (
-          <div className="mt-4 p-4 bg-white-50 dark:bg-white-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+          // Fix line 364 - Total amount section background
+          <div className="mt-4 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg border border-blue-200 dark:border-blue-800">
             <div className="flex justify-between items-center">
               <span className="text-lg font-semibold text-black-900 dark:text-black-100">
                 Total amount to be paid:

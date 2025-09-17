@@ -120,7 +120,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
         <h1 className="text-4xl font-bold text-gray-900 dark:text-black mb-4">
           Looking for Best Car Rentals?
         </h1>
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-black-200 mb-2">
+        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-400 mb-2">
 
           Book Self-Drive Cars in <span className="text-blue-600">Bangalore</span>
         </h2>
@@ -130,7 +130,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
       <div className="max-w-2xl mx-auto bg-white dark:bg-dark-800 rounded-2xl shadow-xl p-6 mb-8">
         {/* Location */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
             Location
           </label>
           <input
@@ -144,7 +144,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
         {/* Date Selection */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-black-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
               Trip Starts
             </label>
             <button
@@ -159,7 +159,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
             </button>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-black-300 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
               Trip Ends
             </label>
             <button
@@ -184,7 +184,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               onChange={(e) => setDeliveryPickup(e.target.checked)}
               className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
-            <span className="text-gray-700 dark:text-black-300 font-medium">
+            <span className="text-gray-700 dark:text-gray-400 font-medium">
               Home Delivery
             </span>
           </label>

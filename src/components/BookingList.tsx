@@ -117,7 +117,7 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6 flex justify-center items-center h-64">
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 flex justify-center items-center h-64">
         <LoadingSpinner />
       </div>
     );
@@ -125,19 +125,19 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   if (filteredBookings.length === 0) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6 text-center">
-        <Calendar className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-600 mb-2">No Bookings Yet</h3>
-        <p className="text-gray-500">Your car bookings will appear here once you make a reservation.</p>
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 text-center">
+        <Calendar className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+        <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">No Bookings Yet</h3>
+        <p className="text-gray-500 dark:text-gray-400">Your car bookings will appear here once you make a reservation.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-gray-900 flex items-center">
-          <Calendar className="w-5 h-5 mr-2 text-blue-600" />
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+          <Calendar className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
           Recent Bookings
         </h3>
         <div className="relative">
@@ -146,22 +146,22 @@ export const BookingList: React.FC<BookingListProps> = ({
             value={phoneFilter}
             onChange={(e) => setPhoneFilter(e.target.value)}
             placeholder="Filter by phone number"
-            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-64"
+            className="px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-64"
           />
-          <Phone className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          <Phone className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
         </div>
       </div>
 
       <div className="space-y-4">
         {filteredBookings.map((booking) => (
-          <div key={booking.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+          <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-4 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h4 className="font-semibold text-gray-900 flex items-center">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center">
                   <Car className="w-4 h-4 mr-2" />
                   {booking.carName}
                 </h4>
-                <p className="text-sm text-gray-600">
+                <p className="text-sm text-gray-600 dark:text-gray-400">
                   {formatDate(booking.pickupDate)} - {formatDate(booking.dropDate)}
                 </p>
               </div>
@@ -231,7 +231,7 @@ export const BookingList: React.FC<BookingListProps> = ({
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">
+            <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-400">
               <div className="space-y-1">
                 <div className="flex items-center">
                   <User className="w-4 h-4 mr-2" />
@@ -249,7 +249,7 @@ export const BookingList: React.FC<BookingListProps> = ({
 
               <div className="space-y-1">
                 {/* Pickup and Drop Times */}
-                <div className="flex items-center text-sm text-gray-700">
+                <div className="flex items-center text-sm text-gray-400">
                   <Clock className="w-4 h-4 mr-2" />
                   {formatTime(booking.pickupDate)} - {formatTime(booking.dropDate)}
                 </div>

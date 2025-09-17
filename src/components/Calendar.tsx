@@ -105,13 +105,13 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   const getBookingColor = (booking: Booking): string => {
     // Color coding based on vehicle type and seats
     if (booking.carType === 'Electric') {
-      return 'bg-green-100 text-green-800 border-green-200';
+      return 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 border-green-200 dark:border-green-600';
     } else if (booking.carSeats === 7) {
-      return 'bg-red-100 text-red-800 border-red-200';
+      return 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 border-red-200 dark:border-red-600';
     } else if (booking.carSeats === 5) {
-      return 'bg-blue-100 text-blue-800 border-blue-200';
+      return 'bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-600';
     } else {
-      return 'bg-gray-100 text-gray-800 border-gray-200';
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600';
     }
   };
 
@@ -120,24 +120,24 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
     
     if (isPickup && isDrop) {
       // Same day pickup and drop - use purple
-      return 'bg-purple-100 text-purple-800 border-purple-200';
+      return 'bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 border-purple-200 dark:border-purple-600';
     } else if (isPickup) {
       // Pickup day - use darker shade
       if (booking.carType === 'Electric') {
-        return 'bg-green-200 text-green-900 border-green-300';
+        return 'bg-green-200 dark:bg-green-700 text-green-900 dark:text-green-100 border-green-300 dark:border-green-500';
       } else if (booking.carSeats === 7) {
-        return 'bg-red-200 text-red-900 border-red-300';
+        return 'bg-red-200 dark:bg-red-700 text-red-900 dark:text-red-100 border-red-300 dark:border-red-500';
       } else if (booking.carSeats === 5) {
-        return 'bg-blue-200 text-blue-900 border-blue-300';
+        return 'bg-blue-200 dark:bg-blue-700 text-blue-900 dark:text-blue-100 border-blue-300 dark:border-blue-500';
       }
     } else if (isDrop) {
       // Drop day - use lighter shade with different pattern
       if (booking.carType === 'Electric') {
-        return 'bg-green-50 text-green-700 border-green-300';
+        return 'bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-600';
       } else if (booking.carSeats === 7) {
-        return 'bg-red-50 text-red-700 border-red-300';
+        return 'bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-300 dark:border-red-600';
       } else if (booking.carSeats === 5) {
-        return 'bg-blue-50 text-blue-700 border-blue-300';
+        return 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-600';
       }
     }
     
@@ -157,38 +157,38 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   const days = getDaysInMonth(currentDate);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6">
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-3 sm:p-6">
       {/* Responsive header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
-        <h3 className="text-lg sm:text-xl font-bold text-black-900 flex items-center">
-          <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center">
+          <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600 dark:text-blue-400" />
           <span className="hidden sm:inline">Booking Calendar</span>
           <span className="sm:hidden">Calendar</span>
         </h3>
         <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-between sm:justify-start">
           <button
             onClick={() => navigateMonth('prev')}
-            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg transition-colors flex-shrink-0"
           >
-            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
           </button>
-          <span className="text-base sm:text-lg font-semibold text-gray-900 text-center flex-1 sm:min-w-[200px]">
+          <span className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white text-center flex-1 sm:min-w-[200px]">
             <span className="sm:hidden">{monthNames[currentDate.getMonth()].slice(0, 3)} {currentDate.getFullYear()}</span>
             <span className="hidden sm:inline">{monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}</span>
           </span>
           <button
             onClick={() => navigateMonth('next')}
-            className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+            className="p-1.5 sm:p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-lg transition-colors flex-shrink-0"
           >
-            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 dark:text-gray-300" />
           </button>
         </div>
       </div>
 
       {/* Days of week header - responsive */}
-      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
         {daysOfWeek.map(day => (
-          <div key={day} className="p-1 sm:p-3 text-center text-xs sm:text-sm font-semibold text-gray-600">
+          <div key={day} className="p-1 sm:p-3 text-center text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-400">
             <span className="sm:hidden">{day.slice(0, 1)}</span>
             <span className="hidden sm:inline">{day}</span>
           </div>
@@ -200,11 +200,11 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
         {days.map((day, index) => (
           <div
             key={index}
-            className={`min-h-[60px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border border-gray-100 relative ${
-              day.isCurrentMonth ? 'bg-white' : 'bg-gray-50'
+            className={`min-h-[60px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border border-gray-100 dark:border-dark-600 relative ${
+              day.isCurrentMonth ? 'bg-white dark:bg-dark-800' : 'bg-gray-50 dark:bg-dark-700'
             } ${
               day.date.toDateString() === new Date().toDateString()
-                ? 'bg-blue-50 border-blue-200'
+                ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
                 : ''
             } ${
               day.bookings.length > 0 ? 'backdrop-blur-sm bg-opacity-90' : ''
@@ -212,14 +212,14 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
           >
             {/* Add blur overlay for booked dates */}
             {day.bookings.length > 0 && (
-              <div className="absolute inset-0 bg-gray-200 bg-opacity-80 backdrop-blur-[3px] rounded pointer-events-none"></div>
+              <div className="absolute inset-0 bg-gray-200 dark:bg-dark-600 bg-opacity-80 backdrop-blur-[3px] rounded pointer-events-none"></div>
             )}
             
             <div className={`text-xs sm:text-sm mb-1 relative z-10 ${
-              day.isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+              day.isCurrentMonth ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'
             } ${
               day.date.toDateString() === new Date().toDateString()
-                ? 'font-bold text-blue-600'
+                ? 'font-bold text-blue-600 dark:text-blue-400'
                 : ''
             } ${
               day.bookings.length > 0 ? 'opacity-35' : ''
@@ -262,7 +262,7 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
                   );
                 })}
                 {day.bookings.length > (window.innerWidth < 640 ? 2 : 3) && (
-                  <div className="text-[9px] sm:text-xs text-gray-500 text-center opacity-75">
+                  <div className="text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 text-center opacity-75">
                     +{day.bookings.length - (window.innerWidth < 640 ? 2 : 3)} more
                   </div>
                 )}
@@ -273,27 +273,27 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
       </div>
 
       {/* Responsive legend */}
-      <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+      <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-green-100 border border-green-200 rounded mr-2 flex-shrink-0"></div>
+          <div className="w-3 h-3 bg-green-100 dark:bg-green-800 border border-green-200 dark:border-green-600 rounded mr-2 flex-shrink-0"></div>
           <span>Electric Vehicle</span>
         </div>
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-blue-100 border border-blue-200 rounded mr-2 flex-shrink-0"></div>
+          <div className="w-3 h-3 bg-blue-100 dark:bg-blue-800 border border-blue-200 dark:border-blue-600 rounded mr-2 flex-shrink-0"></div>
           <span>5-Seater Car</span>
         </div>
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-red-100 border border-red-200 rounded mr-2 flex-shrink-0"></div>
+          <div className="w-3 h-3 bg-red-100 dark:bg-red-800 border border-red-200 dark:border-red-600 rounded mr-2 flex-shrink-0"></div>
           <span>7-Seater Car</span>
         </div>
         <div className="flex items-center">
-          <div className="w-3 h-3 bg-purple-100 border border-purple-200 rounded mr-2 flex-shrink-0"></div>
+          <div className="w-3 h-3 bg-purple-100 dark:bg-purple-800 border border-purple-200 dark:border-purple-600 rounded mr-2 flex-shrink-0"></div>
           <span>Same Day P→D</span>
         </div>
       </div>
 
       {/* Responsive pickup/drop legend */}
-      <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500">
+      <div className="mt-3 sm:mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 text-[10px] sm:text-xs text-gray-500 dark:text-gray-400">
         <div className="flex items-center">
           <span className="font-bold mr-1">P</span>
           <span>= Pickup Day</span>
