@@ -177,9 +177,17 @@ export const useServiceBookings = () => {
   };
 
   useEffect(() => {
-    fetchServiceBookings();
-  }, [isAuthenticated]);
-
+    if (isAuthenticated) {
+      // Clear service bookings immediately when user changes to prevent showing stale data
+      setServiceBookings([]);
+      setLoading(true);
+      fetchServiceBookings();
+    } else {
+      // Clear service bookings when user logs out
+      setServiceBookings([]);
+      setLoading(false);
+    }
+  }, [isAuthenticated, user?.email]); // Add user?.email dependency to refetch when user changes
   return {
     serviceBookings,
     loading,

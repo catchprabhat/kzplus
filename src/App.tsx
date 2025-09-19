@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, IndianRupee } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -414,7 +414,7 @@ function App() {
   }
 
   // Show login form if not authenticated and trying to access protected routes
-  const protectedRoutes = ['bookings', 'calendar', 'service-bookings', 'settings', 'profile'];
+  const protectedRoutes = ['bookings', 'service-bookings', 'settings', 'profile'];
   const needsAuth = protectedRoutes.includes(activeTab);
 
   if (!isAuthenticated && needsAuth) {
@@ -696,7 +696,7 @@ function App() {
   const navigationItems = [
     { key: 'home', label: 'Home', icon: CarIcon, protected: false },
     { key: 'self-drive', label: 'Self-Drive', icon: CarIcon, protected: false },
-    { key: 'calendar', label: 'Car Availability', icon: Calendar, protected: true },
+    { key: 'calendar', label: 'Car Availability', icon: Calendar, protected: false },
     { key: 'bookings', label: 'My Trips', icon: Calendar, protected: true },
     { key: 'service-bookings', label: 'Scheduled Services', icon: Wrench, protected: true },
     { key: 'sale-purchase', label: 'Buy and Sell History', icon: CarIcon, protected: false }

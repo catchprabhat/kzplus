@@ -3,16 +3,15 @@ import { useState, useEffect } from 'react';
 export type Theme = 'light' | 'dark';
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState<Theme>('dark'); // Changed from 'light' to 'dark'
+  const [theme, setTheme] = useState<Theme>('dark'); // Already set to 'dark'
 
-  // Load theme from localStorage on mount
   useEffect(() => {
     const savedTheme = localStorage.getItem('driveEasyTheme') as Theme;
     if (savedTheme) {
       setTheme(savedTheme);
     } else {
       // Default to dark theme for first-time visitors
-      setTheme('dark'); // Changed from system preference check to always default to dark
+      setTheme('dark'); // Already defaults to dark
     }
   }, []);
 
