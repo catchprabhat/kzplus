@@ -156,6 +156,44 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
 
   const days = getDaysInMonth(currentDate);
 
+  // Add this function INSIDE the component, before the return statement
+  const getDateBackgroundColor = (dayBookings: Booking[]): string => {
+    if (dayBookings.length === 0) {
+      return ''; // No bookings, use default background
+    }
+  
+    // Temporary workaround: Map car names to seat counts
+    const getCarSeats = (carName: string): number => {
+      const carSeatsMap: { [key: string]: number } = {
+        'Innova Crysta': 7,
+        'Tata Safari 2023': 7,
+        'Duster': 5,
+        'Baleno': 5,
+        'Polo': 5,
+        'Glanza': 5
+      };
+      return carSeatsMap[carName] || 5; // Default to 5 seats if not found
+    };
+  
+    // Check what types of vehicles are booked on this date using car names
+    const has5Seater = dayBookings.some(booking => getCarSeats(booking.carName) === 5);
+    const has7Seater = dayBookings.some(booking => getCarSeats(booking.carName) === 7);
+  
+    console.log('Debug - has5Seater:', has5Seater, 'has7Seater:', has7Seater);
+  
+    // Priority: 7-seater > 5-seater (for cell background only)
+    if (has7Seater) {
+      console.log('Returning red background for 7-seater');
+      return 'bg-red-100 dark:bg-red-800'; // Red for 7-seater cars
+    } else if (has5Seater) {
+      console.log('Returning blue background for 5-seater');
+      return 'bg-blue-100 dark:bg-blue-800'; // Blue for 5-seater cars
+    }
+  
+    console.log('Returning fallback gray background');
+    return 'bg-gray-100 dark:bg-gray-700'; // Fallback for any edge cases
+  };
+
   return (
     <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-3 sm:p-6">
       {/* Responsive header */}
@@ -197,79 +235,76 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
 
       {/* Calendar grid - responsive */}
       <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
-        {days.map((day, index) => (
-          <div
-            key={index}
-            className={`min-h-[60px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border border-gray-100 dark:border-dark-600 relative ${
-              day.isCurrentMonth ? 'bg-white dark:bg-dark-800' : 'bg-gray-50 dark:bg-dark-700'
-            } ${
-              day.date.toDateString() === new Date().toDateString()
-                ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700'
-                : ''
-            } ${
-              day.bookings.length > 0 ? 'backdrop-blur-sm bg-opacity-90' : ''
-            }`}
-          >
-            {/* Add blur overlay for booked dates */}
-            {day.bookings.length > 0 && (
-              <div className="absolute inset-0 bg-gray-200 dark:bg-dark-600 bg-opacity-80 backdrop-blur-[3px] rounded pointer-events-none"></div>
-            )}
-            
-            <div className={`text-xs sm:text-sm mb-1 relative z-10 ${
-              day.isCurrentMonth ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'
-            } ${
-              day.date.toDateString() === new Date().toDateString()
-                ? 'font-bold text-blue-600 dark:text-blue-400'
-                : ''
-            } ${
-              day.bookings.length > 0 ? 'opacity-35' : ''
-            }`}>
-              {day.date.getDate()}
-            </div>
-            
-            {day.bookings.length > 0 && (
-              <div className="space-y-0.5 sm:space-y-1 relative z-10">
-                {day.bookings.slice(0, window.innerWidth < 640 ? 2 : 3).map((booking, bookingIndex) => {
-                  const isPickup = isPickupDate(day.date, booking);
-                  const isDrop = isDropDate(day.date, booking);
-                  const colorClass = getPickupDropColor(booking, isPickup, isDrop);
-                  
-                  return (
-                    <div
-                      key={bookingIndex}
-                      className={`text-[10px] sm:text-xs px-0.5 sm:px-1 py-0.5 rounded flex items-center justify-between border ${colorClass} opacity-80`}
-                      title={`${booking.carName} (${booking.carType}, ${booking.carSeats} seats) - ${booking.customerName}\nPickup: ${formatDateTime(booking.pickupDate)}\nDrop: ${formatDateTime(booking.dropDate)}`}
-                    >
-                      <div className="flex items-center min-w-0 flex-1">
-                        <Car className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 flex-shrink-0" />
-                        <span className="truncate text-[9px] sm:text-xs">
-                          <span className="sm:hidden">{booking.carName.slice(0, 4)}</span>
-                          <span className="hidden sm:inline">{booking.carName}</span>
-                        </span>
-                      </div>
-                      <div className="flex items-center ml-0.5 sm:ml-1 flex-shrink-0">
-                        {isPickup && isDrop && (
-                          <span className="text-[9px] sm:text-xs font-bold">P→D</span>
-                        )}
-                        {isPickup && !isDrop && (
-                          <span className="text-[9px] sm:text-xs font-bold">P</span>
-                        )}
-                        {isDrop && !isPickup && (
-                          <span className="text-[9px] sm:text-xs font-bold">D</span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-                {day.bookings.length > (window.innerWidth < 640 ? 2 : 3) && (
-                  <div className="text-[9px] sm:text-xs text-gray-500 dark:text-gray-400 text-center opacity-75">
-                    +{day.bookings.length - (window.innerWidth < 640 ? 2 : 3)} more
-                  </div>
-                )}
+        {days.map((day, index) => {
+          const dateBackgroundColor = getDateBackgroundColor(day.bookings);
+          
+          return (
+            <div
+              key={index}
+              className={`min-h-[60px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border border-gray-100 dark:border-dark-600 relative ${
+                day.isCurrentMonth 
+                  ? dateBackgroundColor || 'bg-white dark:bg-dark-800' 
+                  : 'bg-gray-50 dark:bg-dark-700'
+              } ${
+                day.date.toDateString() === new Date().toDateString()
+                  ? 'ring-2 ring-blue-500 dark:ring-blue-400'
+                  : ''
+              }`}
+            >
+              <div className={`text-xs sm:text-sm mb-1 relative z-10 ${
+                day.isCurrentMonth ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-500'
+              } ${
+                day.date.toDateString() === new Date().toDateString()
+                  ? 'font-bold text-blue-600 dark:text-blue-400'
+                  : ''
+              }`}>
+                {day.date.getDate()}
               </div>
-            )}
-          </div>
-        ))}
+              
+              {day.bookings.length > 0 && (
+                <div className="space-y-0.5 sm:space-y-1 relative z-10">
+                  {day.bookings.slice(0, window.innerWidth < 640 ? 2 : 3).map((booking, bookingIndex) => {
+                    const isPickup = isPickupDate(day.date, booking);
+                    const isDrop = isDropDate(day.date, booking);
+                    const colorClass = getPickupDropColor(booking, isPickup, isDrop);
+                    
+                    return (
+                      <div
+                        key={bookingIndex}
+                        className={`text-[10px] sm:text-xs px-0.5 sm:px-1 py-0.5 rounded flex items-center justify-between border ${colorClass}`}
+                        title={`${booking.carName} (${booking.carType}, ${booking.carSeats} seats) - ${booking.customerName}\nPickup: ${formatDateTime(booking.pickupDate)}\nDrop: ${formatDateTime(booking.dropDate)}`}
+                      >
+                        <div className="flex items-center min-w-0 flex-1">
+                          <Car className="w-2 h-2 sm:w-3 sm:h-3 mr-0.5 sm:mr-1 flex-shrink-0" />
+                          <span className="truncate text-[9px] sm:text-xs">
+                            <span className="sm:hidden">{booking.carName.slice(0, 4)}</span>
+                            <span className="hidden sm:inline">{booking.carName}</span>
+                          </span>
+                        </div>
+                        <div className="flex items-center ml-0.5 sm:ml-1 flex-shrink-0">
+                          {isPickup && isDrop && (
+                            <span className="text-[9px] sm:text-xs font-bold">P→D</span>
+                          )}
+                          {isPickup && !isDrop && (
+                            <span className="text-[9px] sm:text-xs font-bold">P</span>
+                          )}
+                          {isDrop && !isPickup && (
+                            <span className="text-[9px] sm:text-xs font-bold">D</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {day.bookings.length > (window.innerWidth < 640 ? 2 : 3) && (
+                    <div className="text-[9px] sm:text-xs text-gray-600 dark:text-gray-400 text-center font-medium">
+                      +{day.bookings.length - (window.innerWidth < 640 ? 2 : 3)} more
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {/* Responsive legend */}

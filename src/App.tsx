@@ -345,7 +345,8 @@ function App() {
   // Add new hook for calendar that shows ALL bookings to everyone
   const { 
     bookings: calendarBookings, 
-    loading: calendarLoading 
+    loading: calendarLoading,
+    refetch: refetchCalendarBookings
   } = useCalendarBookings();
 
   const {
@@ -613,6 +614,35 @@ function App() {
   setActiveTab(tab);
   setMobileMenuOpen(false); // Close mobile menu when changing tabs
   setShowServicesOverlay(false); // Close services overlay when changing tabs
+
+  // Refresh data based on the tab being switched to
+  switch (tab) {
+    case 'calendar':
+      // Refresh calendar bookings when switching to car availability
+      refetchCalendarBookings();
+      break;
+    case 'bookings':
+      // Refresh user bookings when switching to my bookings
+      if (isAuthenticated) {
+        fetchBookings();
+      }
+      break;
+    case 'service-bookings':
+      // Refresh service bookings when switching to service bookings
+      if (isAuthenticated) {
+        fetchServiceBookings();
+      }
+      break;
+    case 'self-drive':
+      // Refresh available cars data if needed
+      if (selfDriveBookingData.tripStartDate && selfDriveBookingData.tripEndDate) {
+        fetchAvailableCars(selfDriveBookingData.tripStartDate.toISOString(), selfDriveBookingData.tripEndDate.toISOString());
+      }
+      break;
+    default:
+      // For other tabs, no specific refresh needed
+      break;
+  }
 
   // Scroll to top of the page
   window.scrollTo(0, 0);
@@ -1077,7 +1107,7 @@ function App() {
               {/* Services Section */}
               <section className="py-6 xs:py-8 sm:py-12 md:py-16">
                 <div className="text-center mb-8 sm:mb-12 md:mb-16">
-                  <h2 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 dark:text-black mb-3 sm:mb-4">Our Premium Services</h2>
+                  <h2 className="text-2xl xs:text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4">Our Premium Services</h2>
                   <p className="text-base xs:text-lg sm:text-xl text-gray-500 dark:text-gray-500 max-w-2xl mx-auto px-3 sm:px-4">
                     Comprehensive automotive solutions designed to meet all your car-related needs
                   </p>
@@ -1098,7 +1128,7 @@ function App() {
                       </div>
                     </div>
                     <div className="p-6 sm:p-8">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-black mb-4">Car Services</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Car Services</h3>
                       <p className="text-gray-600 dark:text-gray-500 mb-6 text-sm sm:text-base">
                         Professional maintenance, detailing, and repair services for your vehicle. 
                         From basic wash to ceramic coating and mechanical repairs.
@@ -1141,7 +1171,7 @@ function App() {
                       </div>
                     </div>
                     <div className="p-6 sm:p-8">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-black mb-4">Self-Drive Car Rental</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Self-Drive Car Rental</h3>
                       <p className="text-gray-600 dark:text-gray-500 mb-6 text-sm sm:text-base">
                         Premium fleet of well-maintained vehicles for your self-drive adventures. 
                         From economy to luxury cars, find the perfect ride for any occasion.
@@ -1184,7 +1214,7 @@ function App() {
                       </div>
                     </div>
                     <div className="p-6 sm:p-8">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-black mb-4">Sale / Purchase</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Sale / Purchase</h3>
                       <p className="text-gray-600 dark:text-gray-500 mb-6 text-sm sm:text-base">
                         Seamless car buying and selling experience with verified listings, 
                         fair pricing, and complete documentation assistance.
@@ -1219,8 +1249,8 @@ function App() {
               {/* Features Section */}
               <section className="py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50 dark:from-dark-800 dark:to-dark-700 rounded-2xl sm:rounded-3xl transition-colors duration-300">
                 <div className="text-center mb-12 sm:mb-16 px-4">
-                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-black mb-4">Why Choose A plus auto care?</h2>
-                  <p className="text-lg sm:text-xl text-gray-800 dark:text-gray-900 max-w-2xl mx-auto">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">Why Choose A plus auto care?</h2>
+                  <p className="text-lg sm:text-xl text-gray-800 dark:text-gray-500 max-w-2xl mx-auto">
                     We're committed to providing exceptional automotive solutions with unmatched service quality
                   </p>
                 </div>
@@ -1230,7 +1260,7 @@ function App() {
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Shield className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">Trusted & Secure</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Trusted & Secure</h3>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Fully verified services with comprehensive insurance coverage</p>
                   </div>
 
@@ -1238,7 +1268,7 @@ function App() {
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Clock className="w-6 sm:w-8 h-6 sm:h-8 text-green-600 dark:text-green-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">24/7 Support</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">24/7 Support</h3>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Round-the-clock customer support and roadside assistance</p>
                   </div>
 
@@ -1246,7 +1276,7 @@ function App() {
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Star className="w-6 sm:w-8 h-6 sm:h-8 text-purple-600 dark:text-purple-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">Premium Quality</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Premium Quality</h3>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">High-quality vehicles and professional service standards</p>
                   </div>
 
@@ -1254,7 +1284,7 @@ function App() {
                     <div className="w-12 sm:w-16 h-12 sm:h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                       <Users className="w-6 sm:w-8 h-6 sm:h-8 text-yellow-600 dark:text-yellow-400" />
                     </div>
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-black mb-2">Customer First</h3>
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Customer First</h3>
                     <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Personalized service tailored to your specific needs</p>
                   </div>
                 </div>
@@ -1372,7 +1402,7 @@ function App() {
           {activeTab === 'calendar' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">Booking Calendar</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Car Availability</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-500">
                   View all car bookings in a monthly calendar format with color-coded vehicle types
                 </p>
@@ -1390,7 +1420,7 @@ function App() {
           {activeTab === 'bookings' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">My Bookings</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">My Bookings</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-black-300">
                   {isAuthenticated ? 'Manage and view your car reservations' : 'Please log in to view your bookings'}
                 </p>
@@ -1428,7 +1458,7 @@ function App() {
           {activeTab === 'service-bookings' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-Grey mb-4">Service Bookings</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Service Bookings</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
                   Manage and view all your car service appointments
                 </p>
@@ -1531,7 +1561,12 @@ function App() {
                   <li>+918050922920 - Tyre care and mechanic work</li>
                   <li>+918123540767 - Others</li>
                   <li>
-                    <a href="https://maps.app.goo.gl/auGNQh4kqViej7Hr5?g_st=aw" target="_blank" rel="noopener noreferrer">
+                    <a 
+                      href="https://maps.app.goo.gl/auGNQh4kqViej7Hr5?g_st=aw" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-gray-400 dark:text-gray-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors"
+                    >
                       Click here for Location
                     </a>
                   </li>

@@ -117,7 +117,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 p-4">
       {/* Header */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-black mb-4">
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
           Looking for Best Car Rentals?
         </h1>
         <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-400 mb-2">

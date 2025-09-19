@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 export type Theme = 'light' | 'dark';
 
 export const useTheme = () => {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark'); // Changed from 'light' to 'dark'
 
   // Load theme from localStorage on mount
   useEffect(() => {
@@ -11,9 +11,8 @@ export const useTheme = () => {
     if (savedTheme) {
       setTheme(savedTheme);
     } else {
-      // Check system preference
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(prefersDark ? 'dark' : 'light');
+      // Default to dark theme for first-time visitors
+      setTheme('dark'); // Changed from system preference check to always default to dark
     }
   }, []);
 

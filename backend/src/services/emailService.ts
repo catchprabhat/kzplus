@@ -454,7 +454,7 @@ Need help? Contact us at support@aplusautocare.com
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
         from: 'JIXDRIVE <support@kzplusautocare.in>',
-        to: process.env.ADMIN_EMAIL || 'umrsjd123@gmail.com',
+        to: process.env.ADMIN_EMAIL || 'catchprabhat@gmail.com',
         subject: adminSubject,
         html: adminHtml,
         text: adminText,
