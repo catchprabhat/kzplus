@@ -130,21 +130,21 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
       <div className="max-w-2xl mx-auto bg-white dark:bg-dark-800 rounded-2xl shadow-xl p-6 mb-8">
         {/* Location */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Location
           </label>
           <input
             type="text"
             value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black"
+            readOnly
+            className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-black cursor-not-allowed"
           />
         </div>
 
         {/* Date Selection */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Trip Starts
             </label>
             <button
@@ -159,7 +159,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
             </button>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-400 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               Trip Ends
             </label>
             <button
@@ -184,7 +184,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               onChange={(e) => setDeliveryPickup(e.target.checked)}
               className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
             />
-            <span className="text-gray-700 dark:text-gray-400 font-medium">
+            <span className="text-gray-700 dark:text-gray-300 font-medium">
               Home Delivery
             </span>
           </label>
