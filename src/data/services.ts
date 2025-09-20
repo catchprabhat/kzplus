@@ -1376,6 +1376,188 @@ export const servicesByCategory = {
       icon: 'shield',
       color: 'red'
     }
+  ],
+  'Scooty': [
+    {
+      id: 'scooty-body-wash',
+      name: 'Body Wash',
+      description: 'Thorough cleaning of the vehicle\'s exterior using car shampoo to remove dirt, dust, and road grime without damaging the paint.',
+      price: 150,
+      duration: '30 min',
+      category: 'Scooty',
+      icon: 'droplets',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-polish',
+      name: 'Diesel Wash',
+      description: 'Specialized cleaning process to remove diesel stains, oil residues, and soot from the vehicleﾕs body and engine bay.',
+      price: 200,
+      duration: '10 min',
+      category: 'Scooty',
+      icon: 'sparkles',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-engine-wash',
+      name: 'Chain Lube',
+      description: 'Lubrication of motorcycle or bicycle chains to reduce friction, prevent rust, and ensure smooth operation.',
+      price: 50,
+      duration: '5 min',
+      category: 'Scooty',
+      icon: 'wrench',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-headlight-restoration',
+      name: 'Hard Water Removal',
+      description: 'Treatment to remove hard water stains, mineral deposits, and spots from the vehicleﾕs paint, glass, and chrome surfaces.',
+      price: 750,
+      duration: '5 hours',
+      category: 'Scooty',
+      icon: 'search',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-wheel-cleaning',
+      name: 'Wax Polish',
+      description: 'Application of a protective wax layer to enhance shine, protect paint from UV rays, and repel dirt and water.',
+      price: 50,
+      duration: '15 min',
+      category: 'Scooty',
+      icon: 'circle',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-oil-change',
+      name: '3 Step Polish',
+      description: 'Multi-stage polishing process involving compounding, polishing, and finishing to restore paint clarity and remove imperfections.',
+      price: 1450,
+      duration: '3 hours',
+      category: 'Scooty',
+      icon: 'droplet',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-brake-service',
+      name: 'Ceramic',
+      description: 'Advanced ceramic coating that provides long-lasting protection, high gloss, and hydrophobic properties for vehicle surfaces.',
+      price: 4950,
+      duration: '6 hours',
+      category: 'Scooty',
+      icon: 'disc',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-battery-service',
+      name: 'Graphene',
+      description: 'Application of graphene-based coating for superior durability, heat resistance, and water repellency compared to traditional coatings.',
+      price: 6950,
+      duration: '1 day',
+      category: 'Scooty',
+      icon: 'battery',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-wheel-alignment',
+      name: 'PPF',
+      description: 'Transparent, self-healing paint protection film applied to vehicle surfaces to guard against scratches, chips, and UV damage.',
+      price: 11950,
+      duration: '1 day',
+      category: 'Scooty',
+      icon: 'circle',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-chain-lubrication',
+      name: 'Head Light Restoration',
+      description: 'Restoration process that removes yellowing, oxidation, and scratches from headlights to improve clarity and brightness.',
+      price: 450,
+      duration: '1 hour',
+      category: 'Scooty',
+      icon: 'link',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-fluid-top-up',
+      name: 'Mechanic Work',
+      description: 'Repair and maintenance services for engines, brakes, suspension, transmission, and other mechanical components to ensure safe and reliable vehicle operation.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'droplet',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-filter-replacement',
+      name: 'Tyre Change',
+      description: 'Replacement of worn or damaged tyres, including wheel balancing and alignment to ensure safety, stability, and even tyre wear.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'wind',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-spark-plug',
+      name: 'Rim Restoration',
+      description: 'Repair and refinishing of damaged or scratched rims to restore their original look, strength, and shine.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'zap',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-suspension-check',
+      name: 'Dent & Paint',
+      description: 'Repair of dents and scratches followed by professional paintwork to restore the vehicleﾕs original finish.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'activity',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-diagnostic-scan',
+      name: 'Seat Cover',
+      description: 'Installation or replacement of seat covers to enhance comfort, style, and protection for the vehicleﾕs interior.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'search',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-denting-painting',
+      name: 'Accessories',
+      description: 'Supply and installation of car accessories such as floor mats, roof racks, infotainment systems, and lighting upgrades.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'droplets',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-periodic-maintenance',
+      name: 'Periodic Maintenance',
+      description: 'Scheduled vehicle servicing that includes oil changes, filter replacements, fluid top-ups, and inspection of essential components to ensure optimal performance and longevity.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'shield',
+      color: 'orange'
+    },
+    {
+      id: 'scooty-others',
+      name: 'Others',
+      description: 'Any additional services or custom requests not covered in the listed categories.',
+      price: 0,
+      duration: '0',
+      category: 'Scooty',
+      icon: 'shield',
+      color: 'orange'
+    }
   ]
 };
 

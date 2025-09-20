@@ -281,7 +281,15 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               <div className="flex items-center justify-between mb-6">
                 <div className="text-lg font-semibold text-black-900 dark:text-gray-300">
                   {tripStartDate && tripEndDate ? (
-                    `${formatDate(tripStartDate)} - ${formatDate(tripEndDate)}`
+                    <div className="flex flex-col sm:flex-row sm:items-center">
+                      <span className="block sm:inline">
+                        {formatDate(tripStartDate)}
+                      </span>
+                      <span className="hidden sm:inline mx-2"> - </span>
+                      <span className="block sm:inline">
+                        {formatDate(tripEndDate)}
+                      </span>
+                    </div>
                   ) : selectingStartDate ? (
                     'Select start date'
                   ) : (

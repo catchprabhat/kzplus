@@ -75,6 +75,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   // Define services that should have custom price and duration inputs for each category
   const customizableServices = {
     'Bike': ['Mechanic Work', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others', 'Periodic Maintenance'],
+    'Scooty': ['Mechanic Work', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others', 'Periodic Maintenance'],
     'Small Car': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
     'Sedan Car': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
     'Compact SUV': ['Mechanic Work', 'Periodic Maintenance', 'Tyre Change', 'Rim Restoration', 'Dent & Paint', 'Seat Cover', 'Accessories', 'Others'],
@@ -740,7 +741,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           </motion.button>
         </motion.div>
         <motion.h2 
-          className="text-4xl font-bold text-gray-400 mb-4"
+          className="text-4xl font-bold text-black-400 mb-4"
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
@@ -748,7 +749,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           {t('title')}
         </motion.h2>
         <motion.p 
-          className="text-xl text-gray-400 max-w-2xl mx-auto mb-8"
+          className="text-xl text-gray-500 max-w-2xl mx-auto mb-8"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.2, duration: 0.4 }}

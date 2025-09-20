@@ -333,8 +333,22 @@ function App() {
     googleMapsLocation: ''
   });
 
+  // Add state to track intended destination before login
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState<string | null>(null);
+
   // Authentication
-  const { user, loading: authLoading, isAuthenticated, login, logout, updateProfile } = useAuth();
+  const { user, loading: authLoading, isAuthenticated, login: originalLogin, logout, updateProfile } = useAuth();
+
+  // Enhanced login function that handles post-login navigation
+  const login = (userData: any) => {
+    originalLogin(userData);
+    
+    // Handle post-login navigation
+    if (redirectAfterLogin) {
+      setActiveTab(redirectAfterLogin as any);
+      setRedirectAfterLogin(null); // Clear the redirect state
+    }
+  };
 
   const { 
     bookings, 
@@ -421,6 +435,10 @@ function App() {
   const needsAuth = protectedRoutes.includes(activeTab);
 
   if (!isAuthenticated && needsAuth) {
+    // Remember the intended destination
+    if (!redirectAfterLogin) {
+      setRedirectAfterLogin(activeTab);
+    }
     return <OTPLoginForm onLogin={login} />;
   }
 
@@ -460,7 +478,8 @@ function App() {
       // Check if user is authenticated
       if (!isAuthenticated) {
         alert('Please log in to make a booking.');
-        setActiveTab('profile'); // Redirect to login
+        setRedirectAfterLogin('book'); // Remember to redirect to book page after login
+        setActiveTab('login'); // Redirect to login
         return;
       }
       
@@ -744,7 +763,7 @@ function App() {
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white">
                 Best Car & Bike Services
               </h2>
-              <p className="text-gray-600 dark:text-black-300 mt-2">
+              <p className="text-gray-600 dark:text-gray-300 mt-2">
                 Your Vehicle, Our Service!
               </p>
             </div>
@@ -1144,7 +1163,7 @@ function App() {
                       </div>
                     </div>
                     <div className="p-6 sm:p-8">
-                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Car Services</h3>
+                      <h3 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white mb-4">Car & Bike Services</h3>
                       <p className="text-gray-600 dark:text-gray-500 mb-6 text-sm sm:text-base">
                         Professional maintenance, detailing, and repair services for your vehicle. 
                         From basic wash to ceramic coating and mechanical repairs.
@@ -1376,17 +1395,34 @@ function App() {
                   </div>
                 </div>
 
-                {/* Show Booking Form only when car is selected and dates are available */}
+                {/* Show Booking Form only when car is selected, dates are available, and user is authenticated */}
                 {selectedCar && pickupDate && dropDate && (
                   <div ref={bookingDetailsRef} className="max-w-md mx-auto">
-                    <BookingForm
-                      selectedCar={selectedCar}
-                      pickupDate={pickupDate}
-                      dropDate={dropDate}
-                      onBookingComplete={handleBookingComplete}
-                      loading={bookingLoading}
-                      onNavigate={handleTabChange}
-                    />
+                    {isAuthenticated ? (
+                      <BookingForm
+                        selectedCar={selectedCar}
+                        pickupDate={pickupDate}
+                        dropDate={dropDate}
+                        onBookingComplete={handleBookingComplete}
+                        loading={bookingLoading}
+                        onNavigate={handleTabChange}
+                      />
+                    ) : (
+                      <div className="text-center py-8 bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8">
+                        <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">Authentication Required</h3>
+                        <p className="text-gray-500 dark:text-gray-400 mb-4">Please log in to make a booking. This ensures your bookings are saved to your account.</p>
+                        <button
+                          onClick={() => {
+                            setRedirectAfterLogin('book'); // Remember to redirect back to car selection
+                            setActiveTab('login');
+                          }}
+                          className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Go to Login
+                        </button>
+                      </div>
+                    )}
                   </div>
                 )}
                 
@@ -1437,15 +1473,15 @@ function App() {
             <div>
               <div className="text-center mb-8">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">My Bookings</h2>
-                <p className="text-base sm:text-lg text-gray-600 dark:text-black-300">
+                <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
                   {isAuthenticated ? 'Manage and view your car reservations' : 'Please log in to view your bookings'}
                 </p>
               </div>
               {!isAuthenticated ? (
-                <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+                <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
                   <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-600 mb-2">Authentication Required</h3>
-                  <p className="text-gray-500 mb-4">Please log in to view your bookings.</p>
+                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">Authentication Required</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">Please log in to view your bookings.</p>
                   <button
                     onClick={() => handleTabChange('login')}
                     className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
@@ -1476,15 +1512,29 @@ function App() {
               <div className="text-center mb-8">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Service Bookings</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400">
-                  Manage and view all your car service appointments
+                  {isAuthenticated ? 'Manage and view all your car service appointments' : 'Please log in to view your service bookings'}
                 </p>
               </div>
-              <ServiceBookingList
-                bookings={serviceBookings}
-                loading={serviceLoading}
-                onUpdateStatus={handleUpdateServiceBookingStatus}
-                onDelete={deleteServiceBooking}
-              />
+              {isAuthenticated ? (
+                <ServiceBookingList
+                  bookings={serviceBookings}
+                  loading={serviceLoading}
+                  onUpdateStatus={handleUpdateServiceBookingStatus}
+                  onDelete={deleteServiceBooking}
+                />
+              ) : (
+                <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
+                  <Wrench className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">Authentication Required</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">Please log in to view your service bookings.</p>
+                  <button
+                    onClick={() => setActiveTab('login')}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Log In
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -1499,26 +1549,54 @@ function App() {
               <div className="text-center mb-8">
                 <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">Notification Settings</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
-                  Configure email and WhatsApp notifications for bookings
+                  {isAuthenticated ? 'Configure email and WhatsApp notifications for bookings' : 'Please log in to access settings'}
                 </p>
               </div>
-              <NotificationSettings />
+              {isAuthenticated ? (
+                <NotificationSettings />
+              ) : (
+                <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
+                  <Settings className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">Authentication Required</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">Please log in to access notification settings.</p>
+                  <button
+                    onClick={() => setActiveTab('login')}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Log In
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
-          {activeTab === 'profile' && isAuthenticated && user && (
+          {activeTab === 'profile' && (
             <div>
               <div className="text-center mb-8">
-                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-black mb-4">User Profile</h2>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-4">User Profile</h2>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
-                  Manage your account information and preferences
+                  {isAuthenticated ? 'Manage your account information and preferences' : 'Please log in to view your profile'}
                 </p>
               </div>
-              <UserProfile 
-                user={user} 
-                onLogout={logout} 
-                onUpdateProfile={updateProfile}
-              />
+              {isAuthenticated && user ? (
+                <UserProfile 
+                  user={user} 
+                  onLogout={logout} 
+                  onUpdateProfile={updateProfile}
+                />
+              ) : (
+                <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
+                  <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">Authentication Required</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">Please log in to view your profile.</p>
+                  <button
+                    onClick={() => setActiveTab('login')}
+                    className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Log In
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
