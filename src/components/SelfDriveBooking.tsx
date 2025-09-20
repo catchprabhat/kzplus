@@ -137,7 +137,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
             type="text"
             value={location}
             readOnly
-            className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-black cursor-not-allowed"
+            className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-not-allowed"
           />
         </div>
 
@@ -152,7 +152,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 setSelectingStartDate(true);
                 setShowCalendar(true);
               }}
-              className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black flex items-center justify-between"
+              className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between"
             >
               <span>{tripStartDate ? `${formatDate(tripStartDate)}, ${formatTime(startTime)}` : '2 Sep\'25, 9 PM'}</span>
               <Calendar className="w-5 h-5" />
@@ -167,7 +167,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 setSelectingStartDate(false);
                 setShowCalendar(true);
               }}
-              className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black flex items-center justify-between"
+              className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between"
             >
               <span>{tripEndDate ? `${formatDate(tripEndDate)}, ${formatTime(endTime)}` : '4 Sep\'25, 9 PM'}</span>
               <Calendar className="w-5 h-5" />
@@ -279,7 +279,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
             >
               {/* Calendar Header */}
               <div className="flex items-center justify-between mb-6">
-                <div className="text-lg font-semibold text-black-900 dark:text-black">
+                <div className="text-lg font-semibold text-black-900 dark:text-gray-300">
                   {tripStartDate && tripEndDate ? (
                     `${formatDate(tripStartDate)} - ${formatDate(tripEndDate)}`
                   ) : selectingStartDate ? (
@@ -308,7 +308,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                     <button onClick={prevMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded">
                       <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-black">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-300">
                       {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h3>
                     <button onClick={nextMonth} className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded">
@@ -347,7 +347,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                                 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                                 : day.isToday
                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                                : 'hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-900 dark:text-black'
+                                : 'hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-900 dark:text-gray-300'
                             }
                           `}
                         >
@@ -361,7 +361,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 {/* Next Month */}
                 <div>
                   <div className="flex items-center justify-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-black">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-300">
                       {new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                     </h3>
                   </div>
@@ -397,7 +397,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                                 ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200'
                                 : day.isToday
                                 ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200'
-                                : 'hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-900 dark:text-black'
+                                : 'hover:bg-gray-100 dark:hover:bg-dark-700 text-gray-900 dark:text-gray-300'
                             }
                           `}
                         >
@@ -411,7 +411,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
 
               {/* Time Selection */}
               <div className="mt-8">
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-black mb-4">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-4">
                   Select the start time & end time
                 </h4>
                 
@@ -425,7 +425,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       <select
                         value={startTime.hour}
                         onChange={(e) => handleTimeChange('start', 'hour', parseInt(e.target.value))}
-                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-black"
+                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
                           <option key={hour} value={hour}>{hour}</option>
@@ -435,7 +435,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       <select
                         value={startTime.minute}
                         onChange={(e) => handleTimeChange('start', 'minute', parseInt(e.target.value))}
-                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-black"
+                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
                         {Array.from({ length: 60 }, (_, i) => i).map(minute => (
                           <option key={minute} value={minute}>{minute.toString().padStart(2, '0')}</option>
@@ -444,7 +444,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       <select
                         value={startTime.period}
                         onChange={(e) => handleTimeChange('start', 'period', e.target.value)}
-                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-black"
+                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>
@@ -466,7 +466,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       <select
                         value={endTime.hour}
                         onChange={(e) => handleTimeChange('end', 'hour', parseInt(e.target.value))}
-                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-black"
+                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
                         {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
                           <option key={hour} value={hour}>{hour}</option>
@@ -476,7 +476,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       <select
                         value={endTime.minute}
                         onChange={(e) => handleTimeChange('end', 'minute', parseInt(e.target.value))}
-                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-black"
+                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
                         {Array.from({ length: 60 }, (_, i) => i).map(minute => (
                           <option key={minute} value={minute}>{minute.toString().padStart(2, '0')}</option>
@@ -485,7 +485,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       <select
                         value={endTime.period}
                         onChange={(e) => handleTimeChange('end', 'period', e.target.value)}
-                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-black"
+                        className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
                         <option value="AM">AM</option>
                         <option value="PM">PM</option>

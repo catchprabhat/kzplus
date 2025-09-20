@@ -64,7 +64,7 @@ export const CouponInput: React.FC<CouponInputProps> = ({
     <div className="mt-4 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg border border-gray-200 dark:border-dark-600">
       <div className="flex items-center mb-3">
         <Tag className="w-5 h-5 mr-2 text-green-600" />
-        <h4 className="font-semibold text-gray-900 dark:text-black">Apply Coupon</h4>
+        <h4 className="font-semibold text-gray-900 dark:text-white">Apply Coupon</h4>
       </div>
 
       {!appliedCoupon ? (
@@ -75,7 +75,7 @@ export const CouponInput: React.FC<CouponInputProps> = ({
               value={couponCode}
               onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
               placeholder="Enter coupon code"
-              className="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-600 dark:bg-dark-800 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="flex-1 px-3 py-2 border border-gray-300 dark:border-dark-600 dark:bg-dark-800 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               disabled={isValidating}
             />
             <button
@@ -109,8 +109,8 @@ export const CouponInput: React.FC<CouponInputProps> = ({
                 <div key={coupon.id} className="p-4 border-b border-gray-100 dark:border-dark-700 last:border-b-0">
                   <div className="flex items-center justify-between mb-2">
                     <div>
-                      <h5 className="font-semibold text-gray-900 dark:text-black">{coupon.code}</h5>
-                      <p className="text-sm text-gray-600 dark:text-gray-600">{coupon.description}</p>
+                      <h5 className="font-semibold text-gray-900 dark:text-gray-200">{coupon.code}</h5>
+                      <p className="text-sm text-gray-600 dark:text-gray-200">{coupon.description}</p>
                     </div>
                     <button
                       onClick={() => handleCouponSelect(coupon.code)}
@@ -120,8 +120,8 @@ export const CouponInput: React.FC<CouponInputProps> = ({
                     </button>
                   </div>
                   <div className="mt-2">
-                    <h6 className="text-xs font-medium text-gray-700 dark:text-gray-600 mb-1">Terms & Conditions:</h6>
-                    <ul className="text-xs text-gray-600 dark:text-gray-500 space-y-1">
+                    <h6 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Terms & Conditions:</h6>
+                    <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                       {coupon.termsAndConditions.map((term, index) => (
                         <li key={index} className="flex items-start space-x-1">
                           <span className="text-gray-400 mt-0.5">•</span>

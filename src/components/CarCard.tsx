@@ -28,7 +28,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected }) =
       </div>
       
       <div className="p-6">
-        <h3 className="text-xl font-bold text-black-900 dark:text-black mb-2">{car.name}</h3>
+        <h3 className="text-xl font-bold text-black-900 dark:text-gray-200 mb-2">{car.name}</h3>
         
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="flex items-center text-black-600 dark:text-black-300">

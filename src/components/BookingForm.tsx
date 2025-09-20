@@ -219,7 +219,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       >
         See calendar view of booked vehicles
       </p>
-      <h3 className="text-xl font-bold text-gray-900 dark:text-black mb-6 flex items-center">
+      <h3 className="text-xl font-bold text-gray-900 dark:text-gray-300 mb-6 flex items-center">
         <User className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
         Booking Details
       </h3>
@@ -306,7 +306,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="text"
             value={customerData.name}
             onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your full name"
             required
             disabled={loading}
@@ -322,7 +322,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="email"
             value={customerData.email}
             onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your email"
             required
             disabled={loading || isAuthenticated}
@@ -344,7 +344,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="tel"
             value={customerData.phone}
             onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-black rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your phone number"
             required
             disabled={loading}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, IndianRupee } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
@@ -316,6 +316,9 @@ function App() {
   const [availableCars, setAvailableCars] = useState<Car[]>(cars);
   const [bookedCarIds, setBookedCarIds] = useState<string[]>([]);
 
+  // Add ref for auto-scrolling to booking details
+  const bookingDetailsRef = useRef<HTMLDivElement>(null);
+
   // Add new state for self-drive booking data
   const [selfDriveBookingData, setSelfDriveBookingData] = useState({
     location: 'Bangalore',
@@ -423,6 +426,19 @@ function App() {
 
   const handleCarSelect = (car: Car) => {
     setSelectedCar(selectedCar?.id === car.id ? null : car);
+    
+    // Auto-scroll to booking details when a car is selected
+    if (selectedCar?.id !== car.id) { // Only scroll when selecting a new car, not deselecting
+      setTimeout(() => {
+        if (bookingDetailsRef.current) {
+          bookingDetailsRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+            inline: 'nearest'
+          });
+        }
+      }, 100); // Small delay to ensure the booking form is rendered
+    }
   };
 
   // Helper function to format date without timezone conversion
@@ -1362,7 +1378,7 @@ function App() {
 
                 {/* Show Booking Form only when car is selected and dates are available */}
                 {selectedCar && pickupDate && dropDate && (
-                  <div className="max-w-md mx-auto">
+                  <div ref={bookingDetailsRef} className="max-w-md mx-auto">
                     <BookingForm
                       selectedCar={selectedCar}
                       pickupDate={pickupDate}
