@@ -757,30 +757,31 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
         </motion.p>
 
         <motion.div 
-          className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-md mx-auto"
+          className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6 max-w-md mx-auto"
           variants={cardVariants}
           custom={0}
         >
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center justify-center">
-            <Search className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-2 text-blue-600" />
+          <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center justify-center">
+            <Search className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600" />
             {t('find_vehicle')}
           </h3>
 
-          <div className="space-y-4">
-            <div className="flex space-x-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
               <motion.button
                 onClick={() => setSearchType('vehicle')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+                className={`flex-1 py-2 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 ${
                   searchType === 'vehicle'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 } relative overflow-hidden`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="relative z-10">
-                  <Car className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-2" />
-                  {t('vehicle_number')}
+                <span className="relative z-10 flex items-center justify-center">
+                  <Car className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">{t('vehicle_number')}</span>
+                  <span className="xs:hidden">Vehicle</span>
                 </span>
                 <motion.span
                   className="absolute inset-0 bg-blue-500 opacity-0"
@@ -790,17 +791,18 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               </motion.button>
               <motion.button
                 onClick={() => setSearchType('phone')}
-                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all duration-200 ${
+                className={`flex-1 py-2 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 ${
                   searchType === 'phone'
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 } relative overflow-hidden`}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <span className="relative z-10">
-                  <Phone className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 inline mr-2" />
-                  {t('phone_number')}
+                <span className="relative z-10 flex items-center justify-center">
+                  <Phone className="w-4 h-4 mr-1 sm:mr-2" />
+                  <span className="hidden xs:inline">{t('phone_number')}</span>
+                  <span className="xs:hidden">Phone</span>
                 </span>
                 <motion.span
                   className="absolute inset-0 bg-blue-500 opacity-0"
@@ -819,22 +821,22 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   setSearchAttempted(false);
                 }}
                 placeholder={searchType === 'vehicle' ? t('search_placeholder_vehicle') : t('search_placeholder_phone')}
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
                 disabled={searchLoading}
-                whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
+                whileFocus={{ scale: 1.01, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
               />
               <motion.button
                 onClick={searchUser}
                 disabled={!searchQuery.trim() || searchLoading}
-                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center relative overflow-hidden"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                className="px-3 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center relative overflow-hidden min-w-[44px]"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <span className="relative z-10">
                   {searchLoading ? (
                     <LoadingSpinner size="sm" />
                   ) : (
-                    <Search className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5" />
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
                   )}
                 </span>
                 <motion.span
@@ -886,12 +888,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   <div className="flex justify-center">
                     <motion.button
                       onClick={() => setShowCustomerForm(true)}
-                      className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 relative overflow-hidden space-x-2"
+                      className="inline-flex items-center px-3 py-2 sm:px-4 sm:py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-all duration-200 relative overflow-hidden space-x-1 sm:space-x-2"
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                     >
-                      <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4" />
-                      <span className="relative z-10">{t('register_now')}</span>
+                      <UserPlus className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5" />
+                      <span className="relative z-10 text-sm sm:text-base">{t('register_now')}</span>
                       <motion.span
                         className="absolute inset-0 bg-blue-500 opacity-0"
                         whileTap={{ opacity: 0.3, scale: 2 }}
@@ -975,13 +977,14 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           variants={cardVariants}
           custom={1}
         >
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
             <Wrench className="w-5 h-5 sm:w-6 sm:h-6 md:w-5 md:h-5 mr-2 text-blue-600" />
             {t('select_services')}
           </h3>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+
               Vehicle Category
             </label>
             <div className="relative">
@@ -1029,9 +1032,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                         </motion.div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <h4 className="font-semibold text-gray-900">{service.name}</h4>
+                            <h4 className="font-semibold text-gray-900 dark:text-white">{service.name}</h4>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">{service.description}</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{service.description}</p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">
                             {shouldHaveCustomInputs(service) && isSelected ? (
                               <div className="flex flex-col space-y-2 w-full">

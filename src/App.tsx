@@ -46,7 +46,7 @@ const serviceIcons = [
         <img
           src="/images/one.svg"
           alt="Body Wash Icon"
-          className="w-12 h-12 text-blue-600 dark:text-blue-400"
+          className="w-12 h-12 text-blue-600 dark:text-white"
         />
       </div>
     )

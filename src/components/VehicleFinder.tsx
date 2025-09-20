@@ -102,7 +102,7 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-      <h2 className="text-xl font-bold text-center mb-4">🔍 Find Your Vehicle</h2>
+      <h2 className="text-xl font-bold text-center mb-4 ">🔍 Find Your Vehicle</h2>
       
       {/* Search Type Toggle */}
       <div className="flex mb-4">
