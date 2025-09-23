@@ -27,9 +27,9 @@ export const BookingList: React.FC<BookingListProps> = ({
   const isAdmin = user?.email === 'catchprabhat@gmail.com';
 
   useEffect(() => {
-    // Filter bookings based on phoneFilter
+    // Filter bookings based on phoneFilter - with safe toLowerCase
     const filtered = bookings.filter((booking) =>
-      booking.customerPhone.toLowerCase().includes(phoneFilter.toLowerCase())
+      booking.customerPhone?.toLowerCase()?.includes(phoneFilter.toLowerCase()) || false
     );
     setFilteredBookings(filtered);
   }, [bookings, phoneFilter]);
@@ -90,9 +90,18 @@ export const BookingList: React.FC<BookingListProps> = ({
     setOpenDropdown(null);
     
     try {
+      // Don't do optimistic update here - let the parent handle it
+      // The useEffect will automatically update filteredBookings when parent bookings change
       await onUpdateStatus(id, status);
+      
+      console.log('✅ Status updated successfully to:', status);
+      // No need for window.location.reload() - parent will refresh data automatically
+      
     } catch (error) {
-      console.error('Error updating booking status:', error);
+      console.error('❌ Error updating booking status:', error);
+      
+      // Show user-friendly error message
+      alert('Failed to update booking status. Please try again.');
     } finally {
       setActionLoading(null);
     }

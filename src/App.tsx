@@ -20,6 +20,7 @@ import { AdminPage } from './components/AdminPage';
 import { LoadingSpinner } from './components/LoadingSpinner';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ComingSoon } from './components/ComingSoon';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { cars } from './data/cars';
 import { Car, Booking, ServiceBooking as ServiceBookingType } from './types';
 import { useBookings } from './hooks/useBookings';
@@ -378,10 +379,14 @@ function App() {
   // Wrapper functions to adapt update status functions to return Promise<void>
   const handleUpdateBookingStatus = async (id: string, status: 'confirmed' | 'pending' | 'cancelled'): Promise<void> => {
     await updateBookingStatus(id, status);
+    // Automatically refresh bookings data after successful status update
+    await fetchBookings();
   };
 
   const handleUpdateServiceBookingStatus = async (id: string, status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled'): Promise<void> => {
     await updateServiceBookingStatus(id, status);
+    // Automatically refresh service bookings data after successful status update
+    await fetchServiceBookings();
   };
 
   // Function to calculate total hours
@@ -523,6 +528,12 @@ function App() {
       setLatestServiceBooking(null); // Clear service booking
       setShowConfirmation(true);
       
+      // Add scroll to top functionality when booking is confirmed
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+      
       // Refresh bookings list
       fetchBookings();
 
@@ -564,6 +575,12 @@ function App() {
       setLatestServiceBooking(createdServiceBooking);
       setLatestBooking(null); // Clear regular booking
       setShowConfirmation(true);
+      
+      // Add scroll to top functionality when service booking is confirmed
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
       
       // Hide confirmation after 5 seconds
       setTimeout(() => {
@@ -828,10 +845,7 @@ function App() {
               
               {/* Desktop Header Info & Auth */}
               <div className="hidden md:flex items-center space-x-4">
-                <div className="flex items-center text-sm text-black-600 dark:text-black-300">
-                  <MapPin className="w-4 h-4 mr-1" />
-                  Premium Car Solutions & Services
-                </div>
+                
                 
                 {/* Theme Toggle */}
                 <ThemeToggle />
@@ -1490,12 +1504,14 @@ function App() {
                   </button>
                 </div>
               ) : (
-                <BookingList 
-                  bookings={bookings} 
-                  loading={loading}
-                  onUpdateStatus={handleUpdateBookingStatus}
-                  onDelete={deleteBooking}
-                />
+                <ErrorBoundary>
+                  <BookingList 
+                    bookings={bookings} 
+                    loading={loading}
+                    onUpdateStatus={handleUpdateBookingStatus}
+                    onDelete={deleteBooking}
+                  />
+                </ErrorBoundary>
               )}
             </div>
           )}

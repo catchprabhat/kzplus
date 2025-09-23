@@ -133,14 +133,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
 
       <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-2xl mx-auto">
         <div className="text-center mb-8">
-          <h3 className="text-2xl font-bold text-gray-900 dark:text-black mb-2">User Profile</h3>
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-300 mb-2">User Profile</h3>
           <p className="text-gray-600 dark:text-gray-300">Manage your account information and profile picture</p>
         </div>
 
         {/* Profile Image Section */}
         <div className="mb-8">
           <div className="text-center mb-6">
-            <h4 className="text-lg font-semibold text-gray-900 dark:text-black mb-4 flex items-center justify-center">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-4 flex items-center justify-center">
               <Camera className="w-5 h-5 mr-2" />
               Profile Picture
             </h4>
@@ -181,7 +181,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
         {/* Profile Information */}
         <div className="space-y-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <User className="w-4 h-4 inline mr-1" />
               Full Name
             </label>
@@ -200,14 +200,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                 {errors.name && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.name}</p>}
               </div>
             ) : (
-              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-gray-500">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-white">
                 {user.name}
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Mail className="w-4 h-4 inline mr-1" />
               Email Address
             </label>
@@ -226,14 +226,14 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                 {errors.email && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.email}</p>}
               </div>
             ) : (
-              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-gray-600">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-white">
                 {user.email}
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-600 mb-2">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
               <Phone className="w-4 h-4 inline mr-1" />
               Phone Number
             </label>
@@ -252,7 +252,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ user, onLogout, onUpda
                 {errors.phone && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.phone}</p>}
               </div>
             ) : (
-              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-black">
+              <div className="px-4 py-3 bg-gray-50 dark:bg-dark-700 rounded-lg text-gray-900 dark:text-white">
                 {user.phone}
               </div>
             )}

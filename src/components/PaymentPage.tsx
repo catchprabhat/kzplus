@@ -45,10 +45,10 @@ class PaymentPageErrorBoundary extends React.Component<
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-100 dark:bg-dark-900 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
-            <p className="text-gray-600">Please try again or contact support.</p>
+            <h1 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Something went wrong</h1>
+            <p className="text-gray-600 dark:text-gray-300">Please try again or contact support.</p>
           </div>
         </div>
       );
@@ -178,13 +178,13 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
   // Validate bookingData to prevent undefined errors
   if (!bookingData || !bookingData.selectedUser || !bookingData.selectedServices) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-100 dark:bg-dark-900 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Invalid Booking Data</h1>
-          <p className="text-gray-600">Please go back and try again.</p>
+          <h1 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Invalid Booking Data</h1>
+          <p className="text-gray-600 dark:text-gray-300">Please go back and try again.</p>
           <button
             onClick={onBack}
-            className="mt-4 inline-flex items-center text-blue-600 hover:text-blue-700"
+            className="mt-4 inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Service Booking
@@ -197,7 +197,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
   return (
     <PaymentPageErrorBoundary>
       <motion.div 
-        className="min-h-screen bg-gray-100 space-y-8 relative py-6 px-4 sm:px-6 lg:px-8"
+        className="min-h-screen bg-gray-100 dark:bg-dark-900 space-y-8 relative py-6 px-4 sm:px-6 lg:px-8"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
@@ -224,14 +224,14 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
         <div className="text-center mb-8">
           <motion.button
             onClick={onBack}
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 mb-4 transition-colors"
+            className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mb-4 transition-colors"
             whileHover={{ x: -5 }}
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Service Booking
           </motion.button>
           <motion.h2 
-            className="text-4xl font-bold text-gray-900 mb-4"
+            className="text-4xl font-bold text-gray-900 dark:text-white mb-4"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
@@ -239,7 +239,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
             Payment Options
           </motion.h2>
           <motion.p 
-            className="text-xl text-gray-600 max-w-2xl mx-auto"
+            className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2, duration: 0.4 }}
@@ -248,50 +248,50 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
           </motion.p>
         </div>
 
-        {/*  */}
+        {/* Booking Summary */}
         <motion.div 
-          className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
+          className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
           variants={cardVariants}
           custom={0}
         >
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Booking Summary</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Booking Summary</h3>
           <div className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-gray-600">Vehicle:</span>
-              <span className="font-medium">{bookingData.selectedUser.vehicleNumber} ({bookingData.selectedUser.vehicleType})</span>
+              <span className="text-gray-600 dark:text-gray-300">Vehicle:</span>
+              <span className="font-medium text-gray-900 dark:text-white">{bookingData.selectedUser.vehicleNumber} ({bookingData.selectedUser.vehicleType})</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Customer:</span>
-              <span className="font-medium">{bookingData.customerData.name}</span>
+              <span className="text-gray-600 dark:text-gray-300">Customer:</span>
+              <span className="font-medium text-gray-900 dark:text-white">{bookingData.customerData.name}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Date & Time:</span>
-              <span className="font-medium">{new Date(bookingData.scheduledDate).toLocaleDateString()} at {bookingData.scheduledTime}</span>
+              <span className="text-gray-600 dark:text-gray-300">Date & Time:</span>
+              <span className="font-medium text-gray-900 dark:text-white">{new Date(bookingData.scheduledDate).toLocaleDateString()} at {bookingData.scheduledTime}</span>
             </div>
-            <div className="border-t pt-3">
-              <div className="text-gray-600 mb-2">Services:</div>
+            <div className="border-t border-gray-200 dark:border-dark-600 pt-3">
+              <div className="text-gray-600 dark:text-gray-300 mb-2">Services:</div>
               {bookingData.selectedServices.map((service, index) => (
-                <div key={index} className="flex justify-between text-sm">
+                <div key={index} className="flex justify-between text-sm text-gray-900 dark:text-white">
                   <span>{service.name}</span>
                   <span>₹{service.price}</span>
                 </div>
               ))}
             </div>
-            <div className="border-t pt-3 flex justify-between text-lg font-bold">
-              <span>Total Amount:</span>
-              <span className="text-blue-600">₹{bookingData.totalPrice}</span>
+            <div className="border-t border-gray-200 dark:border-dark-600 pt-3 flex justify-between text-lg font-bold">
+              <span className="text-gray-900 dark:text-white">Total Amount:</span>
+              <span className="text-blue-600 dark:text-blue-400">₹{bookingData.totalPrice}</span>
             </div>
           </div>
         </motion.div>
 
         {/* Payment Methods */}
         <motion.div 
-          className="bg-white rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
+          className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
           variants={cardVariants}
           custom={1}
         >
-          <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center">
-            <Lock className="w-5 h-5 mr-2 text-green-600" />
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
+            <Lock className="w-5 h-5 mr-2 text-green-600 dark:text-green-400" />
             Mode of Payment
           </h3>
 
@@ -301,8 +301,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               onClick={() => setPaymentMethod('debit')}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 paymentMethod === 'debit'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-white'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -315,8 +315,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               onClick={() => setPaymentMethod('credit')}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 paymentMethod === 'credit'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-white'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -329,8 +329,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               onClick={() => setPaymentMethod('upi')}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 paymentMethod === 'upi'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-white'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -343,8 +343,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               onClick={() => setPaymentMethod('pay-at-service')}
               className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                 paymentMethod === 'pay-at-service'
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-200 hover:border-gray-300'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-white'
               }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -363,53 +363,53 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               transition={{ duration: 0.3 }}
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Cardholder Name
                 </label>
                 <input
                   type="text"
                   value={cardDetails.name}
                   onChange={(e) => setCardDetails({ ...cardDetails, name: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder="Enter cardholder name"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                   Card Number
                 </label>
                 <input
                   type="text"
                   value={cardDetails.number}
                   onChange={(e) => setCardDetails({ ...cardDetails, number: formatCardNumber(e.target.value) })}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                   placeholder="1234 5678 9012 3456"
                   maxLength={19}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     Expiry Date
                   </label>
                   <input
                     type="text"
                     value={cardDetails.expiry}
                     onChange={(e) => setCardDetails({ ...cardDetails, expiry: formatExpiry(e.target.value) })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="MM/YY"
                     maxLength={5}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                     CVV
                   </label>
                   <input
                     type="text"
                     value={cardDetails.cvv}
                     onChange={(e) => setCardDetails({ ...cardDetails, cvv: e.target.value.replace(/\D/g, '') })}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                     placeholder="123"
                     maxLength={3}
                   />
@@ -431,8 +431,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
                   onClick={() => setUpiOption('gpay')}
                   className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                     upiOption === 'gpay'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-white'
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -445,8 +445,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
                   onClick={() => setUpiOption('paytm')}
                   className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                     upiOption === 'paytm'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-white'
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -459,8 +459,8 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
                   onClick={() => setUpiOption('phonepe')}
                   className={`p-4 rounded-lg border-2 transition-all duration-200 ${
                     upiOption === 'phonepe'
-                      ? 'border-blue-500 bg-blue-50 text-blue-700'
-                      : 'border-gray-200 hover:border-gray-300'
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300'
+                      : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 text-gray-900 dark:text-white'
                   }`}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -475,16 +475,16 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
           {/* Pay at Service Info */}
           {paymentMethod === 'pay-at-service' && (
             <motion.div 
-              className="bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+              className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700 rounded-lg p-4"
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               transition={{ duration: 0.3 }}
             >
               <div className="flex items-center">
-                <IndianRupee className="w-5 h-5 text-yellow-600 mr-2" />
+                <IndianRupee className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mr-2" />
                 <div>
-                  <h4 className="font-medium text-yellow-800">Pay at Service Location</h4>
-                  <p className="text-sm text-yellow-700">You can pay when our team arrives for the service. Cash and digital payments accepted.</p>
+                  <h4 className="font-medium text-yellow-800 dark:text-yellow-200">Pay at Service Location</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-300">You can pay when our team arrives for the service. Cash and digital payments accepted.</p>
                 </div>
               </div>
             </motion.div>
@@ -494,7 +494,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
           <motion.button
             onClick={handlePayment}
             disabled={processing || (paymentMethod !== 'pay-at-service' && paymentMethod !== 'upi' && (!cardDetails.name || !cardDetails.number || !cardDetails.expiry || !cardDetails.cvv))}
-            className="w-full mt-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center relative overflow-hidden"
+            className="w-full mt-6 py-3 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center relative overflow-hidden"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >

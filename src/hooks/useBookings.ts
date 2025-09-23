@@ -104,9 +104,17 @@ export const useBookings = () => {
   const updateBookingStatus = async (id: string, status: 'confirmed' | 'pending' | 'cancelled') => {
     try {
       setError(null);
+      
+      // Optimistically update the local state first
+      setBookings(prev => prev.map(booking => 
+        booking.id === id ? { ...booking, status } : booking
+      ));
+      
+      // Then make the API call
       const updatedApiBooking = await bookingApi.updateBookingStatus(id, status);
       const updatedBooking = convertApiBooking(updatedApiBooking);
       
+      // Update with the actual response from server
       setBookings(prev => prev.map(booking => 
         booking.id === id ? updatedBooking : booking
       ));
@@ -123,6 +131,9 @@ export const useBookings = () => {
       
       return updatedBooking;
     } catch (err) {
+      // Revert the optimistic update on error
+      const originalBookings = await fetchBookings();
+      
       const errorMessage = err instanceof Error ? err.message : 'Failed to update booking';
       setError(errorMessage);
       throw new Error(errorMessage);

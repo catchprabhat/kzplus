@@ -1018,8 +1018,8 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                     onClick={() => !shouldHaveCustomInputs(service) && handleServiceToggle(service)}
                     className={`p-4 border rounded-lg transition-all duration-200 ${
                       isSelected
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-dark-600 hover:border-gray-300 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-dark-700'
                     } ${isRepeatServiceMode ? 'cursor-not-allowed' : ''} hover:shadow-md`}
                     variants={cardVariants}
                     custom={index}
@@ -1033,7 +1033,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                         </motion.div>
                         <div className="flex-1">
                           <div className="flex items-center space-x-2">
-                            <h4 className="font-semibold text-gray-900 dark:text-white">{service.name}</h4>
+                            <h4 className="font-semibold text-gray-900 dark:text-white hover:text-black dark:hover:text-white">{service.name}</h4>
                           </div>
                           <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">{service.description}</p>
                           <div className="flex items-center space-x-4 mt-2 text-sm text-gray-500">

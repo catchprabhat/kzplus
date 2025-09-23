@@ -116,7 +116,7 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   };
 
   const getPickupDropColor = (booking: Booking, isPickup: boolean, isDrop: boolean): string => {
-    const baseColor = getBookingColor(booking);
+    const seats = getCarSeats(booking.carName); // Use the shared helper function
     
     if (isPickup && isDrop) {
       // Same day pickup and drop - use purple
@@ -125,23 +125,23 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
       // Pickup day - use darker shade
       if (booking.carType === 'Electric') {
         return 'bg-green-200 dark:bg-green-700 text-green-900 dark:text-green-100 border-green-300 dark:border-green-500';
-      } else if (booking.carSeats === 7) {
+      } else if (seats === 7) {
         return 'bg-red-200 dark:bg-red-700 text-red-900 dark:text-red-100 border-red-300 dark:border-red-500';
-      } else if (booking.carSeats === 5) {
+      } else if (seats === 5) {
         return 'bg-blue-200 dark:bg-blue-700 text-blue-900 dark:text-blue-100 border-blue-300 dark:border-blue-500';
       }
     } else if (isDrop) {
       // Drop day - use lighter shade with different pattern
       if (booking.carType === 'Electric') {
         return 'bg-green-50 dark:bg-green-900 text-green-700 dark:text-green-300 border-green-300 dark:border-green-600';
-      } else if (booking.carSeats === 7) {
+      } else if (seats === 7) {
         return 'bg-red-50 dark:bg-red-900 text-red-700 dark:text-red-300 border-red-300 dark:border-red-600';
-      } else if (booking.carSeats === 5) {
+      } else if (seats === 5) {
         return 'bg-blue-50 dark:bg-blue-900 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-600';
       }
     }
     
-    return baseColor;
+    return getCarBarColor(booking); // Use the new function as fallback
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -157,41 +157,39 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   const days = getDaysInMonth(currentDate);
 
   // Add this function INSIDE the component, before the return statement
-  const getDateBackgroundColor = (dayBookings: Booking[]): string => {
-    if (dayBookings.length === 0) {
-      return ''; // No bookings, use default background
-    }
-  
-    // Temporary workaround: Map car names to seat counts
-    const getCarSeats = (carName: string): number => {
-      const carSeatsMap: { [key: string]: number } = {
-        'Innova Crysta': 7,
-        'Tata Safari 2023': 7,
-        'Duster': 5,
-        'Baleno': 5,
-        'Polo': 5,
-        'Glanza': 5
-      };
-      return carSeatsMap[carName] || 5; // Default to 5 seats if not found
+  // Add a shared helper function at the top level
+  const getCarSeats = (carName: string): number => {
+    const carSeatsMap: { [key: string]: number } = {
+      'Innova Crysta': 7,
+      'Tata Safari 2023': 7,
+      'Duster': 5,
+      'Baleno': 5,
+      'Polo': 5,
+      'Glanza': 5
     };
-  
-    // Check what types of vehicles are booked on this date using car names
-    const has5Seater = dayBookings.some(booking => getCarSeats(booking.carName) === 5);
-    const has7Seater = dayBookings.some(booking => getCarSeats(booking.carName) === 7);
-  
-    console.log('Debug - has5Seater:', has5Seater, 'has7Seater:', has7Seater);
-  
-    // Priority: 7-seater > 5-seater (for cell background only)
-    if (has7Seater) {
-      console.log('Returning red background for 7-seater');
-      return 'bg-red-100 dark:bg-red-800'; // Red for 7-seater cars
-    } else if (has5Seater) {
-      console.log('Returning blue background for 5-seater');
-      return 'bg-blue-100 dark:bg-blue-800'; // Blue for 5-seater cars
+    return carSeatsMap[carName] || 5; // Default to 5 seats if not found
+  };
+
+  // Remove or modify the getDateBackgroundColor function to always return neutral background
+  const getDateBackgroundColor = (dayBookings: Booking[]): string => {
+    // Always return empty string to keep normal cell background
+    return '';
+  };
+
+  // Add a new function to get individual car bar colors
+  const getCarBarColor = (booking: Booking): string => {
+    const seats = getCarSeats(booking.carName);
+    
+    // Color coding based on vehicle type and seats for individual bars
+    if (booking.carType === 'Electric') {
+      return 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 border-green-200 dark:border-green-600';
+    } else if (seats === 7) {
+      return 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 border-red-200 dark:border-red-600';
+    } else if (seats === 5) {
+      return 'bg-blue-100 dark:bg-blue-800 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-600';
+    } else {
+      return 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border-gray-200 dark:border-gray-600';
     }
-  
-    console.log('Returning fallback gray background');
-    return 'bg-gray-100 dark:bg-gray-700'; // Fallback for any edge cases
   };
 
   return (

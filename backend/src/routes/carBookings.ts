@@ -211,44 +211,99 @@ router.get('/user', authenticateUser, async (req, res) => {
   }
 });
 
-// Update booking status
-router.patch('/:id/status', authenticateUser, async (req: Request, res: Response) => {
+// Update car booking status (PUT route to match service bookings pattern)
+router.put('/:id/status', authenticateUser, async (req: Request, res: Response) => {
   const { id } = req.params;
   const { status } = req.body;
+  const user = (req as any).user;
 
-  if (!status) {
-    return res.status(400).json({ error: 'Status is required' });
+  console.log('=== CAR BOOKING STATUS UPDATE REQUEST ===');
+  console.log('Request params:', { id, status });
+  console.log('User info:', { userId: user.id, email: user.email, phone: user.phone });
+  console.log('Request body:', req.body);
+
+  // Check if user is the specific admin
+  if (user.email !== 'catchprabhat@gmail.com') {
+    console.log('❌ Access denied - user is not the authorized admin');
+    console.log('User email:', user.email, 'Required:', 'catchprabhat@gmail.com');
+    return res.status(403).json({ error: 'Admin access required. Only authorized admin can update booking status.' });
   }
 
-  // Validate status values
-  if (!['confirmed', 'pending', 'cancelled'].includes(status)) {
-    return res.status(400).json({ error: 'Invalid status value' });
+  console.log('✅ Admin access verified for:', user.email);
+
+  // Validate status
+  const validStatuses = ['pending', 'confirmed', 'cancelled'];
+  if (!validStatuses.includes(status)) {
+    console.log('❌ Invalid status:', status, 'Valid statuses:', validStatuses);
+    return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
   }
 
-  // Check if user is admin (add admin check)
-  const userEmail = req.user?.email;
-  const adminEmail = process.env.ADMIN_EMAIL || 'catchprabhat@gmail.com';
-  
-  if (userEmail !== adminEmail) {
-    return res.status(403).json({ error: 'Admin access required' });
-  }
+  console.log('✅ Status validation passed');
 
   try {
+    // Check if booking exists
+    console.log('🔍 Checking if car booking exists...');
+    const existingBooking = await sql`SELECT * FROM car_bookings WHERE id = ${id}` as any[];
+    
+    console.log('Existing booking query result:', existingBooking);
+    
+    if (existingBooking.length === 0) {
+      console.log('❌ Car booking not found:', id);
+      return res.status(404).json({ error: 'Car booking not found' });
+    }
+
+    console.log('✅ Car booking found:', existingBooking[0]);
+    console.log('Current status:', existingBooking[0].status);
+
+    // Update booking status
+    console.log('🔄 Attempting to update car booking status...');
+    console.log('Update query params:', { id, status });
+    
     const result = await sql`
       UPDATE car_bookings 
-      SET status = ${status}, updated_at = NOW() 
-      WHERE id = ${id} 
+      SET status = ${status}
+      WHERE id = ${id}
       RETURNING *
     ` as any[];
     
+    console.log('✅ Update query executed successfully');
+    console.log('Update result:', result);
+    console.log('Updated booking:', result[0]);
+
     if (result.length === 0) {
-      return res.status(404).json({ error: 'Booking not found' });
+      console.log('❌ No rows updated - car booking not found during update');
+      return res.status(404).json({ error: 'Failed to update car booking - booking not found' });
     }
-    
-    res.json(result[0]);
+
+    console.log('✅ Car booking status update successful!');
+    console.log('=== END CAR BOOKING STATUS UPDATE ===');
+
+    res.status(200).json({ 
+      message: 'Car booking status updated successfully',
+      booking: result[0],
+      debug: {
+        oldStatus: existingBooking[0].status,
+        newStatus: result[0].status,
+        updatedAt: result[0].updated_at
+      }
+    });
   } catch (error) {
-    console.error('Error updating booking status:', error);
-    res.status(500).json({ error: 'Failed to update booking status' });
+    console.error('💥 ERROR in car booking status update:');
+    console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('Error message:', error instanceof Error ? error.message : error);
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('Request details:', {
+      params: req.params,
+      body: req.body,
+      method: req.method,
+      url: req.url,
+      userEmail: user.email
+    });
+    
+    res.status(500).json({ 
+      error: 'Failed to update car booking status',
+      details: error instanceof Error ? error.message : 'Unknown error occurred'
+    });
   }
 });
 
@@ -399,5 +454,93 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
     res.status(500).json({ error: 'Failed to create booking' });
   }
 });
+
+// Remove this entire duplicate route (lines ~459-540):
+// router.put('/:id/status', authenticateToken, async (req: Request, res: Response) => {
+//   try {
+//     const { id } = req.params;
+//     const { status } = req.body;
+//     const userEmail = (req as any).user?.email;
+// 
+//     console.log('=== Car Booking Status Update (PUT) ===');
+//     console.log('Booking ID:', id);
+//     console.log('New Status:', status);
+//     console.log('User Email:', userEmail);
+// 
+//     // Admin access check
+//     const adminEmail = process.env.ADMIN_EMAIL || 'catchprabhat@gmail.com';
+//     if (userEmail !== adminEmail) {
+//       console.log('Access denied - not admin');
+//       return res.status(403).json({ 
+//         success: false, 
+//         message: 'Admin access required' 
+//       });
+//     }
+// 
+//     // Validate status
+//     const validStatuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+//     if (!validStatuses.includes(status)) {
+//       console.log('Invalid status:', status);
+//       return res.status(400).json({ 
+//         success: false, 
+//         message: 'Invalid status' 
+//       });
+//     }
+// 
+//     // Check if booking exists
+//     const checkQuery = 'SELECT * FROM car_bookings WHERE id = $1';
+//     const checkResult = await pool.query(checkQuery, [id]);
+//     
+//     if (checkResult.rows.length === 0) {
+//       console.log('Booking not found');
+//       return res.status(404).json({ 
+//         success: false, 
+//         message: 'Booking not found' 
+//       });
+//     }
+// 
+//     console.log('Current booking:', checkResult.rows[0]);
+// 
+//     // Update booking status
+//     const updateQuery = `
+//       UPDATE car_bookings 
+//       SET status = $1, updated_at = CURRENT_TIMESTAMP 
+//       WHERE id = $2 
+//       RETURNING *
+//     `;
+//     
+//     const result = await pool.query(updateQuery, [status, id]);
+//     console.log('Update successful:', result.rows[0]);
+// 
+//     res.json({
+//       success: true,
+//       message: 'Booking status updated successfully',
+//       booking: result.rows[0],
+//       debug: {
+//         bookingId: id,
+//         newStatus: status,
+//         adminEmail: userEmail,
+//         timestamp: new Date().toISOString()
+//       }
+//     });
+// 
+//   } catch (error) {
+//     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+//     const errorStack = error instanceof Error ? error.stack : 'No stack trace';
+//     
+//     console.error('Error updating car booking status:', {
+//       message: errorMessage,
+//       stack: errorStack,
+//       bookingId: req.params.id,
+//       requestBody: req.body
+//     });
+//     
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to update booking status',
+//       error: errorMessage
+//     });
+//   }
+// });
 
 export default router;

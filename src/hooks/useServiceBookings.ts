@@ -165,15 +165,23 @@ export const useServiceBookings = () => {
   };
 
   const updateServiceBookingStatus = async (id: string, status: string) => {
-    // This would need a backend endpoint for updating status
-    console.log('Update service booking status:', id, status);
-    await fetchServiceBookings();
+    try {
+      await serviceBookingApi.updateBookingStatus(id, status);
+      await fetchServiceBookings(); // Refresh the list
+    } catch (error) {
+      console.error('Error updating service booking status:', error);
+      throw error;
+    }
   };
 
   const deleteServiceBooking = async (id: string) => {
-    // This would need a backend endpoint for deleting bookings
-    console.log('Delete service booking:', id);
-    await fetchServiceBookings();
+    try {
+      await serviceBookingApi.deleteBooking(id);
+      await fetchServiceBookings(); // Refresh the list
+    } catch (error) {
+      console.error('Error deleting service booking:', error);
+      throw error;
+    }
   };
 
   useEffect(() => {

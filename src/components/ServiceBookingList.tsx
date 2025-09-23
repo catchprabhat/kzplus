@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Calendar, User, Car, Phone, Mail, Clock, DollarSign, MoreVertical, Edit, Trash2, CheckCircle } from 'lucide-react';
 import { ServiceBooking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
+import { useAuth } from '../hooks/useAuth';
 
 interface ServiceBookingListProps {
   bookings: ServiceBooking[];
@@ -18,6 +19,10 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 }) => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  // Check if current user is admin
+  const isAdmin = user?.email === 'catchprabhat@gmail.com';
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -79,6 +84,33 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
       } finally {
         setActionLoading(null);
       }
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, newStatus: string) => {
+    if (!onUpdateStatus) return;
+    
+    try {
+      setActionLoading(id);
+      
+      // Map display text to actual status values
+      const statusMap: { [key: string]: string } = {
+        'Mark as Confirmed': 'confirmed',
+        'Mark as In Progress': 'in-progress',
+        'Mark as Completed': 'completed',
+        'Mark as Cancelled': 'cancelled'
+      };
+      
+      const mappedStatus = statusMap[newStatus] || newStatus;
+      console.log('Updating status:', { id, newStatus, mappedStatus });
+      
+      await onUpdateStatus(id, mappedStatus as any);
+      setOpenDropdown(null);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      alert('Failed to update booking status. Please try again.');
+    } finally {
+      setActionLoading(null);
     }
   };
 
@@ -148,7 +180,8 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                     
                     {openDropdown === booking.id && (
                       <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                        {onUpdateStatus && (
+                        {/* Show status update options only for admin */}
+                        {onUpdateStatus && isAdmin && (
                           <>
                             <button
                               onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
@@ -180,9 +213,10 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                             </button>
                           </>
                         )}
+                        {/* Show delete option for all users */}
                         {onDelete && (
                           <>
-                            {onUpdateStatus && <hr className="my-1" />}
+                            {onUpdateStatus && isAdmin && <hr className="my-1" />}
                             <button
                               onClick={() => handleDelete(booking.id)}
                               className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"

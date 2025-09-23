@@ -235,8 +235,9 @@ export const bookingApi = {
         'Authorization': `Bearer ${token}`,
       };
   
+      // Make sure this uses PUT method
       const response = await fetch(`${API_BASE_URL}/car-bookings/${id}/status`, {
-        method: 'PATCH',
+        method: 'PUT',  // Should be PUT, not PATCH
         headers,
         body: JSON.stringify({ status }),
       });
@@ -562,5 +563,92 @@ export const serviceBookingApi = {
     }
 
     return response.json();
+  },  // <- Added missing comma here
+
+  // Update service booking status (admin only)
+  // Around line 565, update the updateBookingStatus function
+  updateBookingStatus: async (id: string, status: string): Promise<void> => {
+    const token = localStorage.getItem('driveEasyToken');
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+  
+    console.log('🚀 Frontend: Starting status update request');
+    console.log('Request details:', { id, status, token: token ? 'present' : 'missing' });
+  
+    const requestBody = { status };
+    console.log('Request body:', requestBody);
+  
+    const url = `${API_BASE_URL}/bookings/service-bookings/${id}/status`;
+    console.log('Request URL:', url);
+  
+    try {
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+  
+      console.log('Response received:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: Object.fromEntries(response.headers.entries())
+      });
+  
+      const responseText = await response.text();
+      console.log('Response text:', responseText);
+  
+      if (!response.ok) {
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+          console.log('Parsed error data:', errorData);
+        } catch (parseError) {
+          console.log('Failed to parse error response as JSON:', parseError);
+          errorData = { error: responseText };
+        }
+        
+        console.error('❌ API Error:', errorData);
+        throw new Error(errorData.error || `Failed to update booking status: ${response.status} ${response.statusText}`);
+      }
+  
+      console.log('✅ Status updated successfully');
+      
+      // Try to parse success response
+      try {
+        const successData = JSON.parse(responseText);
+        console.log('Success response data:', successData);
+      } catch (parseError) {
+        console.log('Response is not JSON (but request succeeded):', responseText);
+      }
+    } catch (fetchError) {
+      console.error('💥 Fetch error:', fetchError);
+      throw fetchError;
+    }
+  },
+
+  // Delete service booking
+  deleteBooking: async (id: string): Promise<void> => {
+    const token = localStorage.getItem('driveEasyToken');
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
+    const response = await fetch(`${API_BASE_URL}/bookings/service-bookings/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || 'Failed to delete booking');
+    }
   }
 };
