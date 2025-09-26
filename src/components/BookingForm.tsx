@@ -357,6 +357,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           onCouponApplied={handleCouponApplied}
           onCouponRemoved={handleCouponRemoved}
           serviceType="car-booking"
+          bookingDurationHours={calculateTotalHours()}
         />
         
         {/* Add Total Amount to be Paid section */}

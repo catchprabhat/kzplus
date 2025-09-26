@@ -2,8 +2,10 @@ import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
 import { emailService } from '../services/emailService';
 import { authenticateUser } from '../middleware/userAuth';
+// Remove this line: import jwt from 'jsonwebtoken';
 
 const router = express.Router();
+// Remove this line: const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 // Create a new car booking (WITHOUT authentication - original endpoint)
 router.post('/', async (req: Request, res: Response) => {
@@ -119,9 +121,10 @@ router.get('/available-cars', async (req: Request, res: Response) => {
     }
 
     // Get booked car IDs for the date range using template literal
+    // Exclude both 'cancelled' and 'deleted' bookings
     const bookedCars = await sql`
       SELECT car_id FROM car_bookings 
-      WHERE status != 'cancelled'
+      WHERE status != 'cancelled' AND status != 'deleted'
       AND (
         (pickup_date <= ${pickupDate as string} AND drop_date > ${pickupDate as string}) OR
         (pickup_date < ${dropDate as string} AND drop_date >= ${dropDate as string}) OR
@@ -307,13 +310,46 @@ router.put('/:id/status', authenticateUser, async (req: Request, res: Response) 
   }
 });
 
-// Delete booking
-router.delete('/:id', async (req: Request, res: Response) => {
+// Delete booking - Update booking status to deleted instead of permanent deletion
+router.delete('/:id', authenticateUser, async (req, res) => {
   const { id } = req.params;
   
   try {
+    const user = req.user;
+    
+    if (!user || !user.email) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Check if user is admin or owns the booking
+    const isAdmin = user.email === 'catchprabhat@gmail.com';
+    
+    if (!isAdmin) {
+      // Regular users can only delete their own bookings - use user_email instead of user_id
+      const userEmail = user.email.toLowerCase().trim();
+      const bookings = await sql`
+        SELECT * FROM car_bookings 
+        WHERE id = ${id} AND LOWER(TRIM(user_email)) = ${userEmail}
+      ` as any[];
+      
+      if (bookings.length === 0) {
+        return res.status(403).json({ error: 'You can only delete your own bookings' });
+      }
+    }
+    
+    // First check if booking exists
+    const existingBooking = await sql`
+      SELECT * FROM car_bookings WHERE id = ${id}
+    ` as any[];
+    
+    if (existingBooking.length === 0) {
+      return res.status(404).json({ error: 'Booking not found' });
+    }
+    
+    // Update the booking status to deleted
     const result = await sql`
-      DELETE FROM car_bookings 
+      UPDATE car_bookings 
+      SET status = 'deleted'
       WHERE id = ${id} 
       RETURNING *
     ` as any[];
@@ -322,10 +358,18 @@ router.delete('/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
     
-    res.json({ message: 'Booking deleted successfully' });
+    console.log('Booking status updated to deleted:', result[0]);
+    res.json({ 
+      success: true,
+      message: 'Booking status updated to deleted successfully', 
+      booking: result[0] 
+    });
   } catch (error) {
-    console.error('Error deleting booking:', error);
-    res.status(500).json({ error: 'Failed to delete booking' });
+    console.error('Error updating booking status to deleted:', error);
+    res.status(500).json({ 
+      error: 'Failed to update booking status',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    });
   }
 });
 

@@ -176,11 +176,24 @@ export const useServiceBookings = () => {
 
   const deleteServiceBooking = async (id: string) => {
     try {
-      await serviceBookingApi.deleteBooking(id);
-      await fetchServiceBookings(); // Refresh the list
+      console.log('Attempting to delete service booking:', id);
+      const result = await serviceBookingApi.deleteBooking(id);
+      
+      // Update the local state to reflect the change - FIX: use setServiceBookings instead of setBookings
+      setServiceBookings(prevBookings => 
+        prevBookings.map(booking => 
+          booking.id === id 
+            ? { ...booking, status: 'deleted' as any }
+            : booking
+        )
+      );
+      
+      console.log('Service booking deleted successfully:', result);
+      return result;
     } catch (error) {
       console.error('Error deleting service booking:', error);
-      throw error;
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      throw new Error(`Failed to delete booking: ${errorMessage}`);
     }
   };
 

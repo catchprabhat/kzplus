@@ -11,7 +11,8 @@ export const useCoupon = () => {
   const validateCoupon = useCallback(async (
     code: string, 
     orderAmount: number, 
-    serviceType: string = 'car-booking'
+    serviceType: string = 'car-booking',
+    bookingDurationHours?: number
   ): Promise<CouponValidationResult> => {
     if (!code.trim()) {
       const result = {
@@ -26,7 +27,7 @@ export const useCoupon = () => {
     setIsValidating(true);
     
     try {
-      const result = await couponService.validateCoupon(code, orderAmount, serviceType);
+      const result = await couponService.validateCoupon(code, orderAmount, serviceType, bookingDurationHours);
       setValidationMessage(result.message);
       setIsValid(result.isValid);
       return result;
@@ -46,12 +47,13 @@ export const useCoupon = () => {
   const applyCoupon = useCallback(async (
     code: string, 
     orderAmount: number, 
-    serviceType: string = 'car-booking'
+    serviceType: string = 'car-booking',
+    bookingDurationHours?: number
   ): Promise<AppliedCoupon | null> => {
-    const validation = await validateCoupon(code, orderAmount, serviceType);
+    const validation = await validateCoupon(code, orderAmount, serviceType, bookingDurationHours);
     
     if (validation.isValid) {
-      const applied = await couponService.applyCoupon(code, orderAmount, serviceType);
+      const applied = await couponService.applyCoupon(code, orderAmount, serviceType, bookingDurationHours);
       if (applied) {
         setAppliedCoupon(applied);
         return applied; // Return the applied coupon data

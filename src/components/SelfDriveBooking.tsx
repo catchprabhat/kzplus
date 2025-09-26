@@ -41,13 +41,74 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   };
 
   const handleDateSelect = (date: Date) => {
+    const today = new Date();
+    const isToday = date.toDateString() === today.toDateString();
+    
     if (selectingStartDate) {
       setTripStartDate(date);
+      
+      // If the current end date is before the new start date, reset it
+      if (tripEndDate && tripEndDate < date) {
+        setTripEndDate(null);
+      }
+      
+      // If today is selected, set start time to current time + 1 hour
+      if (isToday) {
+        const now = new Date();
+        const nextHour = Math.min(now.getHours() + 1, 12); // Limit to 12 for 12-hour format
+        const period = now.getHours() + 1 >= 12 ? 'PM' : 'AM';
+        const adjustedHour = nextHour > 12 ? nextHour - 12 : nextHour === 0 ? 12 : nextHour;
+        
+        setStartTime({
+          hour: adjustedHour,
+          minute: 0,
+          period: period
+        });
+      }
+      
       setSelectingStartDate(false);
     } else {
-      setTripEndDate(date);
-      setSelectingStartDate(true);
+      // Only allow selecting end date if it's on or after the start date
+      if (tripStartDate && date >= tripStartDate) {
+        setTripEndDate(date);
+        setSelectingStartDate(true);
+      }
+      // If trying to select a date before start date, do nothing or show a message
     }
+  };
+
+  // Add function to generate available time options based on selected date
+  const generateTimeOptions = (type: 'start' | 'end', selectedDate: Date | null) => {
+    const options = [];
+    const today = new Date();
+    const isToday = selectedDate?.toDateString() === today.toDateString();
+    
+    if (type === 'start' && isToday) {
+      // For start time on today, only show times after current time + 1 hour
+      const minHour = Math.min(today.getHours() + 1, 23);
+      const currentPeriod = minHour >= 12 ? 'PM' : 'AM';
+      const adjustedMinHour = minHour > 12 ? minHour - 12 : minHour === 0 ? 12 : minHour;
+      
+      // Generate hours from minimum hour to 12
+      for (let hour = adjustedMinHour; hour <= 12; hour++) {
+        options.push({ value: hour, period: currentPeriod });
+      }
+      
+      // If we're in AM and there's room, add PM hours
+      if (currentPeriod === 'AM') {
+        for (let hour = 1; hour <= 12; hour++) {
+          options.push({ value: hour, period: 'PM' });
+        }
+      }
+    } else {
+      // Normal time options
+      for (let hour = 1; hour <= 12; hour++) {
+        options.push({ value: hour, period: 'AM' });
+        options.push({ value: hour, period: 'PM' });
+      }
+    }
+    
+    return options;
   };
 
   const handleTimeChange = (type: 'start' | 'end', field: 'hour' | 'minute' | 'period', value: any) => {
@@ -323,13 +384,6 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       <ChevronRight className="w-5 h-5" />
                     </button>
                   </div>
-                  <div className="grid grid-cols-7 gap-1 mb-2">
-                    {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(day => (
-                      <div key={day} className="text-center text-sm font-medium text-gray-500 dark:text-gray-400 p-2">
-                        {day}
-                      </div>
-                    ))}
-                  </div>
                   <div className="grid grid-cols-7 gap-1">
                     {generateCalendarDays(currentMonth).map((day, index) => {
                       const isSelected = (tripStartDate && day.date.toDateString() === tripStartDate.toDateString()) ||
@@ -337,17 +391,21 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       const isInRange = tripStartDate && tripEndDate &&
                                       day.date >= tripStartDate && day.date <= tripEndDate;
                       
+                      // Disable dates before start date when selecting end date
+                      const isDisabled = (day.date < new Date() && !day.isToday) ||
+                                       (!selectingStartDate && tripStartDate && day.date < tripStartDate);
+                      
                       return (
                         <button
                           key={index}
                           onClick={() => handleDateSelect(day.date)}
-                          disabled={day.date < new Date() && !day.isToday}
+                          disabled={isDisabled}
                           className={`
                             p-2 text-sm rounded transition-colors
                             ${
                               !day.isCurrentMonth
                                 ? 'text-gray-300 dark:text-gray-600'
-                                : day.date < new Date() && !day.isToday
+                                : isDisabled
                                 ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                                 : isSelected
                                 ? 'bg-blue-600 text-white'
@@ -387,17 +445,21 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       const isInRange = tripStartDate && tripEndDate &&
                                       day.date >= tripStartDate && day.date <= tripEndDate;
                       
+                      // Disable dates before start date when selecting end date
+                      const isDisabled = (day.date < new Date() && !day.isToday) ||
+                                       (!selectingStartDate && tripStartDate && day.date < tripStartDate);
+                      
                       return (
                         <button
                           key={index}
                           onClick={() => handleDateSelect(day.date)}
-                          disabled={day.date < new Date() && !day.isToday}
+                          disabled={isDisabled}
                           className={`
                             p-2 text-sm rounded transition-colors
                             ${
                               !day.isCurrentMonth
                                 ? 'text-gray-300 dark:text-gray-600'
-                                : day.date < new Date() && !day.isToday
+                                : isDisabled
                                 ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                                 : isSelected
                                 ? 'bg-blue-600 text-white'
@@ -435,9 +497,17 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                         onChange={(e) => handleTimeChange('start', 'hour', parseInt(e.target.value))}
                         className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
-                        {Array.from({ length: 12 }, (_, i) => i + 1).map(hour => (
-                          <option key={hour} value={hour}>{hour}</option>
-                        ))}
+                        {(() => {
+                          const today = new Date();
+                          const isToday = tripStartDate?.toDateString() === today.toDateString();
+                          const minHour = isToday ? Math.min(today.getHours() + 1, 23) : 1;
+                          const startHour = isToday && minHour > 12 ? minHour - 12 : isToday && minHour === 0 ? 12 : isToday ? minHour : 1;
+                          const maxHour = 12;
+                          
+                          return Array.from({ length: maxHour - startHour + 1 }, (_, i) => startHour + i).map(hour => (
+                            <option key={hour} value={hour}>{hour}</option>
+                          ));
+                        })()}
                       </select>
                       <span className="text-gray-500">:</span>
                       <select
@@ -454,8 +524,20 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                         onChange={(e) => handleTimeChange('start', 'period', e.target.value)}
                         className="p-2 border border-gray-300 dark:border-dark-600 rounded dark:bg-dark-700 dark:text-gray-300"
                       >
-                        <option value="AM">AM</option>
-                        <option value="PM">PM</option>
+                        {(() => {
+                          const today = new Date();
+                          const isToday = tripStartDate?.toDateString() === today.toDateString();
+                          const options = [];
+                          
+                          if (!isToday || today.getHours() < 12) {
+                            options.push(<option key="AM" value="AM">AM</option>);
+                          }
+                          if (!isToday || today.getHours() >= 11) {
+                            options.push(<option key="PM" value="PM">PM</option>);
+                          }
+                          
+                          return options;
+                        })()}
                       </select>
                     </div>
                     <div className="text-blue-600 font-medium">

@@ -27,12 +27,32 @@ export const BookingList: React.FC<BookingListProps> = ({
   const isAdmin = user?.email === 'catchprabhat@gmail.com';
 
   useEffect(() => {
-    // Filter bookings based on phoneFilter - with safe toLowerCase
-    const filtered = bookings.filter((booking) =>
-      booking.customerPhone?.toLowerCase()?.includes(phoneFilter.toLowerCase()) || false
-    );
+    // Filter bookings based on phoneFilter and exclude deleted bookings
+    const filtered = bookings.filter((booking) => {
+      const matchesPhone = booking.customerPhone?.toLowerCase()?.includes(phoneFilter.toLowerCase()) || false;
+      // Filter out deleted bookings from frontend display
+      const isNotDeleted = booking.status !== 'deleted';
+      return matchesPhone && isNotDeleted;
+    });
     setFilteredBookings(filtered);
   }, [bookings, phoneFilter]);
+
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      confirmed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300', label: 'Confirmed' },
+      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300', label: 'Pending' },
+      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300', label: 'Cancelled' },
+      deleted: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-800 dark:text-gray-300', label: 'Deleted' }
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
 
   const formatDate = (date: Date) => {
     return new Date(date.toString()).toLocaleDateString('en-US', {
@@ -110,7 +130,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   const handleDelete = async (id: string) => {
     if (!onDelete) return;
     
-    if (window.confirm('Are you sure you want to delete this booking?')) {
+    if (window.confirm('Are you sure you want to delete this booking? This will mark it as deleted.')) {
       setActionLoading(id);
       setOpenDropdown(null);
       
@@ -118,6 +138,7 @@ export const BookingList: React.FC<BookingListProps> = ({
         await onDelete(id);
       } catch (error) {
         console.error('Error deleting booking:', error);
+        alert('Failed to delete booking. Please try again.');
       } finally {
         setActionLoading(null);
       }
@@ -178,7 +199,7 @@ export const BookingList: React.FC<BookingListProps> = ({
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
                   {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                 </span>
-                {(onUpdateStatus || onDelete) && (
+                {(onUpdateStatus || onDelete) && booking.status !== 'deleted' && (
                   <div className="relative">
                     <button
                       onClick={() => setOpenDropdown(openDropdown === booking.id ? null : booking.id)}

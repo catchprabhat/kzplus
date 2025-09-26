@@ -17,10 +17,21 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const today = new Date().toISOString().split('T')[0];
   
   // Generate time slots in 30-minute intervals
-  const generateTimeSlots = () => {
+  const generateTimeSlots = (selectedDate?: string) => {
     const slots = [];
-    for (let hour = 0; hour < 24; hour++) {
+    const now = new Date();
+    const isToday = selectedDate === today;
+    
+    // If today is selected, start from current hour + 1
+    const startHour = isToday ? Math.min(now.getHours() + 1, 23) : 0;
+    
+    for (let hour = startHour; hour < 24; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
+        // If it's today and we're at the start hour, skip times before current time + 1 hour
+        if (isToday && hour === now.getHours() + 1 && minute < now.getMinutes()) {
+          continue;
+        }
+        
         const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         const displayTime = new Date(`2000-01-01T${timeString}`).toLocaleTimeString('en-US', {
           hour: 'numeric',
@@ -33,7 +44,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     return slots;
   };
 
-  const timeSlots = generateTimeSlots();
+  const timeSlots = generateTimeSlots(pickupDateTime.date);
   
   const calculateDuration = () => {
     if (pickupDate && dropDate) {
@@ -70,7 +81,23 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const dropDateTime = parseDateTime(dropDate);
 
   const handlePickupDateChange = (date: string) => {
-    onPickupDateChange(combineDateTime(date, pickupDateTime.time));
+    const isToday = date === today;
+    let newTime = pickupDateTime.time;
+    
+    // If today is selected, set time to current time + 1 hour
+    if (isToday) {
+      const now = new Date();
+      const nextHour = Math.min(now.getHours() + 1, 23);
+      const minutes = Math.ceil(now.getMinutes() / 30) * 30; // Round to next 30-minute slot
+      
+      if (minutes >= 60) {
+        newTime = `${(nextHour + 1).toString().padStart(2, '0')}:00`;
+      } else {
+        newTime = `${nextHour.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+      }
+    }
+    
+    onPickupDateChange(combineDateTime(date, newTime));
   };
 
   const handlePickupTimeChange = (time: string) => {

@@ -4,55 +4,89 @@ class CouponService {
   private coupons: Coupon[] = [
     {
       id: '1',
-      code: 'DISCOUNT20',
-      name: 'Special Discount',
-      description: '20% discount on car bookings',
+      code: 'JIX3D20',
+      name: '3 Day Special',
+      description: '20% off for bookings 72+ hours',
       discountType: 'percentage',
       discountValue: 20,
-      minOrderAmount: 2000,
-      maxDiscountAmount: 5000,
+      minOrderAmount: 0,
+      maxDiscountAmount: undefined,
       validFrom: new Date(),
-      validUntil: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
-      usageLimit: 1000,
+      validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Valid for 1 year
+      usageLimit: undefined,
       usedCount: 0,
       isActive: true,
       applicableServices: ['car-booking'],
       termsAndConditions: [
-        'Valid only for car bookings above ₹2000',
-        'Cannot be combined with other offers',
-        'Valid for next 10 days only',
-        'Maximum discount amount is ₹5000',
-        'One time use per customer'
+        'Valid only for bookings with duration of 72 hours or more',
+        'Cannot be combined with other offers'
       ],
       createdAt: new Date(),
       updatedAt: new Date()
     },
     {
       id: '2',
-      code: 'FIRSTRIDE50',
-      name: 'First Ride Offer',
-      description: 'Flat ₹500 off on first booking',
-      discountType: 'fixed',
-      discountValue: 500,
-      minOrderAmount: 500,
-      maxDiscountAmount: 50,
+      code: 'JIX5D30',
+      name: '5 Day Special',
+      description: '30% off for bookings 120+ hours',
+      discountType: 'percentage',
+      discountValue: 30,
+      minOrderAmount: 0,
+      maxDiscountAmount: undefined,
       validFrom: new Date(),
-      validUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      usageLimit: 500,
+      validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Valid for 1 year
+      usageLimit: undefined,
       usedCount: 0,
       isActive: true,
       applicableServices: ['car-booking'],
       termsAndConditions: [
-        'Valid only for first-time users',
-        'Minimum booking amount ₹500',
-        'Valid for 30 days from registration',
-        'Cannot be combined with other offers',
-        'Applicable on all car booking services'
+        'Valid only for bookings with duration of 120 hours or more',
+        'Cannot be combined with other offers'
       ],
       createdAt: new Date(),
       updatedAt: new Date()
     },
-    
+    {
+      id: '3',
+      code: 'JIX7D40',
+      name: '7 Day Special',
+      description: '40% off for bookings 168+ hours',
+      discountType: 'percentage',
+      discountValue: 40,
+      minOrderAmount: 0,
+      maxDiscountAmount: undefined,
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Valid for 1 year
+      usageLimit: undefined,
+      usedCount: 0,
+      isActive: true,
+      applicableServices: ['car-booking'],
+      termsAndConditions: [
+        'Valid only for bookings with duration of 168 hours or more',
+        'Cannot be combined with other offers'
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '4',
+      code: 'JIXADMIN20',
+      name: 'Admin Special',
+      description: '20% off - No restrictions',
+      discountType: 'percentage',
+      discountValue: 20,
+      minOrderAmount: 0,
+      maxDiscountAmount: undefined,
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000), // Valid for 1 year
+      usageLimit: undefined,
+      usedCount: 0,
+      isActive: true,
+      applicableServices: ['car-booking'],
+      termsAndConditions: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
   ];
 
   async getCouponByCode(code: string): Promise<Coupon | null> {
@@ -65,7 +99,8 @@ class CouponService {
   async validateCoupon(
     code: string, 
     orderAmount: number, 
-    serviceType: string = 'car-booking'
+    serviceType: string = 'car-booking',
+    bookingDurationHours?: number
   ): Promise<CouponValidationResult> {
     const coupon = await this.getCouponByCode(code);
     
@@ -117,6 +152,28 @@ class CouponService {
       };
     }
 
+    // Check duration requirements for specific coupons
+    if (bookingDurationHours !== undefined) {
+      if (coupon.code === 'JIX3D20' && bookingDurationHours < 72) {
+        return {
+          isValid: false,
+          message: 'This coupon requires a booking duration of at least 72 hours (3 days)'
+        };
+      }
+      if (coupon.code === 'JIX5D30' && bookingDurationHours < 120) {
+        return {
+          isValid: false,
+          message: 'This coupon requires a booking duration of at least 120 hours (5 days)'
+        };
+      }
+      if (coupon.code === 'JIX7D40' && bookingDurationHours < 168) {
+        return {
+          isValid: false,
+          message: 'This coupon requires a booking duration of at least 168 hours (7 days)'
+        };
+      }
+    }
+
     // Calculate discount
     let discountAmount = 0;
     if (coupon.discountType === 'percentage') {
@@ -141,9 +198,10 @@ class CouponService {
   async applyCoupon(
     code: string, 
     orderAmount: number, 
-    serviceType: string = 'car-booking'
+    serviceType: string = 'car-booking',
+    bookingDurationHours?: number
   ): Promise<AppliedCoupon | null> {
-    const validation = await this.validateCoupon(code, orderAmount, serviceType);
+    const validation = await this.validateCoupon(code, orderAmount, serviceType, bookingDurationHours);
     
     if (!validation.isValid || !validation.discountAmount || !validation.finalAmount) {
       return null;

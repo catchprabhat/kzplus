@@ -279,22 +279,45 @@ export const bookingApi = {
   },
 
   // Delete a booking
+  // Delete a booking
   async deleteBooking(id: string): Promise<void> {
     try {
+      const token = localStorage.getItem('driveEasyToken');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+      
+      console.log('Attempting to delete booking:', id);
+      
       const response = await fetch(`${API_BASE_URL}/car-bookings/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
       });
       
+      console.log('Delete response status:', response.status);
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete booking');
+        const errorText = await response.text();
+        console.error('Delete booking error response:', errorText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || 'Failed to delete booking' };
+        }
+        
+        throw new Error(errorData.error || `HTTP ${response.status}: Failed to delete booking`);
       }
+      
+      const responseText = await response.text();
+      console.log('Delete booking success:', responseText);
     } catch (error) {
       console.error('Error deleting booking:', error);
-      throw new Error('Failed to delete booking');
+      throw error;
     }
   }
 };
@@ -567,88 +590,95 @@ export const serviceBookingApi = {
 
   // Update service booking status (admin only)
   // Around line 565, update the updateBookingStatus function
-  updateBookingStatus: async (id: string, status: string): Promise<void> => {
-    const token = localStorage.getItem('driveEasyToken');
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-  
-    console.log('🚀 Frontend: Starting status update request');
-    console.log('Request details:', { id, status, token: token ? 'present' : 'missing' });
-  
-    const requestBody = { status };
-    console.log('Request body:', requestBody);
-  
-    const url = `${API_BASE_URL}/bookings/service-bookings/${id}/status`;
-    console.log('Request URL:', url);
-  
+  // Update service booking status - FIXED
+  updateBookingStatus: async (id: string, status: string): Promise<ServiceBooking> => {
     try {
+      const url = `${API_BASE_URL}/bookings/service-bookings/${id}/status`;
+      console.log('🔄 Making status update request to:', url);
+      console.log('📊 Request payload:', { status });
+      
+      const token = localStorage.getItem('driveEasyToken');
+      if (!token) {
+        throw new Error('Authentication required. Please log in.');
+      }
+      
       const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody),
+        body: JSON.stringify({ status }),
       });
-  
-      console.log('Response received:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        headers: Object.fromEntries(response.headers.entries())
-      });
-  
-      const responseText = await response.text();
-      console.log('Response text:', responseText);
-  
+      
+      console.log('📡 Response status:', response.status);
+      console.log('📡 Response ok:', response.ok);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error response text:', errorText);
+        
         let errorData;
         try {
-          errorData = JSON.parse(responseText);
-          console.log('Parsed error data:', errorData);
-        } catch (parseError) {
-          console.log('Failed to parse error response as JSON:', parseError);
-          errorData = { error: responseText };
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || 'Unknown error' };
         }
         
-        console.error('❌ API Error:', errorData);
-        throw new Error(errorData.error || `Failed to update booking status: ${response.status} ${response.statusText}`);
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
-  
-      console.log('✅ Status updated successfully');
       
-      // Try to parse success response
-      try {
-        const successData = JSON.parse(responseText);
-        console.log('Success response data:', successData);
-      } catch (parseError) {
-        console.log('Response is not JSON (but request succeeded):', responseText);
-      }
+      const result = await response.json();
+      console.log('✅ Status update successful:', result);
+      return result;
     } catch (fetchError) {
       console.error('💥 Fetch error:', fetchError);
       throw fetchError;
     }
   },
 
-  // Delete service booking
+  // Delete service booking - FIXED
   deleteBooking: async (id: string): Promise<void> => {
-    const token = localStorage.getItem('driveEasyToken');
-    if (!token) {
-      throw new Error('Authentication required');
+    try {
+      const token = localStorage.getItem('driveEasyToken');
+      if (!token) {
+        throw new Error('Authentication required. Please log in.');
+      }
+      
+      console.log('🗑️ Attempting to delete booking:', id);
+      console.log('🔑 Using token:', token ? 'Token present' : 'No token');
+      
+      const response = await fetch(`${API_BASE_URL}/bookings/service-bookings/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('📡 Delete response status:', response.status);
+      console.log('📡 Delete response ok:', response.ok);
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Delete error response:', errorText);
+        
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || 'Unknown error' };
+        }
+        
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+  
+      const result = await response.json();
+      console.log('✅ Delete booking success:', result);
+      return result;
+    } catch (error) {
+      console.error('💥 Delete booking network error:', error);
+      throw error;
     }
-
-    const response = await fetch(`${API_BASE_URL}/bookings/service-bookings/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to delete booking');
-    }
-  }
+  },
 };

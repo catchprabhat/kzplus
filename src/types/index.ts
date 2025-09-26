@@ -32,7 +32,7 @@ export interface Booking {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
-  status: 'confirmed' | 'pending' | 'cancelled';
+  status: 'confirmed' | 'pending' | 'cancelled' | 'deleted'; // Added 'deleted'
   createdAt: Date;
   couponCode?: string;
   discountAmount?: number;
@@ -68,7 +68,7 @@ export interface ServiceBooking {
   totalPrice: number;
   scheduledDate: Date;
   scheduledTime: string;
-  status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'in-progress' | 'completed' | 'cancelled' | 'deleted'; // Added 'deleted'
   notes?: string;
   createdAt: Date;
 }

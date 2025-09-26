@@ -144,9 +144,16 @@ export const useBookings = () => {
   const deleteBooking = async (id: string) => {
     try {
       setError(null);
+      console.log('Deleting booking with ID:', id);
+      
       await bookingApi.deleteBooking(id);
-      setBookings(prev => prev.filter(booking => booking.id !== id));
+      
+      // Instead of filtering out, refresh the list to get updated statuses
+      await fetchBookings();
+      
+      console.log('Booking deleted successfully');
     } catch (err) {
+      console.error('Delete booking error in hook:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete booking';
       setError(errorMessage);
       throw new Error(errorMessage);

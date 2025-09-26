@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, User, Car, Phone, Mail, Clock, DollarSign, MoreVertical, Edit, Trash2, CheckCircle } from 'lucide-react';
 import { ServiceBooking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
@@ -19,10 +19,43 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 }) => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [filteredBookings, setFilteredBookings] = useState<ServiceBooking[]>(bookings);
+  const [phoneFilter, setPhoneFilter] = useState('');
   const { user } = useAuth();
 
   // Check if current user is admin
   const isAdmin = user?.email === 'catchprabhat@gmail.com';
+
+  // Move this useEffect inside the component
+  useEffect(() => {
+    const filtered = bookings.filter((booking) => {
+      const matchesPhone = booking.customerPhone?.toLowerCase()?.includes(phoneFilter.toLowerCase()) || false;
+      // Filter out deleted bookings from frontend display
+      const isNotDeleted = booking.status !== 'deleted';
+      return matchesPhone && isNotDeleted;
+    });
+    setFilteredBookings(filtered);
+  }, [bookings, phoneFilter]);
+
+  // Move this function inside the component
+  const getStatusBadge = (status: string) => {
+    const statusConfig = {
+      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300', label: 'Pending' },
+      confirmed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300', label: 'Confirmed' },
+      'in-progress': { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-300', label: 'In Progress' },
+      completed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300', label: 'Completed' },
+      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300', label: 'Cancelled' },
+      deleted: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-800 dark:text-gray-300', label: 'Deleted' }
+    };
+    
+    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    
+    return (
+      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
 
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -74,13 +107,19 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
   const handleDelete = async (id: string) => {
     if (!onDelete) return;
     
-    if (window.confirm('Are you sure you want to delete this service booking?')) {
+    if (window.confirm('Are you sure you want to cancel this service booking?')) {
       try {
         setActionLoading(id);
         await onDelete(id);
         setOpenDropdown(null);
+        
+        // Show success message
+        alert('Service booking cancelled successfully!');
+        console.log('Service booking cancelled successfully');
       } catch (error) {
-        console.error('Failed to delete service booking:', error);
+        console.error('Failed to cancel service booking:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(`Failed to cancel service booking: ${errorMessage}`);
       } finally {
         setActionLoading(null);
       }
@@ -148,7 +187,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
       </h3>
       
       <div className="space-y-4">
-        {bookings.map((booking) => (
+        {filteredBookings.map((booking) => (
           <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-6 hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
               <div>
@@ -164,7 +203,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
                   {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).replace('-', ' ')}
                 </span>
-                {(onUpdateStatus || onDelete) && (
+                {(onUpdateStatus || onDelete) && booking.status !== 'deleted' && (
                   <div className="relative">
                     <button
                       onClick={() => setOpenDropdown(openDropdown === booking.id ? null : booking.id)}
@@ -213,8 +252,8 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                             </button>
                           </>
                         )}
-                        {/* Show delete option for all users */}
-                        {onDelete && (
+                        {/* Show delete option only if not already deleted */}
+                        {onDelete && booking.status !== 'deleted' && (
                           <>
                             {onUpdateStatus && isAdmin && <hr className="my-1" />}
                             <button
@@ -280,4 +319,36 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
       </div>
     </div>
   );
+};
+
+// Add this to your booking display logic
+const getStatusDisplay = (status: string) => {
+  switch (status) {
+    case 'deleted':
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+          Deleted
+        </span>
+      );
+    case 'pending':
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+          Pending
+        </span>
+      );
+    case 'confirmed':
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+          Confirmed
+        </span>
+      );
+    case 'cancelled':
+      return (
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+          Cancelled
+        </span>
+      );
+    default:
+      return status;
+  }
 };

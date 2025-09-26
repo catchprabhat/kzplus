@@ -63,6 +63,11 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
 
   const getBookingsForDate = (date: Date): Booking[] => {
     return bookings.filter(booking => {
+      // First filter out deleted bookings
+      if (booking.status === 'deleted') {
+        return false;
+      }
+      
       // Ensure dates are properly parsed as Date objects
       const bookingStart = new Date(booking.pickupDate);
       const bookingEnd = new Date(booking.dropDate);

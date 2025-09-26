@@ -21,7 +21,9 @@ export const useCalendarBookings = () => {
       
       // Use getBookings() instead of getAllBookings() - this fetches all bookings for calendar view
       const apiBookings = await bookingApi.getBookings();
-      const convertedBookings = apiBookings.map(convertApiBooking);
+      const convertedBookings = apiBookings
+        .map(convertApiBooking)
+        .filter(booking => booking.status !== 'deleted'); // Filter out deleted bookings
       setBookings(convertedBookings);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch bookings';

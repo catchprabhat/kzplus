@@ -972,10 +972,10 @@ function App() {
                             Login Required
                           </span>
                         )}
-                        {((key === 'bookings' && bookings.length > 0) || 
-                          (key === 'service-bookings' && serviceBookings.length > 0)) && (
+                        {((key === 'bookings' && bookings.filter(booking => booking.status !== 'deleted').length > 0) || 
+                          (key === 'service-bookings' && serviceBookings.filter(booking => booking.status !== 'deleted').length > 0)) && (
                           <span className="ml-auto bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2 py-1 rounded-full">
-                            {key === 'bookings' ? bookings.length : serviceBookings.length}
+                            {key === 'bookings' ? bookings.filter(booking => booking.status !== 'deleted').length : serviceBookings.filter(booking => booking.status !== 'deleted').length}
                           </span>
                         )}
                       </button>
@@ -1048,10 +1048,10 @@ function App() {
                           Login Required
                         </span>
                       )}
-                      {((key === 'bookings' && bookings.length > 0) || 
-                        (key === 'service-bookings' && serviceBookings.length > 0)) && (
+                      {((key === 'bookings' && bookings.filter(booking => booking.status !== 'deleted').length > 0) || 
+                        (key === 'service-bookings' && serviceBookings.filter(booking => booking.status !== 'deleted').length > 0)) && (
                         <span className="ml-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
-                          {key === 'bookings' ? bookings.length : serviceBookings.length}
+                          {key === 'bookings' ? bookings.filter(booking => booking.status !== 'deleted').length : serviceBookings.filter(booking => booking.status !== 'deleted').length}
                         </span>
                       )}
                     </button>

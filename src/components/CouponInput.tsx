@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Tag, X, Check, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { Tag, X, Check, AlertCircle } from 'lucide-react';
 import { useCoupon } from '../hooks/useCoupon';
-import { Coupon } from '../types/coupon';
 
 interface CouponInputProps {
   orderAmount: number;
   onCouponApplied: (discountAmount: number, finalAmount: number) => void;
   onCouponRemoved: () => void;
   serviceType?: string;
+  bookingDurationHours?: number; // Add this prop
 }
 
 export const CouponInput: React.FC<CouponInputProps> = ({
   orderAmount,
   onCouponApplied,
   onCouponRemoved,
-  serviceType = 'car-booking'
+  serviceType = 'car-booking',
+  bookingDurationHours // Add this prop
 }) => {
   const [couponCode, setCouponCode] = useState('');
-  const [showOffers, setShowOffers] = useState(false);
-  const [availableCoupons, setAvailableCoupons] = useState<Coupon[]>([]);
   
   const {
     appliedCoupon,
@@ -26,25 +25,13 @@ export const CouponInput: React.FC<CouponInputProps> = ({
     validationMessage,
     isValid,
     applyCoupon,
-    removeCoupon,
-    getAllActiveCoupons
+    removeCoupon
   } = useCoupon();
 
-  useEffect(() => {
-    const loadCoupons = async () => {
-      const coupons = await getAllActiveCoupons();
-      setAvailableCoupons(coupons);
-    };
-    loadCoupons();
-  }, [getAllActiveCoupons]);
-
-  const handleApplyCoupon = async (code?: string) => {
-    const codeToApply = code || couponCode;
-    const appliedCouponData = await applyCoupon(codeToApply, orderAmount, serviceType);
+  const handleApplyCoupon = async () => {
+    const appliedCouponData = await applyCoupon(couponCode, orderAmount, serviceType, bookingDurationHours);
     if (appliedCouponData) {
       onCouponApplied(appliedCouponData.discountAmount, appliedCouponData.finalAmount);
-      setCouponCode(codeToApply);
-      setShowOffers(false);
     }
   };
 
@@ -52,12 +39,6 @@ export const CouponInput: React.FC<CouponInputProps> = ({
     removeCoupon();
     onCouponRemoved();
     setCouponCode('');
-    setShowOffers(false);
-  };
-
-  const handleCouponSelect = (code: string) => {
-    setCouponCode(code);
-    handleApplyCoupon(code);
   };
 
   return (
@@ -80,60 +61,13 @@ export const CouponInput: React.FC<CouponInputProps> = ({
             />
             <button
               type="button"
-              onClick={() => handleApplyCoupon()}
+              onClick={handleApplyCoupon}
               disabled={!couponCode.trim() || isValidating}
               className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
             >
               {isValidating ? 'Checking...' : 'Apply'}
             </button>
           </div>
-
-          {/* View Offers Button */}
-          <button
-            type="button"
-            onClick={() => setShowOffers(!showOffers)}
-            className="flex items-center justify-between w-full text-sm text-blue-600 hover:text-blue-800 font-medium"
-          >
-            <span>View Offers</span>
-            {showOffers ? (
-              <ChevronUp className="w-4 h-4" />
-            ) : (
-              <ChevronDown className="w-4 h-4" />
-            )}
-          </button>
-
-          {/* Offers Dropdown */}
-          {showOffers && (
-            <div className="mt-2 border border-gray-200 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-800 shadow-lg">
-              {availableCoupons.map((coupon) => (
-                <div key={coupon.id} className="p-4 border-b border-gray-100 dark:border-dark-700 last:border-b-0">
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <h5 className="font-semibold text-gray-900 dark:text-gray-200">{coupon.code}</h5>
-                      <p className="text-sm text-gray-600 dark:text-gray-200">{coupon.description}</p>
-                    </div>
-                    <button
-                      onClick={() => handleCouponSelect(coupon.code)}
-                      className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                  <div className="mt-2">
-                    <h6 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Terms & Conditions:</h6>
-                    <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
-                      {coupon.termsAndConditions.map((term, index) => (
-                        <li key={index} className="flex items-start space-x-1">
-                          <span className="text-gray-400 mt-0.5">•</span>
-                          <span>{term}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
 
           {validationMessage && (
             <div className={`flex items-center space-x-2 text-sm ${

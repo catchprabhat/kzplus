@@ -1,10 +1,12 @@
 import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
 import { authenticateUser } from '../middleware/userAuth';
-import jwt from 'jsonwebtoken';
+// Remove these unused imports:
+// import jwt from 'jsonwebtoken';
 
 const router = express.Router();
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+// Remove this unused constant:
+// const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
 interface ServiceBooking {
   id: number;
@@ -215,7 +217,7 @@ router.put('/service-bookings/:id/status', authenticateUser, async (req: Request
     console.log('✅ Admin access verified for:', user.email);
 
     // Validate status
-    const validStatuses = ['pending', 'confirmed', 'in-progress', 'completed', 'cancelled'];
+    const validStatuses = ['pending', 'confirmed', 'in-progress', 'completed', 'cancelled', 'deleted'];
     if (!validStatuses.includes(status)) {
       console.log('❌ Invalid status:', status, 'Valid statuses:', validStatuses);
       return res.status(400).json({ error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` });
@@ -294,23 +296,32 @@ router.put('/service-bookings/:id/status', authenticateUser, async (req: Request
   }
 });
 
-// Delete service booking
-router.delete('/service-bookings/:id', async (req, res) => {
+// Update service booking status to deleted instead of permanent deletion
+router.delete('/service-bookings/:id', authenticateUser, async (req, res) => {
   try {
     const { id } = req.params;
-    const authHeader = req.headers.authorization;
+    const userFromToken = req.user; // Get user from authenticateUser middleware
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
+    if (!userFromToken) {
+      return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const token = authHeader.substring(7);
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    const userEmail = decoded.email;
+    const userEmail = userFromToken.email;
+    const userPhone = userFromToken.phone;
+    
+    if (!userEmail && !userPhone) {
+      return res.status(400).json({ error: 'User identification required' });
+    }
 
-    // Find user
-    const users = await sql`SELECT * FROM users WHERE email = ${userEmail}` as any[];
-    const user = users[0];
+    // Find user by email or phone to get user ID
+    let user;
+    if (userEmail) {
+      const users = await sql`SELECT * FROM users WHERE email = ${userEmail}` as any[];
+      user = users[0];
+    } else if (userPhone) {
+      const users = await sql`SELECT * FROM users WHERE phone = ${userPhone}` as any[];
+      user = users[0];
+    }
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
@@ -331,13 +342,25 @@ router.delete('/service-bookings/:id', async (req, res) => {
       }
     }
 
-    // Delete the booking
-    await sql`DELETE FROM service_bookings WHERE id = ${id}`;
+    // Update the booking status to deleted instead of permanent deletion
+    const result = await sql`
+      UPDATE service_bookings 
+      SET status = 'deleted'
+      WHERE id = ${id}
+      RETURNING *
+    ` as any[];
+    
+    if (result.length === 0) {
+      return res.status(404).json({ error: 'Service booking not found' });
+    }
 
-    res.status(200).json({ message: 'Booking deleted successfully' });
+    res.status(200).json({ 
+      message: 'Service booking deleted successfully', 
+      booking: result[0] 
+    });
   } catch (error) {
-    console.error('Error deleting service booking:', error);
-    res.status(500).json({ error: 'Failed to delete booking' });
+    console.error('Error updating service booking status to deleted:', error);
+    res.status(500).json({ error: 'Failed to update booking status' });
   }
 });
 
