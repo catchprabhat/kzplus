@@ -42,8 +42,18 @@ export const useAuth = () => {
       if (userData.token) {
         localStorage.setItem('driveEasyToken', userData.token);
       }
+      
+      // Set loading state and navigate to home page
+      setLoading(true);
+      
+      // Small delay to show loading, then reload to fetch fresh data
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000); // 1000ms delay to show loading state
+      
     } catch (error) {
       console.error('Failed to save user session:', error);
+      setLoading(false);
     }
   };
 

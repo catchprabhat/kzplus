@@ -344,10 +344,12 @@ function App() {
   const login = (userData: any) => {
     originalLogin(userData);
     
-    // Handle post-login navigation
+    // Always navigate to home page after login instead of profile
+    setActiveTab('home');
+    
+    // Clear any redirect state
     if (redirectAfterLogin) {
-      setActiveTab(redirectAfterLogin as any);
-      setRedirectAfterLogin(null); // Clear the redirect state
+      setRedirectAfterLogin(null);
     }
   };
 
@@ -419,8 +421,11 @@ function App() {
   // Show loading spinner while checking authentication
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 flex items-center justify-center transition-colors duration-300">
-        <LoadingSpinner size="lg" text="Loading..." />
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
+        <div className="text-center">
+          <LoadingSpinner size="lg" text="Loading your dashboard..." />
+          <p className="mt-4 text-gray-300">Fetching your personalized data</p>
+        </div>
       </div>
     );
   }
