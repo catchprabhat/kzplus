@@ -552,10 +552,13 @@ function App() {
       setPickupDate('');
       setDropDate('');
       
-      // Hide confirmation after 5 seconds
-      setTimeout(() => {
-        setShowConfirmation(false);
-      }, 5000);
+      // Redirect to car availability page after successful booking
+    setActiveTab('calendar');
+    
+    // Hide confirmation after 5 seconds
+    setTimeout(() => {
+      setShowConfirmation(false);
+    }, 5000);
     } catch (error) {
       console.error('Error creating booking:', error);
       
