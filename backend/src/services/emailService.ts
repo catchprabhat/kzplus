@@ -92,7 +92,7 @@ class EmailService {
         
         <div class="footer">
           <p><strong>A+ Auto Care - Your Car Service Partner</strong></p>
-          <p>📞 Support | 📧 support@aplusautocare.com</p>
+          <p>📞 Support | 📧 kzplusmotors@gmail.com</p>
           <p style="font-size: 12px; color: #9ca3af;">
             This is an automated security message. Please do not reply to this email.
           </p>
@@ -150,7 +150,7 @@ This is an automated security message.
       try {
         // Send email using Resend
         const data = await this.resend.emails.send({
-          from: 'A+ Auto Care <support@kzplusautocare.in>', // Use your verified domain
+          from: 'A+ Auto Care <kzplusmotors@gmail.com>', // Use your verified domain
           to: email,
           subject: template.subject,
           html: template.html,
@@ -272,6 +272,218 @@ This is an automated security message.
       if (now > otpData.expiresAt) {
         this.otpStorage.delete(email);
       }
+    }
+  }
+
+  // Send car service booking confirmation email to both user and admin
+  async sendServiceBookingConfirmation(bookingDetails: {
+    userEmail: string;
+    userName: string;
+    userPhone: string;
+    vehicleNumber: string;
+    vehicleType: string;
+    services: Array<{ name: string; price: number }>;
+    scheduledDate: string;
+    scheduledTime: string;
+    totalPrice: number;
+    notes?: string;
+  }): Promise<{ success: boolean; message: string }> {
+    try {
+      const {
+        userEmail,
+        userName,
+        userPhone,
+        vehicleNumber,
+        vehicleType,
+        services,
+        scheduledDate,
+        scheduledTime,
+        totalPrice,
+        notes
+      } = bookingDetails;
+
+      // Format date for better readability
+      const formatDate = (dateString: string) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        });
+      };
+
+      const subject = '🔧 Booking Confirmed - A+ Auto Care Service';
+      const adminSubject = '🔧 Booking Received - New Service Appointment';
+
+      // Generate services list HTML
+      const servicesListHtml = services.map(service => 
+        `<div class="detail-row">
+          <span class="detail-label">🔧 ${service.name}:</span>
+          <span class="detail-value">₹${service.price}</span>
+        </div>`
+      ).join('');
+
+      // Generate services list for text version
+      const servicesListText = services.map(service => 
+        `- ${service.name}: ₹${service.price}`
+      ).join('\n');
+
+      const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Service Booking Confirmation - A+ Auto Care</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+            .content { background: #f8fafc; padding: 30px; border-radius: 0 0 10px 10px; }
+            .booking-card { background: white; padding: 25px; border-radius: 12px; margin: 20px 0; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+            .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
+            .detail-label { font-weight: bold; color: #374151; }
+            .detail-value { color: #1f2937; }
+            .total-price { background: #fef3c7; padding: 15px; border-radius: 8px; text-align: center; margin: 20px 0; }
+            .footer { text-align: center; margin-top: 30px; padding: 20px; color: #6b7280; font-size: 14px; }
+            .contact-info { background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .services-section { background: #f9fafb; padding: 20px; border-radius: 8px; margin: 20px 0; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>🔧 A+ AUTO CARE</h1>
+            <h2>Booking Confirmed! 🎉</h2>
+            <p>Your car service appointment has been scheduled</p>
+          </div>
+          
+          <div class="content">
+            <div class="booking-card">
+              <h3 style="margin-top: 0; color: #1f2937; text-align: center;">Service Booking Details</h3>
+              
+              <div class="detail-row">
+                <span class="detail-label">👤 Customer Name:</span>
+                <span class="detail-value">${userName}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">📧 Email Address:</span>
+                <span class="detail-value">${userEmail}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">📱 Phone Number:</span>
+                <span class="detail-value">${userPhone}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">🚗 Vehicle Number:</span>
+                <span class="detail-value">${vehicleNumber}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">🚙 Vehicle Type:</span>
+                <span class="detail-value">${vehicleType}</span>
+              </div>
+              
+              <div class="detail-row">
+                <span class="detail-label">📅 Service Date:</span>
+                <span class="detail-value">${formatDate(scheduledDate)}</span>
+              </div>
+              
+              <div class="detail-row" style="border-bottom: none;">
+                <span class="detail-label">⏰ Service Time:</span>
+                <span class="detail-value">${scheduledTime}</span>
+              </div>
+            </div>
+            
+            <div class="services-section">
+              <h4 style="margin-top: 0; color: #1f2937;">🔧 Services Booked:</h4>
+              ${servicesListHtml}
+            </div>
+            
+            <div class="total-price">
+              <h3 style="margin: 0; color: #d97706;">💰 Total Amount: ₹${totalPrice}</h3>
+            </div>
+            
+            ${notes ? `
+            <div class="contact-info">
+              <h4 style="margin-top: 0; color: #1e40af;">📝 Additional Notes:</h4>
+              <p style="margin: 5px 0;">${notes}</p>
+            </div>
+            ` : ''}
+            
+            <div class="contact-info">
+              <h4 style="margin-top: 0; color: #1e40af;">📞 Need Help?</h4>
+              <p style="margin: 5px 0;">📧 Email: kzplusmotors@gmail.com</p>
+              <p style="margin: 5px 0;">📱 Phone: +91-9876543210</p>
+              <p style="margin: 5px 0; font-size: 14px; color: #6b7280;">Our team will contact you before the service</p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>A+ AUTO CARE - Your Trusted Service Partner</strong></p>
+            <p style="font-size: 12px; color: #9ca3af;">
+              This is an automated confirmation email. Please save this for your records.
+            </p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Admin email template with different header
+      const adminHtml = html.replace(
+        '<h2>Booking Confirmed! 🎉</h2>',
+        '<h2>Booking Received! 📋</h2>'
+      ).replace(
+        '<p>Your car service appointment has been scheduled</p>',
+        '<p>A new service appointment has been booked</p>'
+      );
+
+      const text = `
+A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nService Booking Details:\n- Customer Name: ${userName}\n- Email: ${userEmail}\n- Phone: ${userPhone}\n- Vehicle: ${vehicleNumber} (${vehicleType})\n- Service Date: ${formatDate(scheduledDate)}\n- Service Time: ${scheduledTime}\n\nServices Booked:\n${servicesListText}\n\nTotal Amount: ₹${totalPrice}\n${notes ? `\nAdditional Notes: ${notes}\n` : ''}\nThank you for choosing A+ Auto Care!\n\nNeed help? Contact us at kzplusmotors@gmail.com
+      `;
+
+      const adminText = text.replace(
+        'Booking Confirmed! 🔧🎉',
+        'New Service Booking Received! 📋🔧'
+      ).replace(
+        'Thank you for choosing A+ Auto Care!',
+        'Please review this booking in your admin dashboard.'
+      );
+
+      // Send email to user
+      const userEmailResult = await this.resend.emails.send({
+        from: 'A+ Auto Care <support@kzplusautocare.in>',
+        to: userEmail,
+        subject: subject,
+        html: html,
+        text: text,
+      });
+
+      console.log('User service booking confirmation email sent successfully:', userEmailResult);
+
+      // Send email to admin
+      const adminEmailResult = await this.resend.emails.send({
+        from: 'A+ Auto Care <support@kzplusautocare.in>',
+        to: 'kzplusmotors@gmail.com',
+        subject: adminSubject,
+        html: adminHtml,
+        text: adminText,
+      });
+
+      console.log('Admin service booking notification email sent successfully:', adminEmailResult);
+      
+      return {
+        success: true,
+        message: 'Service booking confirmation emails sent successfully to user and admin'
+      };
+    } catch (error) {
+      console.error('Failed to send service booking confirmation emails:', error);
+      return {
+        success: false,
+        message: 'Failed to send service booking confirmation emails'
+      };
     }
   }
 
@@ -429,7 +641,7 @@ Booking Details:
 
 Thank you for choosing JIXDRIVE!
 
-Need help? Contact us at support@aplusautocare.com
+Need help? Contact us at jixdriveblr@gmail.com
       `;
 
       const adminText = text.replace(
@@ -442,7 +654,7 @@ Need help? Contact us at support@aplusautocare.com
 
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <support@kzplusautocare.in>',
+        from: 'JIXDRIVE <jixdriveblr@gmail.com>',
         to: userEmail,
         subject: subject,
         html: html,
@@ -453,7 +665,7 @@ Need help? Contact us at support@aplusautocare.com
 
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <support@kzplusautocare.in>',
+        from: 'JIXDRIVE <jixdriveblr@gmail.com>',
         to: process.env.ADMIN_EMAIL || 'jixdriveblr@gmail.com',
 
         subject: adminSubject,

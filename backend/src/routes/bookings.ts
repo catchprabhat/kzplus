@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
 import { authenticateUser } from '../middleware/userAuth';
+import { emailService } from '../services/emailService';
 // Remove these unused imports:
 // import jwt from 'jsonwebtoken';
 
@@ -77,6 +78,26 @@ router.post(
       ` as ServiceBooking[];
 
       await sql`COMMIT`;
+
+      // Send confirmation emails to user and admin
+      try {
+        await emailService.sendServiceBookingConfirmation({
+          userEmail: user.email,
+          userName: user.name || user.owner_name || 'Customer',
+          userPhone: user.phone,
+          vehicleNumber: user.vehicle_number || 'N/A',
+          vehicleType: user.vehicle_type || 'N/A',
+          services: services,
+          scheduledDate: scheduledDate,
+          scheduledTime: scheduledTime,
+          totalPrice: totalPrice,
+          notes: notes
+        });
+        console.log('Service booking confirmation emails sent successfully');
+      } catch (emailError) {
+        console.error('Failed to send service booking emails:', emailError);
+        // Don't fail the booking if email fails
+      }
 
       res.status(201).json({
         message: 'Service booking created successfully',
