@@ -150,7 +150,7 @@ This is an automated security message.
       try {
         // Send email using Resend
         const data = await this.resend.emails.send({
-          from: 'A+ Auto Care <kzplusmotors@gmail.com>', // Use your verified domain
+          from: 'A+ Auto Care <noreply@kzplusautocare.in>', // Updated to use verified domain
           to: email,
           subject: template.subject,
           html: template.html,
@@ -466,7 +466,7 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
         from: 'A+ Auto Care <support@kzplusautocare.in>',
-        to: 'kzplusmotors@gmail.com',
+        to: 'umrsjd455@gmail.com',
         subject: adminSubject,
         html: adminHtml,
         text: adminText,

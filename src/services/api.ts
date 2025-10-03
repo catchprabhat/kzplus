@@ -1,6 +1,3 @@
-// Mock API service - replace with your actual API endpoints
-// Remove this entire mock data array:
-// const mockBookings: ApiBooking[] = [ ... ];
 const NETLIFY_DATABASE_URL='postgresql://neondb_owner:npg_c2IJw9LjlbpE@ep-cold-lab-a56reurn-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require'; 
 import { neon } from '@netlify/neon';
 const sql = neon(NETLIFY_DATABASE_URL); // automatically uses env NETLIFY_DATABASE_URL
