@@ -454,19 +454,19 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
 
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
-        from: 'A+ Auto Care <support@kzplusautocare.in>',
+        from: 'JIXDRIVE <noreply@kzplusautocare.in>', // CHANGE THIS LINE
         to: userEmail,
         subject: subject,
         html: html,
         text: text,
       });
 
-      console.log('User service booking confirmation email sent successfully:', userEmailResult);
+      console.log('User confirmation email sent successfully:', userEmailResult);
 
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
-        from: 'A+ Auto Care <support@kzplusautocare.in>',
-        to: 'umrsjd455@gmail.com',
+        from: 'JIXDRIVE <noreply@kzplusautocare.in>', // CHANGE THIS LINE
+        to: 'kzplusmotors@gmail.com', // CHANGE THIS LINE
         subject: adminSubject,
         html: adminHtml,
         text: adminText,
@@ -654,7 +654,7 @@ Need help? Contact us at jixdriveblr@gmail.com
 
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <jixdriveblr@gmail.com>',
+        from: 'JIXDRIVE <noreply@kzplusautocare.in>',
         to: userEmail,
         subject: subject,
         html: html,
@@ -665,7 +665,7 @@ Need help? Contact us at jixdriveblr@gmail.com
 
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <jixdriveblr@gmail.com>',
+        from: 'JIXDRIVE <noreply@kzplusautocare.in>',
         to: process.env.ADMIN_EMAIL || 'jixdriveblr@gmail.com',
 
         subject: adminSubject,
