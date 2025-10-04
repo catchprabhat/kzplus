@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Car, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -14,8 +14,8 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   const [location, setLocation] = useState('Bangalore');
   const [tripStartDate, setTripStartDate] = useState<Date | null>(null);
   const [tripEndDate, setTripEndDate] = useState<Date | null>(null);
-  const [startTime, setStartTime] = useState({ hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' });
-  const [endTime, setEndTime] = useState({ hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' });
+  const [startTime, setStartTime] = useState({ hour: 9, minute: 0, period: 'AM' as 'AM' | 'PM' });
+  const [endTime, setEndTime] = useState({ hour: 9, minute: 0, period: 'AM' as 'AM' | 'PM' });
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectingStartDate, setSelectingStartDate] = useState(true);
   const [deliveryPickup, setDeliveryPickup] = useState(false);
@@ -25,6 +25,51 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   const [googleMapsLocation, setGoogleMapsLocation] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
+  // Initialize default dates on component mount
+  useEffect(() => {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    setTripStartDate(today);
+    setTripEndDate(tomorrow);
+    
+    // Set default times based on current time
+    const currentHour = today.getHours();
+    const nextHour = currentHour + 1;
+    
+    // Set start time to next hour (or 9 AM if it's late)
+    if (nextHour < 24) {
+      const hour12 = nextHour > 12 ? nextHour - 12 : nextHour === 0 ? 12 : nextHour;
+      const period = nextHour >= 12 ? 'PM' : 'AM';
+      setStartTime({ hour: hour12, minute: 0, period });
+    } else {
+      setStartTime({ hour: 9, minute: 0, period: 'AM' });
+    }
+    
+    // Set end time to same time next day
+    const endHour12 = nextHour > 12 ? nextHour - 12 : nextHour === 0 ? 12 : nextHour;
+    const endPeriod = nextHour >= 12 ? 'PM' : 'AM';
+    setEndTime({ hour: endHour12, minute: 0, period: endPeriod });
+  }, []);
+
+  // Helper function to get default date display
+  const getDefaultStartDisplay = () => {
+    if (tripStartDate) {
+      return `${formatDate(tripStartDate)}, ${formatTime(startTime)}`;
+    }
+    const today = new Date();
+    return `${today.getDate()} ${today.toLocaleDateString('en-GB', { month: 'short' })}'${today.getFullYear().toString().slice(-2)}, 9 AM`;
+  };
+
+  const getDefaultEndDisplay = () => {
+    if (tripEndDate) {
+      return `${formatDate(tripEndDate)}, ${formatTime(endTime)}`;
+    }
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return `${tomorrow.getDate()} ${tomorrow.toLocaleDateString('en-GB', { month: 'short' })}'${tomorrow.getFullYear().toString().slice(-2)}, 9 AM`;
+  };
 
   const formatDate = (date: Date | null) => {
     if (!date) return '';
@@ -215,7 +260,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               }}
               className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between"
             >
-              <span>{tripStartDate ? `${formatDate(tripStartDate)}, ${formatTime(startTime)}` : '2 Sep\'25, 9 PM'}</span>
+              <span>{tripStartDate ? `${formatDate(tripStartDate)}, ${formatTime(startTime)}` : getDefaultStartDisplay()}</span>
               <Calendar className="w-5 h-5" />
             </button>
           </div>
@@ -230,7 +275,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               }}
               className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between"
             >
-              <span>{tripEndDate ? `${formatDate(tripEndDate)}, ${formatTime(endTime)}` : '4 Sep\'25, 9 PM'}</span>
+              <span>{tripEndDate ? `${formatDate(tripEndDate)}, ${formatTime(endTime)}` : getDefaultEndDisplay()}</span>
               <Calendar className="w-5 h-5" />
             </button>
           </div>
