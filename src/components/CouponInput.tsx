@@ -7,7 +7,7 @@ interface CouponInputProps {
   onCouponApplied: (discountAmount: number, finalAmount: number) => void;
   onCouponRemoved: () => void;
   serviceType?: string;
-  bookingDurationHours?: number; // Add this prop
+  bookingDurationHours?: number; 
 }
 
 export const CouponInput: React.FC<CouponInputProps> = ({
@@ -15,7 +15,7 @@ export const CouponInput: React.FC<CouponInputProps> = ({
   onCouponApplied,
   onCouponRemoved,
   serviceType = 'car-booking',
-  bookingDurationHours // Add this prop
+  bookingDurationHours 
 }) => {
   const [couponCode, setCouponCode] = useState('');
   
@@ -31,7 +31,7 @@ export const CouponInput: React.FC<CouponInputProps> = ({
   const handleApplyCoupon = async () => {
     const appliedCouponData = await applyCoupon(couponCode, orderAmount, serviceType, bookingDurationHours);
     if (appliedCouponData) {
-      // Pass the full coupon data including the coupon object
+      
       onCouponApplied(appliedCouponData.discountAmount, appliedCouponData.finalAmount, appliedCouponData);
     }
   };
