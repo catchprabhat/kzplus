@@ -1,4 +1,5 @@
 import { Coupon, CouponValidationResult, AppliedCoupon } from '../types/coupon';
+import { API_BASE_URL } from './api';
 
 class CouponService {
   private coupons: Coupon[] = [
@@ -86,6 +87,72 @@ class CouponService {
       termsAndConditions: [],
       createdAt: new Date(),
       updatedAt: new Date()
+    },
+    {
+      id: '5',
+      code: 'REGCUST20',
+      name: 'Regular Customer Discount',
+      description: '20% off on service bookings',
+      discountType: 'percentage',
+      discountValue: 20,
+      minOrderAmount: 0,
+      maxDiscountAmount: undefined,
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      usageLimit: undefined,
+      usedCount: 0,
+      isActive: true,
+      applicableServices: ['service-booking'],
+      termsAndConditions: [
+        'Can be applied only once per month per customer',
+        'Cannot be combined with other offers'
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '6',
+      code: 'CERAMIC20',
+      name: 'Ceramic Coating Special',
+      description: '20% off on service bookings',
+      discountType: 'percentage',
+      discountValue: 20,
+      minOrderAmount: 0,
+      maxDiscountAmount: undefined,
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      usageLimit: undefined,
+      usedCount: 0,
+      isActive: true,
+      applicableServices: ['service-booking'],
+      termsAndConditions: [
+        'Can be applied only once per month per customer',
+        'Cannot be combined with other offers'
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    },
+    {
+      id: '7',
+      code: 'APLUSDISC30',
+      name: 'A Plus Special Discount',
+      description: '30% off on service bookings',
+      discountType: 'percentage',
+      discountValue: 30,
+      minOrderAmount: 0,
+      maxDiscountAmount: undefined,
+      validFrom: new Date(),
+      validUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      usageLimit: undefined,
+      usedCount: 0,
+      isActive: true,
+      applicableServices: ['service-booking'],
+      termsAndConditions: [
+        'Can be applied only once per month per customer',
+        'Cannot be combined with other offers'
+      ],
+      createdAt: new Date(),
+      updatedAt: new Date()
     }
   ];
 
@@ -96,11 +163,36 @@ class CouponService {
     return coupon || null;
   }
 
+  // Add this method to check coupon usage from database
+  async checkCouponUsage(userId: string, couponCode: string): Promise<boolean> {
+    try {
+      const response = await fetch(`${API_BASE_URL}/coupons/check-usage`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('driveEasyToken')}`
+        },
+        body: JSON.stringify({ userId, couponCode })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        return data.canUse;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error checking coupon usage:', error);
+      return false;
+    }
+  }
+
+  // Update validateCoupon method
   async validateCoupon(
     code: string, 
     orderAmount: number, 
     serviceType: string = 'car-booking',
-    bookingDurationHours?: number
+    bookingDurationHours?: number,
+    userId?: string
   ): Promise<CouponValidationResult> {
     const coupon = await this.getCouponByCode(code);
     
@@ -174,6 +266,17 @@ class CouponService {
       }
     }
 
+    // Check database for previous usage (for monthly restriction coupons)
+    if (userId && ['REGCUST20', 'CERAMIC20', 'APLUSDISC30'].includes(code)) {
+      const canUse = await this.checkCouponUsage(userId, code);
+      if (!canUse) {
+        return {
+          isValid: false,
+          message: 'This coupon can only be used once per month. Please try again next month.'
+        };
+      }
+    }
+
     // Calculate discount
     let discountAmount = 0;
     if (coupon.discountType === 'percentage') {
@@ -201,7 +304,22 @@ class CouponService {
     serviceType: string = 'car-booking',
     bookingDurationHours?: number
   ): Promise<AppliedCoupon | null> {
-    const validation = await this.validateCoupon(code, orderAmount, serviceType, bookingDurationHours);
+    // Get current user ID
+    const getCurrentUserId = (): string | undefined => {
+      const user = localStorage.getItem('driveEasyUser');
+      if (user) {
+        try {
+          const userData = JSON.parse(user);
+          return userData.id?.toString();
+        } catch (error) {
+          console.error('Error parsing user data:', error);
+        }
+      }
+      return undefined;
+    };
+
+    const userId = getCurrentUserId();
+    const validation = await this.validateCoupon(code, orderAmount, serviceType, bookingDurationHours, userId);
     
     if (!validation.isValid || !validation.discountAmount || !validation.finalAmount) {
       return null;

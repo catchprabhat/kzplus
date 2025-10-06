@@ -31,6 +31,9 @@ router.post(
       services,
       totalPrice,
       notes,
+      couponCode,
+      discountAmount,
+      originalAmount
     } = req.body;
 
     // Validate input
@@ -70,12 +73,26 @@ router.post(
 
       await sql`BEGIN`;
 
-      // Insert into service_bookings matching your exact schema
+      // Insert into service_bookings with coupon information
       const bookingResult = await sql`
-        INSERT INTO service_bookings (user_id, scheduled_date, scheduled_time, total_price, status, notes, services)
-        VALUES (${user.id}, ${scheduledDate}, ${scheduledTime}, ${totalPrice}, 'pending', ${notes || ''}, ${JSON.stringify(services)})
+        INSERT INTO service_bookings (
+          user_id, scheduled_date, scheduled_time, total_price, status, notes, services,
+          coupon_code, discount_amount, original_amount
+        )
+        VALUES (
+          ${user.id}, ${scheduledDate}, ${scheduledTime}, ${totalPrice}, 'pending', ${notes || ''}, 
+          ${JSON.stringify(services)}, ${couponCode || null}, ${discountAmount || 0}, ${originalAmount || totalPrice}
+        )
         RETURNING *;
       ` as ServiceBooking[];
+
+      // If coupon was used, record it in coupon_usage table
+      if (couponCode && discountAmount) {
+        await sql`
+          INSERT INTO coupon_usage (user_id, coupon_code, order_amount, discount_amount, used_at)
+          VALUES (${user.id}, ${couponCode}, ${originalAmount || totalPrice}, ${discountAmount}, NOW())
+        `;
+      }
 
       await sql`COMMIT`;
 

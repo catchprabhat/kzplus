@@ -1,10 +1,11 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response } from 'express';
 import cors from 'cors';
 // Remove or use the helmet import
 // import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
 import carBookingsRouter from './routes/carBookings';
+import couponRoutes from './routes/coupons';
 
 // Import the route files
 import authRoutes from './routes/auth';
@@ -34,12 +35,11 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function(origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) !== -1) {
-        return callback(null, true);
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
       }
-      return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -59,20 +59,11 @@ app.use('/api/users', userRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/vehicles', vehiclesRoutes); // Add this line to register the vehicles routes
+app.use('/api/vehicles', vehiclesRoutes);
 app.use('/api/car-bookings', carBookingsRouter);
+app.use('/api/coupons', couponRoutes);
 
-app.use('*', (_req: Request, res: Response) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
-app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-  console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
-});
-
+// Add this at the end to actually start the server
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server is running on port ${PORT}`);
 });
-
-export default app;

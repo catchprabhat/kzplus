@@ -8,6 +8,20 @@ export const useCoupon = () => {
   const [validationMessage, setValidationMessage] = useState<string>('');
   const [isValid, setIsValid] = useState<boolean>(false);
 
+  // Helper function to get current user ID
+  const getCurrentUserId = (): string | undefined => {
+    const user = localStorage.getItem('driveEasyUser');
+    if (user) {
+      try {
+        const userData = JSON.parse(user);
+        return userData.id?.toString();
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+      }
+    }
+    return undefined;
+  };
+
   const validateCoupon = useCallback(async (
     code: string, 
     orderAmount: number, 
@@ -27,7 +41,8 @@ export const useCoupon = () => {
     setIsValidating(true);
     
     try {
-      const result = await couponService.validateCoupon(code, orderAmount, serviceType, bookingDurationHours);
+      const userId = getCurrentUserId();
+      const result = await couponService.validateCoupon(code, orderAmount, serviceType, bookingDurationHours, userId);
       setValidationMessage(result.message);
       setIsValid(result.isValid);
       return result;
@@ -56,7 +71,7 @@ export const useCoupon = () => {
       const applied = await couponService.applyCoupon(code, orderAmount, serviceType, bookingDurationHours);
       if (applied) {
         setAppliedCoupon(applied);
-        return applied; // Return the applied coupon data
+        return applied;
       }
     }
     

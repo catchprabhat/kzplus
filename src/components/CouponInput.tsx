@@ -31,7 +31,8 @@ export const CouponInput: React.FC<CouponInputProps> = ({
   const handleApplyCoupon = async () => {
     const appliedCouponData = await applyCoupon(couponCode, orderAmount, serviceType, bookingDurationHours);
     if (appliedCouponData) {
-      onCouponApplied(appliedCouponData.discountAmount, appliedCouponData.finalAmount);
+      // Pass the full coupon data including the coupon object
+      onCouponApplied(appliedCouponData.discountAmount, appliedCouponData.finalAmount, appliedCouponData);
     }
   };
 

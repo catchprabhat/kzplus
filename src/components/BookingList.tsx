@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock } from 'lucide-react';
+import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock, UserPlus } from 'lucide-react';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
+import { AssignDriverModal } from './AssignDriverModal';
 
 interface BookingListProps {
   bookings: Booking[];
@@ -17,13 +18,14 @@ export const BookingList: React.FC<BookingListProps> = ({
   onUpdateStatus,
   onDelete,
 }) => {
-  const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [filteredBookings, setFilteredBookings] = useState<Booking[]>(bookings);
+  const [searchTerm, setSearchTerm] = useState('');
   const [phoneFilter, setPhoneFilter] = useState('');
+  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [showAssignDriverModal, setShowAssignDriverModal] = useState(false);
+  const [selectedBookingForDriver, setSelectedBookingForDriver] = useState<Booking | null>(null);
   const { user } = useAuth();
-
-  // Check if current user is admin
   const isAdmin = user?.email === 'catchprabhat@gmail.com';
 
   useEffect(() => {
@@ -36,6 +38,17 @@ export const BookingList: React.FC<BookingListProps> = ({
     });
     setFilteredBookings(filtered);
   }, [bookings, phoneFilter]);
+
+  const handleAssignDriver = (booking: Booking) => {
+    setSelectedBookingForDriver(booking);
+    setShowAssignDriverModal(true);
+    setOpenDropdown(null);
+  };
+
+  const closeAssignDriverModal = () => {
+    setShowAssignDriverModal(false);
+    setSelectedBookingForDriver(null);
+  };
 
   const getStatusBadge = (status: string) => {
     const statusConfig = {
@@ -239,6 +252,13 @@ export const BookingList: React.FC<BookingListProps> = ({
                               <Edit className="w-4 h-4 mr-2" />
                               Mark as Cancelled
                             </button>
+                            <button
+                              onClick={() => handleAssignDriver(booking)}
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                            >
+                              <UserPlus className="w-4 h-4 mr-2" />
+                              Assign a Driver
+                            </button>
                           </>
                         )}
                         {/* Show delete option for all users */}
@@ -319,6 +339,13 @@ export const BookingList: React.FC<BookingListProps> = ({
           </div>
         ))}
       </div>
+
+      {/* Assign Driver Modal */}
+      <AssignDriverModal
+        isOpen={showAssignDriverModal}
+        onClose={closeAssignDriverModal}
+        booking={selectedBookingForDriver}
+      />
     </div>
   );
 };

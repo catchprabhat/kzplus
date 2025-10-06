@@ -3,8 +3,10 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { CreditCard, Smartphone, DollarSign, ArrowLeft, CheckCircle, Lock, IndianRupee } from 'lucide-react';
 import { Service, ServiceBooking as ServiceBookingType } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
+import { CouponInput } from './CouponInput';
 import axios from 'axios';
 import { API_BASE_URL } from '../services/api';
+import { serviceBookingApi } from '../services/api';
 
 interface PaymentPageProps {
   bookingData: {
@@ -111,43 +113,72 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
     }
   };
 
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
+  const [discountedTotal, setDiscountedTotal] = useState(bookingData.totalPrice);
+  const [originalTotal] = useState(bookingData.totalPrice);
+
+  // Add the missing coupon handler functions
+  // Update the handleCouponApplied function
+  const handleCouponApplied = (discountAmount: number, finalAmount: number, couponData?: any) => {
+    setAppliedCoupon({
+      discountAmount: discountAmount,
+      finalAmount: finalAmount,
+      code: couponData?.coupon?.code || null,
+      coupon: couponData?.coupon || null
+    });
+    setDiscountedTotal(finalAmount);
+  };
+
+  const handleCouponRemoved = () => {
+    setAppliedCoupon(null);
+    setDiscountedTotal(originalTotal);
+  };
+
+  // Add the missing handlePayment function
   const handlePayment = async () => {
+    if (processing) return;
+    
     setProcessing(true);
     
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setShowSuccess(true);
-      
-      // Remove the direct API call - let App.tsx handle booking creation
-      // const response = await axios.post(`${API_BASE_URL}/bookings`, ...);
-      
-      setTimeout(() => {
-        setShowSuccess(false);
-        const serviceBooking: ServiceBookingType = {
-          // Generate a temporary ID - the real one will come from the API
-          id: 'temp-' + Date.now(),
-          vehicleNumber: bookingData.selectedUser.vehicleNumber,
-          vehicleType: bookingData.selectedUser.vehicleType,
-          vehicleName: bookingData.selectedUser.vehicleType,
-          customerName: bookingData.customerData.name,
-          customerPhone: bookingData.customerData.phone,
-          customerEmail: bookingData.customerData.email,
-          services: bookingData.selectedServices,
-          totalPrice: bookingData.totalPrice,
-          scheduledDate: new Date(bookingData.scheduledDate),
-          scheduledTime: bookingData.scheduledTime,
-          status: 'pending',
-          notes: bookingData.customerData.notes,
-          createdAt: new Date(),
-        };
+      const serviceBookingData = {
+        userId: bookingData.selectedUser.id,
+        vehicleId: bookingData.selectedUser.id,
+        customerName: bookingData.customerData.name,
+        customerPhone: bookingData.customerData.phone,
+        customerEmail: bookingData.customerData.email,
+        scheduledDate: bookingData.scheduledDate,
+        scheduledTime: bookingData.scheduledTime,
+        services: bookingData.selectedServices,
+        totalPrice: discountedTotal,
+        notes: bookingData.customerData.notes || '',
+        // Add coupon data
+        couponCode: appliedCoupon?.code || null,
+        discountAmount: appliedCoupon?.discountAmount || 0,
+        originalAmount: originalTotal
+      };
   
+      // Use the existing service booking API
+      const result = await serviceBookingApi.createBooking(serviceBookingData);
+      
+      const serviceBooking: ServiceBookingType = {
+        ...result,
+        originalAmount: appliedCoupon ? originalTotal : discountedTotal,
+        discountAmount: appliedCoupon ? appliedCoupon.discountAmount : 0,
+        couponCode: appliedCoupon ? appliedCoupon.code : null,
+        paymentMethod,
+        paymentStatus: paymentMethod === 'pay-at-service' ? 'pending' : 'completed'
+      };
+  
+      setShowSuccess(true);
+      setTimeout(() => {
         onPaymentComplete(serviceBooking);
-      }, 1000);
-    } catch (error: any) {
-      console.error('Payment failed:', error);
-      alert(`Payment failed: ${error.message}`);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('Payment processing failed:', error);
+      alert('Payment processing failed. Please try again.');
+    } finally {
       setProcessing(false);
     }
   };
@@ -279,16 +310,45 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
             </div>
             <div className="border-t border-gray-200 dark:border-dark-600 pt-3 flex justify-between text-lg font-bold">
               <span className="text-gray-900 dark:text-white">Total Amount:</span>
-              <span className="text-blue-600 dark:text-blue-400">₹{bookingData.totalPrice}</span>
+              <span className="text-blue-600 dark:text-blue-400">₹{originalTotal}</span>
             </div>
           </div>
+        </motion.div>
+
+        {/* Coupon Input Section */}
+        <motion.div 
+          className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
+          variants={cardVariants}
+          custom={1}
+        >
+          <CouponInput
+            orderAmount={originalTotal}
+            onCouponApplied={handleCouponApplied}
+            onCouponRemoved={handleCouponRemoved}
+            serviceType="service-booking"
+          />
+          
+          {appliedCoupon && (
+            <div className="mt-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="font-medium text-green-800 dark:text-green-200">Discount Applied</div>
+                  <div className="text-sm text-green-600 dark:text-green-300">You saved ₹{appliedCoupon.discountAmount}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm text-gray-500 line-through">₹{originalTotal}</div>
+                  <div className="text-lg font-bold text-green-600 dark:text-green-400">₹{discountedTotal}</div>
+                </div>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Payment Methods */}
         <motion.div 
           className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 max-w-2xl mx-auto"
           variants={cardVariants}
-          custom={1}
+          custom={2}
         >
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
             <Lock className="w-5 h-5 mr-2 text-green-600 dark:text-green-400" />
@@ -504,7 +564,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
               ) : (
                 <>
                   <Lock className="w-4 h-4 inline mr-2" />
-                  {paymentMethod === 'pay-at-service' ? 'Confirm Booking' : `Pay ₹${bookingData.totalPrice}`}
+                  {paymentMethod === 'pay-at-service' ? 'Confirm Booking' : `Pay ₹${discountedTotal}`}
                 </>
               )}
             </span>
