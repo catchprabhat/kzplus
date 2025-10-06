@@ -51,7 +51,7 @@ export const CouponInput: React.FC<CouponInputProps> = ({
 
       {!appliedCoupon ? (
         <div className="space-y-3">
-          <div className="flex space-x-2">
+          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
             <input
               type="text"
               value={couponCode}
@@ -64,7 +64,7 @@ export const CouponInput: React.FC<CouponInputProps> = ({
               type="button"
               onClick={handleApplyCoupon}
               disabled={!couponCode.trim() || isValidating}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
+              className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-medium transition-colors"
             >
               {isValidating ? 'Checking...' : 'Apply'}
             </button>
