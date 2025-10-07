@@ -285,13 +285,13 @@ export const TermsAndConditions: React.FC = () => {
             href="tel:1-800-374-8332" 
             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Call Support: 1-800-DRIVE-EASY
+            Call Support: +917735537655
           </a>
           <a 
             href="mailto:support@driveeasy.com" 
             className="bg-gray-700 dark:bg-dark-700 hover:bg-gray-600 dark:hover:bg-dark-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
-            Email: support@driveeasy.com
+            Email: jixdriveblr@gmail.com
           </a>
         </div>
         <p className="text-gray-400 dark:text-gray-500 text-sm mt-6">
