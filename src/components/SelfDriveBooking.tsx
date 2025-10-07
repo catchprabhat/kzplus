@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Car, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -24,67 +24,13 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   const [pincode, setPincode] = useState('');
   const [googleMapsLocation, setGoogleMapsLocation] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  // Remove this line:
+  // const [highlightTimeSection, setHighlightTimeSection] = useState(false);
   
-  // Initialize default dates on component mount
-  useEffect(() => {
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    
-    setTripStartDate(today);
-    setTripEndDate(tomorrow);
-    
-    // Set default times based on current time
-    const currentHour = today.getHours();
-    const nextHour = currentHour + 1;
-    
-    // Set start time to next hour (or 9 AM if it's late)
-    if (nextHour < 24) {
-      const hour12 = nextHour > 12 ? nextHour - 12 : nextHour === 0 ? 12 : nextHour;
-      const period = nextHour >= 12 ? 'PM' : 'AM';
-      setStartTime({ hour: hour12, minute: 0, period });
-    } else {
-      setStartTime({ hour: 9, minute: 0, period: 'AM' });
-    }
-    
-    // Set end time to same time next day
-    const endHour12 = nextHour > 12 ? nextHour - 12 : nextHour === 0 ? 12 : nextHour;
-    const endPeriod = nextHour >= 12 ? 'PM' : 'AM';
-    setEndTime({ hour: endHour12, minute: 0, period: endPeriod });
-  }, []);
-
-  // Helper function to get default date display
-  const getDefaultStartDisplay = () => {
-    if (tripStartDate) {
-      return `${formatDate(tripStartDate)}, ${formatTime(startTime)}`;
-    }
-    const today = new Date();
-    return `${today.getDate()} ${today.toLocaleDateString('en-GB', { month: 'short' })}'${today.getFullYear().toString().slice(-2)}, 9 AM`;
-  };
-
-  const getDefaultEndDisplay = () => {
-    if (tripEndDate) {
-      return `${formatDate(tripEndDate)}, ${formatTime(endTime)}`;
-    }
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    return `${tomorrow.getDate()} ${tomorrow.toLocaleDateString('en-GB', { month: 'short' })}'${tomorrow.getFullYear().toString().slice(-2)}, 9 AM`;
-  };
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return '';
-    return date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: 'short',
-      year: '2-digit',
-      weekday: 'short'
-    });
-  };
-
-  const formatTime = (time: { hour: number; minute: number; period: 'AM' | 'PM' }) => {
-    return `${time.hour}:${time.minute.toString().padStart(2, '0')} ${time.period}`;
-  };
-
+  // Add the missing ref
+  const timeSelectionRef = useRef<HTMLDivElement>(null);
+  
+  // Update the handleDateSelect function
   const handleDateSelect = (date: Date) => {
     const today = new Date();
     const isToday = date.toDateString() === today.toDateString();
@@ -117,8 +63,31 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
       if (tripStartDate && date >= tripStartDate) {
         setTripEndDate(date);
         setSelectingStartDate(true);
+        
+        // Auto-scroll to time selection when both dates are selected
+        setTimeout(() => {
+          if (timeSelectionRef.current) {
+            timeSelectionRef.current.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+              inline: 'nearest'
+            });
+          }
+        }, 300);
+        // Add highlight effect
+        setHighlightTimeSection(true);
+        
+        timeSelectionRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          inline: 'nearest'
+        });
+        
+        // Remove highlight after animation
+        setTimeout(() => {
+          setHighlightTimeSection(false);
+        }, 2000);
       }
-      // If trying to select a date before start date, do nothing or show a message
     }
   };
 
@@ -220,37 +189,36 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 p-4">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 p-3 sm:p-4 lg:p-6">
+      {/* Header - Mobile Responsive */}
+      <div className="text-center mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4 px-2">
           Looking for Best Car Rentals?
         </h1>
-        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-400 mb-2">
-
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-gray-400 mb-2 px-2">
           Book Self-Drive Cars in <span className="text-blue-600">Bangalore</span>
         </h2>
       </div>
 
-      {/* Main Booking Card */}
-      <div className="max-w-2xl mx-auto bg-white dark:bg-dark-800 rounded-2xl shadow-xl p-6 mb-8">
-        {/* Location */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+      {/* Main Booking Card - Mobile Responsive */}
+      <div className="max-w-2xl mx-auto bg-white dark:bg-dark-800 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 mb-6 sm:mb-8">
+        {/* Location - Mobile Responsive */}
+        <div className="mb-4 sm:mb-6">
+          <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
             Location
           </label>
           <input
             type="text"
             value={location}
             readOnly
-            className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-not-allowed"
+            className="w-full p-3 sm:p-4 text-sm sm:text-base border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 cursor-not-allowed"
           />
         </div>
 
-        {/* Date Selection */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
+        {/* Date Selection - Mobile Responsive */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
               Trip Starts
             </label>
             <button
@@ -258,14 +226,16 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 setSelectingStartDate(true);
                 setShowCalendar(true);
               }}
-              className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between"
+              className="w-full p-3 sm:p-4 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
             >
-              <span>{tripStartDate ? `${formatDate(tripStartDate)}, ${formatTime(startTime)}` : getDefaultStartDisplay()}</span>
-              <Calendar className="w-5 h-5" />
+              <span className="text-sm sm:text-base font-medium truncate pr-2">
+                {tripStartDate ? formatDateOnly(tripStartDate) : getDefaultStartDisplay()}
+              </span>
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 text-white-600" />
             </button>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+            <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
               Trip Ends
             </label>
             <button
@@ -273,10 +243,12 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 setSelectingStartDate(false);
                 setShowCalendar(true);
               }}
-              className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between"
+              className="w-full p-3 sm:p-4 border border-gray-300 dark:border-dark-600 rounded-lg text-left focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-dark-600 transition-colors"
             >
-              <span>{tripEndDate ? `${formatDate(tripEndDate)}, ${formatTime(endTime)}` : getDefaultEndDisplay()}</span>
-              <Calendar className="w-5 h-5" />
+              <span className="text-sm sm:text-base font-medium truncate pr-2">
+                {tripEndDate ? formatDateOnly(tripEndDate) : getDefaultEndDisplay()}
+              </span>
+              <Calendar className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 text-white-600" />
             </button>
           </div>
         </div>
@@ -313,7 +285,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                   type="text"
                   value={deliveryAddress}
                   onChange={(e) => setDeliveryAddress(e.target.value)}
-                  className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black"
+                  className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300"
                   placeholder="Enter your address"
                 />
               </div>
@@ -325,7 +297,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                   type="text"
                   value={nearbyLocation}
                   onChange={(e) => setNearbyLocation(e.target.value)}
-                  className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black"
+                  className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300"
                   placeholder="Enter nearby landmark"
                 />
               </div>
@@ -337,7 +309,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                   type="text"
                   value={pincode}
                   onChange={(e) => setPincode(e.target.value)}
-                  className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black"
+                  className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300"
                   placeholder="Enter pincode"
                 />
               </div>
@@ -349,7 +321,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
       type="text"
       value={googleMapsLocation}
       onChange={(e) => setGoogleMapsLocation(e.target.value)}
-      className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-black"
+      className="w-full p-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-dark-700 dark:text-gray-300"
       placeholder="Enter your Google Maps location link"
     />
   </div>
@@ -357,10 +329,10 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
           )}
         </AnimatePresence>
 
-        {/* Search Button */}
+        {/* Search Button - Mobile Responsive */}
         <button
           onClick={handleSearch}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-lg transition-colors text-lg"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 sm:py-4 px-6 rounded-lg transition-colors text-base sm:text-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] active:scale-[0.98]"
         >
           SEARCH
         </button>
@@ -524,8 +496,11 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 </div>
               </div>
 
-              {/* Time Selection */}
-              <div className="mt-8">
+              {/* Time Selection with highlight effect */}
+              <div 
+                ref={timeSelectionRef} 
+                className="mt-8"
+              >
                 <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-300 mb-4">
                   Select the start time & end time
                 </h4>
@@ -647,3 +622,49 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
     </div>
   );
 };
+
+  // Helper functions for formatting
+  const formatDate = (date: Date) => {
+    const day = date.getDate();
+    const month = date.toLocaleDateString('en-US', { month: 'short' });
+    const year = date.getFullYear().toString().slice(-2);
+    const weekday = date.toLocaleDateString('en-US', { weekday: 'long' });
+    
+    // Convert full day names to abbreviated forms
+    const dayAbbreviations: { [key: string]: string } = {
+      'Sunday': 'Sun',
+      'Monday': 'Mon',
+      'Tuesday': 'Tue',
+      'Wednesday': 'Wed',
+      'Thursday': 'Thurs',
+      'Friday': 'Fri',
+      'Saturday': 'Sat'
+    };
+    
+    const abbreviatedDay = dayAbbreviations[weekday] || weekday;
+    
+    return `${month} ${day}' ${year} , ${abbreviatedDay}`;
+  };
+
+  const formatTime = (time: { hour: number; minute: number; period: 'AM' | 'PM' }) => {
+    const minuteStr = time.minute.toString().padStart(2, '0');
+    return `${time.hour}:${minuteStr} ${time.period}`;
+  };
+
+  const formatDateOnly = (date: Date) => {
+    const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const dateStr = date.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: '2-digit'
+    });
+    return `${dateStr}, ${day}`;
+  };
+
+  const getDefaultStartDisplay = () => {
+    return 'Select start date';
+  };
+
+  const getDefaultEndDisplay = () => {
+    return 'Select end date';
+  };
