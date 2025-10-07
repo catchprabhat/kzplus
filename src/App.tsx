@@ -316,6 +316,9 @@ function App() {
   const [showServicesOverlay, setShowServicesOverlay] = useState(false);
   const [availableCars, setAvailableCars] = useState<Car[]>(cars);
   const [bookedCarIds, setBookedCarIds] = useState<string[]>([]);
+  
+  // Add page loading state
+  const [pageLoading, setPageLoading] = useState(true);
 
   // Add ref for auto-scrolling to booking details
   const bookingDetailsRef = useRef<HTMLDivElement>(null);
@@ -411,12 +414,60 @@ function App() {
     }
   };
 
+  // Add useEffect for page loading
+  useEffect(() => {
+    // Show loading for 2 seconds on page load/refresh
+    const timer = setTimeout(() => {
+      setPageLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   // Update the effect when selfDriveBookingData changes
   useEffect(() => {
     if (selfDriveBookingData.tripStartDate && selfDriveBookingData.tripEndDate) {
       fetchAvailableCars(selfDriveBookingData.tripStartDate.toISOString(), selfDriveBookingData.tripEndDate.toISOString());
     }
   }, [selfDriveBookingData]);
+
+  // Add loading overlay before the main return
+  if (pageLoading) {
+    return (
+      <div className="fixed inset-0 bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 flex items-center justify-center z-50">
+        <div className="text-center">
+          {/* Logo */}
+          <div className="mb-8">
+            <img 
+              src="/images/logo/iconnn.png" 
+              alt="A Plus Auto Care" 
+              className="w-24 h-24 mx-auto animate-pulse" 
+            />
+          </div>
+          
+          {/* Loading Spinner */}
+          <div className="mb-6">
+            <LoadingSpinner size="lg" text="" />
+          </div>
+          
+          {/* Loading Text */}
+          <div className="space-y-2">
+            
+            <p className="text-gray-600 dark:text-gray-400 animate-pulse">
+              Loading your complete car solution...
+            </p>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="mt-8 w-64 mx-auto">
+            <div className="bg-gray-200 dark:bg-dark-700 rounded-full h-2 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 h-full rounded-full animate-pulse" style={{width: '100%'}}></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Show loading spinner while checking authentication
   if (authLoading) {
@@ -552,13 +603,13 @@ function App() {
       setPickupDate('');
       setDropDate('');
       
-      // Redirect to car availability page after successful booking
-    setActiveTab('calendar');
-    
-    // Hide confirmation after 5 seconds
-    setTimeout(() => {
-      setShowConfirmation(false);
-    }, 5000);
+      // Redirect to My Trips page after successful booking
+      setActiveTab('bookings');
+      
+      // Hide confirmation after 5 seconds
+      setTimeout(() => {
+        setShowConfirmation(false);
+      }, 5000);
     } catch (error) {
       console.error('Error creating booking:', error);
       
