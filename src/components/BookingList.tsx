@@ -98,8 +98,38 @@ export const BookingList: React.FC<BookingListProps> = ({
       // Exact days - show only days
       return `${diffDays} day${diffDays !== 1 ? 's' : ''}`;
     } else {
-      // Mixed duration - show days and hours
+      // Mixed days and hours
       return `${diffDays} day${diffDays !== 1 ? 's' : ''} ${remainingHours} hour${remainingHours !== 1 ? 's' : ''}`;
+    }
+  };
+
+  const handleUpdateStatus = async (id: string, status: 'confirmed' | 'pending' | 'cancelled') => {
+    if (!onUpdateStatus) return;
+    
+    try {
+      setActionLoading(id);
+      await onUpdateStatus(id, status);
+      setOpenDropdown(null);
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!onDelete) return;
+    
+    if (window.confirm('Are you sure you want to delete this booking?')) {
+      try {
+        setActionLoading(id);
+        await onDelete(id);
+        setOpenDropdown(null);
+      } catch (error) {
+        console.error('Error deleting booking:', error);
+      } finally {
+        setActionLoading(null);
+      }
     }
   };
 
@@ -109,6 +139,10 @@ export const BookingList: React.FC<BookingListProps> = ({
         return 'bg-green-100 text-green-800';
       case 'pending':
         return 'bg-yellow-100 text-yellow-800';
+      case 'in-progress':
+        return 'bg-blue-100 text-blue-800';
+      case 'completed':
+        return 'bg-purple-100 text-purple-800';
       case 'cancelled':
         return 'bg-red-100 text-red-800';
       default:
@@ -116,51 +150,9 @@ export const BookingList: React.FC<BookingListProps> = ({
     }
   };
 
-  const handleStatusUpdate = async (id: string, status: 'confirmed' | 'pending' | 'cancelled') => {
-    if (!onUpdateStatus) return;
-    
-    setActionLoading(id);
-    setOpenDropdown(null);
-    
-    try {
-      // Don't do optimistic update here - let the parent handle it
-      // The useEffect will automatically update filteredBookings when parent bookings change
-      await onUpdateStatus(id, status);
-      
-      console.log('✅ Status updated successfully to:', status);
-      // No need for window.location.reload() - parent will refresh data automatically
-      
-    } catch (error) {
-      console.error('❌ Error updating booking status:', error);
-      
-      // Show user-friendly error message
-      alert('Failed to update booking status. Please try again.');
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!onDelete) return;
-    
-    if (window.confirm('Are you sure you want to delete this booking? This will mark it as deleted.')) {
-      setActionLoading(id);
-      setOpenDropdown(null);
-      
-      try {
-        await onDelete(id);
-      } catch (error) {
-        console.error('Error deleting booking:', error);
-        alert('Failed to delete booking. Please try again.');
-      } finally {
-        setActionLoading(null);
-      }
-    }
-  };
-
   if (loading) {
     return (
-      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 flex justify-center items-center h-64">
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6 flex justify-center items-center h-64">
         <LoadingSpinner />
       </div>
     );
@@ -168,7 +160,7 @@ export const BookingList: React.FC<BookingListProps> = ({
 
   if (filteredBookings.length === 0) {
     return (
-      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 text-center">
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6 text-center">
         <Calendar className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
         <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">No Bookings Yet</h3>
         <p className="text-gray-500 dark:text-gray-400">Your car bookings will appear here once you make a reservation.</p>
@@ -177,38 +169,45 @@ export const BookingList: React.FC<BookingListProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6">
+      {/* Mobile-first responsive header */}
+      <div className="flex flex-col space-y-4 mb-6 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
+        <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center">
           <Calendar className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
           Recent Bookings
         </h3>
-        <div className="relative">
+        
+        {/* Mobile-responsive filter input */}
+        <div className="relative w-full sm:w-auto">
           <input
             type="text"
             value={phoneFilter}
             onChange={(e) => setPhoneFilter(e.target.value)}
             placeholder="Filter by phone number"
-            className="px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 w-64"
+            className="w-full sm:w-64 px-4 py-2 pr-10 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
           />
           <Phone className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
         </div>
       </div>
 
+      {/* Mobile-optimized booking cards */}
       <div className="space-y-4">
         {filteredBookings.map((booking) => (
-          <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center">
-                  <Car className="w-4 h-4 mr-2" />
-                  {booking.carName}
+          <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
+            {/* Card header - mobile optimized */}
+            <div className="flex flex-col space-y-2 mb-3 sm:flex-row sm:justify-between sm:items-start sm:space-y-0">
+              <div className="flex-1">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center text-sm sm:text-base">
+                  <Car className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{booking.carName}</span>
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {formatDate(booking.pickupDate)} - {formatDate(booking.dropDate)}
                 </p>
               </div>
-              <div className="flex items-center space-x-2">
+              
+              {/* Status and actions - mobile optimized */}
+              <div className="flex items-center justify-between sm:justify-end space-x-2">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
                   {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                 </span>
@@ -216,64 +215,61 @@ export const BookingList: React.FC<BookingListProps> = ({
                   <div className="relative">
                     <button
                       onClick={() => setOpenDropdown(openDropdown === booking.id ? null : booking.id)}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
                       disabled={actionLoading === booking.id}
                     >
                       {actionLoading === booking.id ? (
-                        <LoadingSpinner size="sm" />
+                        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
                       ) : (
-                        <MoreVertical className="w-4 h-4 text-gray-500" />
+                        <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
                       )}
                     </button>
-
+                    
+                    {/* Dropdown menu - mobile optimized */}
                     {openDropdown === booking.id && (
-                      <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                        {/* Show status update options only for admin */}
-                        {onUpdateStatus && isAdmin && (
-                          <>
-                            <button
-                              onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Mark as Confirmed
-                            </button>
-                            <button
-                              onClick={() => handleStatusUpdate(booking.id, 'pending')}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Mark as Pending
-                            </button>
-                            <button
-                              onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                            >
-                              <Edit className="w-4 h-4 mr-2" />
-                              Mark as Cancelled
-                            </button>
-                            <button
-                              onClick={() => handleAssignDriver(booking)}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
-                            >
-                              <UserPlus className="w-4 h-4 mr-2" />
-                              Assign a Driver
-                            </button>
-                          </>
-                        )}
-                        {/* Show delete option for all users */}
-                        {onDelete && (
-                          <>
-                            {onUpdateStatus && isAdmin && <hr className="my-1" />}
-                            <button
-                              onClick={() => handleDelete(booking.id)}
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
-                            >
-                              <Trash2 className="w-4 h-4 mr-2" />
-                              Delete Booking
-                            </button>
-                          </>
-                        )}
+                      <div className="absolute right-0 top-8 w-48 bg-white dark:bg-dark-700 rounded-md shadow-lg border dark:border-dark-600 z-10">
+                        <div className="py-1">
+                          {isAdmin && (
+                            <>
+                              <button
+                                onClick={() => handleAssignDriver(booking)}
+                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                              >
+                                <UserPlus className="w-4 h-4 mr-2" />
+                                Assign Driver
+                              </button>
+                              {onUpdateStatus && (
+                                <>
+                                  <button
+                                    onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
+                                    className="w-full text-left px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                    disabled={booking.status === 'confirmed'}
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Mark Confirmed
+                                  </button>
+                                  <button
+                                    onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
+                                    className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                    disabled={booking.status === 'cancelled'}
+                                  >
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Mark Cancelled
+                                  </button>
+                                </>
+                              )}
+                              {onDelete && (
+                                <button
+                                  onClick={() => handleDelete(booking.id)}
+                                  className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete Booking
+                                </button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
@@ -281,56 +277,63 @@ export const BookingList: React.FC<BookingListProps> = ({
               </div>
             </div>
 
-            <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-400">
-              <div className="space-y-1">
+            {/* Booking details - mobile-first grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm text-gray-400">
+              {/* Customer info */}
+              <div className="space-y-2">
                 <div className="flex items-center">
-                  <User className="w-4 h-4 mr-2" />
-                  {booking.customerName}
+                  <User className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{booking.customerName}</span>
                 </div>
                 <div className="flex items-center">
-                  <Mail className="w-4 h-4 mr-2" />
-                  {booking.customerEmail}
+                  <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate text-xs sm:text-sm">{booking.customerEmail}</span>
                 </div>
                 <div className="flex items-center">
-                  <Phone className="w-4 h-4 mr-2" />
-                  {booking.customerPhone}
+                  <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span>{booking.customerPhone}</span>
                 </div>
               </div>
 
-              <div className="space-y-1">
+              {/* Booking details */}
+              <div className="space-y-2">
                 {/* Pickup and Drop Times */}
                 <div className="flex items-center text-sm text-gray-400">
-                  <Clock className="w-4 h-4 mr-2" />
-                  {formatTime(booking.pickupDate)} - {formatTime(booking.dropDate)}
+                  <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">
+                    {formatTime(booking.pickupDate)} - {formatTime(booking.dropDate)}
+                  </span>
                 </div>
                 
                 {/* Duration */}
                 <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {calculateDuration(booking.pickupDate, booking.dropDate)}
+                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="text-xs sm:text-sm">{calculateDuration(booking.pickupDate, booking.dropDate)}</span>
                 </div>
                 
-                {/* Price Section */}
+                {/* Price Section - mobile optimized */}
                 <div className="space-y-1">
                   {booking.originalPrice && booking.discountAmount ? (
                     <>
                       <div className="flex items-center text-sm text-gray-500 line-through">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        ₹{booking.originalPrice}
+                        <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm">₹{booking.originalPrice}</span>
                       </div>
                       <div className="flex items-center text-sm text-green-600">
                         <span className="mr-2">💰</span>
-                        Saved ₹{booking.discountAmount} {booking.couponCode && `(${booking.couponCode})`}
+                        <span className="text-xs sm:text-sm">
+                          Saved ₹{booking.discountAmount} {booking.couponCode && `(${booking.couponCode})`}
+                        </span>
                       </div>
                       <div className="flex items-center font-semibold text-blue-600">
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        ₹{booking.totalPrice}
+                        <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="text-sm sm:text-base">₹{booking.totalPrice}</span>
                       </div>
                     </>
                   ) : (
                     <div className="flex items-center font-semibold text-blue-600">
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      ₹{booking.totalPrice}
+                      <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="text-sm sm:text-base">₹{booking.totalPrice}</span>
                     </div>
                   )}
                 </div>

@@ -37,26 +37,6 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
     setFilteredBookings(filtered);
   }, [bookings, phoneFilter]);
 
-  // Move this function inside the component
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300', label: 'Pending' },
-      confirmed: { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-800 dark:text-blue-300', label: 'Confirmed' },
-      'in-progress': { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-800 dark:text-purple-300', label: 'In Progress' },
-      completed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300', label: 'Completed' },
-      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300', label: 'Cancelled' },
-      deleted: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-800 dark:text-gray-300', label: 'Deleted' }
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-        {config.label}
-      </span>
-    );
-  };
-
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -162,7 +142,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 
   if (loading) {
     return (
-      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8">
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-8">
         <LoadingSpinner size="lg" text="Loading service bookings..." />
       </div>
     );
@@ -170,44 +150,64 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 
   if (bookings.length === 0) {
     return (
-      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
+      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-8 text-center">
         <Car className="w-12 h-12 text-gray-400 dark:text-gray-500 mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">No Service Bookings Yet</h3>
-        <p className="text-gray-500 dark:text-gray-400">Your car service bookings will appear here once you schedule a service.</p>
-        <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Debug: {bookings.length} bookings found</p>
+        <p className="text-gray-500 dark:text-gray-400 text-sm sm:text-base">Your car service bookings will appear here once you schedule a service.</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6">
-      <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 flex items-center">
-        <Calendar className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
-        Service Bookings
-      </h3>
+    <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6">
+      {/* Responsive Header with Filter */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+          <Calendar className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
+          <span className="truncate">Service Bookings</span>
+        </h3>
+        
+        {/* Phone Filter Input */}
+        <div className="relative flex-shrink-0">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Phone className="h-4 w-4 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Filter by phone number"
+            value={phoneFilter}
+            onChange={(e) => setPhoneFilter(e.target.value)}
+            className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+          />
+        </div>
+      </div>
       
+      {/* Responsive Booking Cards */}
       <div className="space-y-4">
         {filteredBookings.map((booking) => (
-          <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-6 hover:shadow-md transition-shadow">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center">
-                  <Car className="w-4 h-4 mr-2" />
-                  {booking.vehicleName} ({booking.vehicleNumber})
+          <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
+            {/* Mobile-First Header */}
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center text-sm sm:text-base">
+                  <Car className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{booking.vehicleName} ({booking.vehicleNumber})</span>
                 </h4>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
                   {formatDate(booking.scheduledDate)} at {formatTime(booking.scheduledTime)}
                 </p>
               </div>
-              <div className="flex items-center space-x-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+              
+              {/* Status and Actions */}
+              <div className="flex items-center justify-between sm:justify-end gap-2">
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)} flex-shrink-0`}>
                   {booking.status.charAt(0).toUpperCase() + booking.status.slice(1).replace('-', ' ')}
                 </span>
                 {(onUpdateStatus || onDelete) && booking.status !== 'deleted' && (
                   <div className="relative">
                     <button
                       onClick={() => setOpenDropdown(openDropdown === booking.id ? null : booking.id)}
-                      className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors touch-manipulation"
                       disabled={actionLoading === booking.id}
                     >
                       {actionLoading === booking.id ? (
@@ -218,34 +218,34 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                     </button>
                     
                     {openDropdown === booking.id && (
-                      <div className="absolute right-0 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                      <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-dark-700 border border-gray-200 dark:border-dark-600 rounded-lg shadow-lg z-10">
                         {/* Show status update options only for admin */}
                         {onUpdateStatus && isAdmin && (
                           <>
                             <button
                               onClick={() => handleStatusUpdate(booking.id, 'confirmed')}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-600 flex items-center touch-manipulation"
                             >
                               <CheckCircle className="w-4 h-4 mr-2" />
                               Mark as Confirmed
                             </button>
                             <button
                               onClick={() => handleStatusUpdate(booking.id, 'in-progress')}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-600 flex items-center touch-manipulation"
                             >
                               <Clock className="w-4 h-4 mr-2" />
                               Mark as In Progress
                             </button>
                             <button
                               onClick={() => handleStatusUpdate(booking.id, 'completed')}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-600 flex items-center touch-manipulation"
                             >
                               <CheckCircle className="w-4 h-4 mr-2" />
                               Mark as Completed
                             </button>
                             <button
                               onClick={() => handleStatusUpdate(booking.id, 'cancelled')}
-                              className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 flex items-center"
+                              className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-dark-600 flex items-center touch-manipulation"
                             >
                               <Edit className="w-4 h-4 mr-2" />
                               Mark as Cancelled
@@ -255,10 +255,10 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
                         {/* Show delete option only if not already deleted */}
                         {onDelete && booking.status !== 'deleted' && (
                           <>
-                            {onUpdateStatus && isAdmin && <hr className="my-1" />}
+                            {onUpdateStatus && isAdmin && <hr className="my-1 border-gray-200 dark:border-dark-600" />}
                             <button
                               onClick={() => handleDelete(booking.id)}
-                              className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center"
+                              className="w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center touch-manipulation"
                             >
                               <Trash2 className="w-4 h-4 mr-2" />
                               Delete Booking
@@ -272,35 +272,38 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
               </div>
             </div>
             
-            <div className="grid md:grid-cols-2 gap-6">
+            {/* Responsive Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+              {/* Customer Details */}
               <div className="space-y-2">
-                <h5 className="font-medium text-gray-900">Customer Details</h5>
-                <div className="space-y-1 text-sm text-gray-400">
+                <h5 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">Customer Details</h5>
+                <div className="space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   <div className="flex items-center">
-                    <User className="w-4 h-4 mr-2" />
-                    {booking.customerName}
+                    <User className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{booking.customerName}</span>
                   </div>
                   <div className="flex items-center">
-                    <Phone className="w-4 h-4 mr-2" />
-                    {booking.customerPhone}
+                    <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{booking.customerPhone}</span>
                   </div>
                   <div className="flex items-center">
-                    <Mail className="w-4 h-4 mr-2" />
-                    {booking.customerEmail}
+                    <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{booking.customerEmail}</span>
                   </div>
                 </div>
               </div>
               
+              {/* Services & Pricing */}
               <div className="space-y-2">
-                <h5 className="font-medium text-gray-900">Services & Pricing</h5>
-                <div className="space-y-1 text-sm text-gray-400">
+                <h5 className="font-medium text-gray-900 dark:text-white text-sm sm:text-base">Services & Pricing</h5>
+                <div className="space-y-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   {booking.services.map((service, index) => (
-                    <div key={index} className="flex justify-between">
-                      <span>{service.name}</span>
-                      <span>₹{service.price}</span>
+                    <div key={index} className="flex justify-between items-center">
+                      <span className="truncate mr-2">{service.name}</span>
+                      <span className="flex-shrink-0 font-medium">₹{service.price}</span>
                     </div>
                   ))}
-                  <div className="flex justify-between font-semibold text-blue-600 border-t pt-1">
+                  <div className="flex justify-between items-center font-semibold text-blue-600 dark:text-blue-400 border-t border-gray-200 dark:border-dark-600 pt-1 mt-2">
                     <span>Total:</span>
                     <span>₹{booking.totalPrice}</span>
                   </div>
@@ -308,10 +311,11 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
               </div>
             </div>
 
+            {/* Notes Section */}
             {booking.notes && (
-              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                <h5 className="font-medium text-gray-900 mb-1">Notes</h5>
-                <p className="text-sm text-gray-600">{booking.notes}</p>
+              <div className="mt-4 p-3 bg-gray-50 dark:bg-dark-600 rounded-lg">
+                <h5 className="font-medium text-gray-900 dark:text-white mb-1 text-sm sm:text-base">Notes</h5>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 break-words">{booking.notes}</p>
               </div>
             )}
           </div>

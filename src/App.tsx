@@ -1125,41 +1125,99 @@ function App() {
 
         {/* Mobile Tab Bar - Always Visible */}
         <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
-          <div className="grid grid-cols-5 gap-0 max-w-md mx-auto">
+          <div className="grid grid-cols-5 gap-0 max-w-md mx-auto relative">
+            {/* Slider indicator */}
+            <div 
+              className="absolute bottom-0 h-1 bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 ease-in-out"
+              style={{
+                left: activeTab === 'self-drive' ? '0%' :
+                      activeTab === 'services' ? '20%' :
+                      activeTab === 'sale-purchase' ? '40%' :
+                      activeTab === 'contact' ? '60%' :
+                      (activeTab === 'profile' || activeTab === 'login') ? '80%' : '0%',
+                width: '20%',
+                opacity: activeTab === 'home' ? 0 : 1
+              }}
+            />
+            
             <button
               onClick={() => handleTabChange('self-drive')}
-              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+              className={`flex flex-col items-center py-3 px-2 transition-colors ${
+                activeTab === 'self-drive' 
+                  ? 'text-blue-600 dark:text-blue-400' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-300'
+              }`}
             >
-              <CarIcon className="w-5 h-5 text-blue-600 dark:text-blue-400 mb-1" />
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Self-Drive</span>
+              <CarIcon className={`w-5 h-5 mb-1 transition-colors ${
+                activeTab === 'self-drive' 
+                  ? 'text-blue-600 dark:text-blue-400' 
+                  : 'text-blue-500 dark:text-blue-400'
+              }`} />
+              <span className="text-xs font-medium">Self-Drive</span>
             </button>
+            
             <button
               onClick={() => handleServiceNavigation('car-services')}
-              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+              className={`flex flex-col items-center py-3 px-2 transition-colors ${
+                activeTab === 'services' 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-300'
+              }`}
             >
-              <Wrench className="w-5 h-5 text-green-600 dark:text-green-400 mb-1" />
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Services</span>
+              <Wrench className={`w-5 h-5 mb-1 transition-colors ${
+                activeTab === 'services' 
+                  ? 'text-green-600 dark:text-green-400' 
+                  : 'text-green-500 dark:text-green-400'
+              }`} />
+              <span className="text-xs font-medium">Services</span>
             </button>
+            
             <button
               onClick={() => handleServiceNavigation('sale-purchase')}
-              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+              className={`flex flex-col items-center py-3 px-2 transition-colors ${
+                activeTab === 'sale-purchase' 
+                  ? 'text-purple-600 dark:text-purple-400' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-purple-500 dark:hover:text-purple-300'
+              }`}
             >
-              <IndianRupee className="w-5 h-5 text-purple-600 dark:text-purple-400 mb-1" />
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Sale & Purchase</span>
+              <IndianRupee className={`w-5 h-5 mb-1 transition-colors ${
+                activeTab === 'sale-purchase' 
+                  ? 'text-purple-600 dark:text-purple-400' 
+                  : 'text-purple-500 dark:text-purple-400'
+              }`} />
+              <span className="text-xs font-medium">Sale & Purchase</span>
             </button>
+            
             <button
               onClick={() => handleTabChange('contact')}
-              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+              className={`flex flex-col items-center py-3 px-2 transition-colors ${
+                activeTab === 'contact' 
+                  ? 'text-indigo-600 dark:text-indigo-400' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-indigo-500 dark:hover:text-indigo-300'
+              }`}
             >
-              <MapPin className="w-5 h-5 text-indigo-600 dark:text-indigo-400 mb-1" />
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">Contact</span>
+              <MapPin className={`w-5 h-5 mb-1 transition-colors ${
+                activeTab === 'contact' 
+                  ? 'text-indigo-600 dark:text-indigo-400' 
+                  : 'text-indigo-500 dark:text-indigo-400'
+              }`} />
+              <span className="text-xs font-medium">Contact</span>
             </button>
+            
             <button
               onClick={() => isAuthenticated ? handleTabChange('profile') : setActiveTab('login')}
-              className="flex flex-col items-center py-3 px-2 hover:bg-gray-50 dark:hover:bg-dark-700 transition-colors"
+              className={`flex flex-col items-center py-3 px-2 transition-colors ${
+                (activeTab === 'profile' || activeTab === 'login') 
+                  ? 'text-orange-600 dark:text-orange-400' 
+                  : 'text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-300'
+              }`}
             >
-              <User className="w-5 h-5 text-orange-600 dark:text-orange-400 mb-1" />
-              <span className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+              <User className={`w-5 h-5 mb-1 transition-colors ${
+                (activeTab === 'profile' || activeTab === 'login') 
+                  ? 'text-orange-600 dark:text-orange-400' 
+                  : 'text-orange-500 dark:text-orange-400'
+              }`} />
+              <span className="text-xs font-medium">
                 {isAuthenticated ? 'Profile' : 'Login'}
               </span>
             </button>
@@ -1174,7 +1232,7 @@ function App() {
               <section className="text-center py-8 sm:py-12 md:py-20 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/10 rounded-xl sm:rounded-2xl md:rounded-3xl"></div>
                 <div className="relative z-10 px-3 sm:px-4">
-                  <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-white dark:text-white mb-3 sm:mb-4 md:mb-6">
+                  <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white mb-3 sm:mb-4 md:mb-6">
                     Your Complete
                     <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 block sm:inline"> Car Solution</span>
                   </h1>
