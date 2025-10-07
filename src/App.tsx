@@ -405,9 +405,8 @@ function App() {
       const result = await getAvailableCars(pickupDate, dropDate);
       setBookedCarIds(result.bookedCarIds);
       
-      // Filter out booked cars
-      const available = cars.filter(car => !result.bookedCarIds.includes(car.id));
-      setAvailableCars(available);
+      // Show all cars instead of filtering out booked ones
+      setAvailableCars(cars);
     } catch (error) {
       console.error('Error fetching available cars:', error);
       setAvailableCars(cars); // Fallback to all cars
@@ -1529,6 +1528,7 @@ function App() {
                         car={car}
                         onSelect={handleCarSelect}
                         isSelected={selectedCar?.id === car.id}
+                        isBooked={bookedCarIds.includes(car.id)}
                       />
                     ))}
                   </div>

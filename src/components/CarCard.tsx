@@ -6,15 +6,26 @@ interface CarCardProps {
   car: Car;
   onSelect: (car: Car) => void;
   isSelected: boolean;
+  isBooked?: boolean;
 }
 
-export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected }) => {
+export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected, isBooked = false }) => {
+  const handleClick = () => {
+    if (!isBooked) {
+      onSelect(car);
+    }
+  };
+
   return (
     <div 
-      className={`bg-white dark:bg-dark-800 rounded-xl shadow-lg overflow-hidden cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl ${
+      className={`bg-white dark:bg-dark-800 rounded-xl shadow-lg overflow-hidden transform transition-all duration-300 ${
+        isBooked 
+          ? 'opacity-70 blur-[0.5px] cursor-not-allowed' 
+          : 'cursor-pointer hover:scale-105 hover:shadow-xl'
+      } ${
         isSelected ? 'ring-4 ring-blue-500 dark:ring-blue-400 ring-opacity-50' : ''
       }`}
-      onClick={() => onSelect(car)}
+      onClick={handleClick}
     >
       <div className="relative">
         <img 
@@ -51,7 +62,6 @@ export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected }) =
             <Zap className="w-4 h-4 mr-2" />
             <span className="text-sm font-semibold">Rs {car.pricePerHour}/hour</span>
           </div>
-          
         </div>
         
         <div className="mb-4">
@@ -65,23 +75,22 @@ export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected }) =
               >
                 {feature}
               </span>
-              
             ))}
-            
             
             {car.features.length > 3 && (
               <span className="text-xs text-black-500 dark:text-black-400">+{car.features.length - 3} more</span>
             )}
           </div>
-          
         </div>
         
         <div className={`w-full py-2 px-4 rounded-lg text-center font-semibold transition-colors ${
-          isSelected 
-            ? 'bg-blue-600 dark:bg-blue-500 text-black' 
-            : 'bg-gray-100 dark:bg-dark-700 text-black-700 dark:text-black-300 hover:bg-gray-200 dark:hover:bg-dark-600'
+          isBooked
+            ? 'bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300 cursor-not-allowed'
+            : isSelected 
+              ? 'bg-blue-600 dark:bg-blue-500 text-black' 
+              : 'bg-gray-100 dark:bg-dark-700 text-black-700 dark:text-black-300 hover:bg-gray-200 dark:hover:bg-dark-600'
         }`}>
-          {isSelected ? 'Selected' : 'Select Car'}
+          {isBooked ? 'Booked' : isSelected ? 'Selected' : 'Select Car'}
         </div>
       </div>
     </div>
