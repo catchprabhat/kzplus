@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Car, Calendar as CalendarIcon, ArrowRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Car, Calendar as CalendarIcon, ArrowRight, X, Clock } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Booking, CalendarDay } from '../types';
 
 interface CalendarProps {
@@ -8,6 +9,9 @@ interface CalendarProps {
 
 export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedBookings, setSelectedBookings] = useState<Booking[]>([]);
+  const [showModal, setShowModal] = useState(false);
 
   const monthNames = [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -197,6 +201,36 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
     }
   };
 
+  const handleDateClick = (day: CalendarDay) => {
+    // Show modal on both mobile and desktop if there are bookings
+    if (day.bookings.length > 0) {
+      setSelectedDate(day.date);
+      setSelectedBookings(day.bookings);
+      setShowModal(true);
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedDate(null);
+    setSelectedBookings([]);
+  };
+
+  const formatDateForModal = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const formatTimeRange = (booking: Booking) => {
+    const pickup = new Date(booking.pickupDate);
+    const drop = new Date(booking.dropDate);
+    return `${pickup.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} - ${drop.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+  };
+
   return (
     <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-3 sm:p-6">
       {/* Responsive header */}
@@ -225,7 +259,6 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
           </button>
         </div>
       </div>
-
       {/* Days of week header - responsive */}
       <div className="grid grid-cols-7 gap-0.5 sm:gap-1 mb-2">
         {daysOfWeek.map(day => (
@@ -244,13 +277,18 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
           return (
             <div
               key={index}
-              className={`min-h-[60px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border border-gray-100 dark:border-dark-600 relative ${
+              onClick={() => handleDateClick(day)}
+              className={`min-h-[60px] sm:min-h-[80px] md:min-h-[100px] p-1 sm:p-2 border border-gray-100 dark:border-dark-600 relative transition-all duration-200 ${
                 day.isCurrentMonth 
                   ? dateBackgroundColor || 'bg-white dark:bg-dark-800' 
                   : 'bg-gray-50 dark:bg-dark-700'
               } ${
                 day.date.toDateString() === new Date().toDateString()
                   ? 'ring-2 ring-blue-500 dark:ring-blue-400'
+                  : ''
+              } ${
+                day.bookings.length > 0
+                  ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:scale-105 active:scale-95'
                   : ''
               }`}
             >
@@ -309,6 +347,131 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
           );
         })}
       </div>
+
+      {/* Mobile Modal */}
+      <AnimatePresence>
+        {showModal && selectedDate && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={closeModal}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 50 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="bg-white dark:bg-dark-800 rounded-2xl p-6 max-w-md w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                    Bookings Details
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {formatDateForModal(selectedDate)}
+                  </p>
+                </div>
+                <button
+                  onClick={closeModal}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-dark-700 rounded-full transition-colors"
+                >
+                  <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+                </button>
+              </div>
+
+              {/* Bookings List */}
+              <div className="space-y-4">
+                {selectedBookings.map((booking, index) => {
+                  const isPickup = isPickupDate(selectedDate, booking);
+                  const isDrop = isDropDate(selectedDate, booking);
+                  const colorClass = getPickupDropColor(booking, isPickup, isDrop);
+                  
+                  return (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`p-4 rounded-xl border-2 ${colorClass}`}
+                    >
+                      {/* Car Info - Keep this section */}
+                      <div className="flex items-center mb-3">
+                        <Car className="w-5 h-5 mr-2 flex-shrink-0" />
+                        <div>
+                          <h4 className="font-semibold text-base">{booking.carName}</h4>
+                          <p className="text-sm opacity-75">
+                            {booking.carType} • {booking.carSeats} Seats
+                          </p>
+                        </div>
+                        <div className="ml-auto">
+                          {isPickup && isDrop && (
+                            <span className="bg-purple-100 dark:bg-purple-800 text-purple-800 dark:text-purple-200 px-2 py-1 rounded-full text-xs font-bold">
+                              Pickup & Drop
+                            </span>
+                          )}
+                          {isPickup && !isDrop && (
+                            <span className="bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-bold">
+                              Pickup Day
+                            </span>
+                          )}
+                          {isDrop && !isPickup && (
+                            <span className="bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-bold">
+                              Drop Day
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* REMOVE Customer Info section completely */}
+                      {/* No customer details or privacy message */}
+
+                      {/* Time Info - Keep this section */}
+                      <div className="mt-3 pt-3 border-t border-current border-opacity-20">
+                        <div className="flex items-center text-sm">
+                          <Clock className="w-4 h-4 mr-2 opacity-60" />
+                          <div>
+                            <p><strong>Pickup:</strong> {formatDateTime(booking.pickupDate)}</p>
+                            <p><strong>Drop:</strong> {formatDateTime(booking.dropDate)}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* REMOVE Status section completely */}
+                      {/* Remove the entire status div */}
+                      {/* <div className="mt-3">
+                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                          booking.status === 'confirmed' 
+                            ? 'bg-green-100 dark:bg-green-800 text-green-800 dark:text-green-200'
+                            : booking.status === 'pending'
+                            ? 'bg-yellow-100 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200'
+                            : 'bg-red-100 dark:bg-red-800 text-red-800 dark:text-red-200'
+                        }`}>
+                          {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                        </span>
+                      </div> */}
+                    </motion.div>
+                  );
+                })}
+              </div>
+
+              {/* Close Button */}
+              <div className="mt-6">
+                <button
+                  onClick={closeModal}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded-xl transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Responsive legend */}
       <div className="mt-4 sm:mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-300">
