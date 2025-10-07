@@ -258,15 +258,19 @@ export const BookingList: React.FC<BookingListProps> = ({
                                   </button>
                                 </>
                               )}
-                              {onDelete && (
-                                <button
-                                  onClick={() => handleDelete(booking.id)}
-                                  className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
-                                >
-                                  <Trash2 className="w-4 h-4 mr-2" />
-                                  Delete Booking
-                                </button>
-                              )}
+                            </>
+                          )}
+                          {/* Move delete option outside admin check */}
+                          {onDelete && (
+                            <>
+                              {isAdmin && <hr className="my-1 border-gray-200 dark:border-dark-600" />}
+                              <button
+                                onClick={() => handleDelete(booking.id)}
+                                className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Delete Booking
+                              </button>
                             </>
                           )}
                         </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, IndianRupee } from 'lucide-react';
+import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, IndianRupee, Edit } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -1499,7 +1499,7 @@ function App() {
                 
                 {/* Show booking summary */}
                 {selfDriveBookingData.tripStartDate && selfDriveBookingData.tripEndDate && (
-                  <div className="mt-4 p-4 bg-blue-50 dark:bg-dark-700 rounded-lg inline-block">
+                  <div className="mt-4 p-4 bg-blue-50 dark:bg-dark-700 rounded-lg inline-block relative">
                     <div className="text-sm text-black-700 dark:text-black-300">
                       <div className="font-bold mb-1">
                         📍 <strong>Trip:</strong> {selfDriveBookingData.location}
@@ -1508,6 +1508,14 @@ function App() {
                         {selfDriveBookingData.tripStartDate.toLocaleDateString()} {selfDriveBookingData.startTime.hour}:{selfDriveBookingData.startTime.minute.toString().padStart(2, '0')} {selfDriveBookingData.startTime.period} - {selfDriveBookingData.tripEndDate.toLocaleDateString()} {selfDriveBookingData.endTime.hour}:{selfDriveBookingData.endTime.minute.toString().padStart(2, '0')} {selfDriveBookingData.endTime.period}
                       </div>
                     </div>
+                    {/* Edit button */}
+                    <button
+                      onClick={() => setActiveTab('self-drive')}
+                      className="absolute top-2 right-2 p-2 hover:bg-blue-100 dark:hover:bg-dark-600 rounded-full transition-colors group"
+                      title="Edit dates and times"
+                    >
+                      <Edit className="w-4 h-4 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 dark:group-hover:text-blue-300" />
+                    </button>
                   </div>
                 )}
               </div>

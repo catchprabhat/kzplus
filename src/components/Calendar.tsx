@@ -237,7 +237,7 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center">
           <CalendarIcon className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-blue-600 dark:text-blue-400" />
-          <span className="hidden sm:inline">Booking Calendar</span>
+          <span className="hidden sm:inline">Booking Days</span>
           <span className="sm:hidden">Calendar</span>
         </h3>
         <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto justify-between sm:justify-start">
