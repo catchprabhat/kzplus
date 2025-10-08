@@ -226,9 +226,9 @@ router.put('/:id/status', authenticateUser, async (req: Request, res: Response) 
   console.log('Request body:', req.body);
 
   // Check if user is the specific admin
-  if (user.email !== 'catchprabhat@gmail.com') {
+  if (user.email !== 'catchprabhat@gmail.com' && user.email !== 'umrsjd455@gmail.com') {
     console.log('❌ Access denied - user is not the authorized admin');
-    console.log('User email:', user.email, 'Required:', 'catchprabhat@gmail.com');
+    console.log('User email:', user.email, 'Required:', 'catchprabhat@gmail.com or umrsjd455@gmail.com');
     return res.status(403).json({ error: 'Admin access required. Only authorized admin can update booking status.' });
   }
 

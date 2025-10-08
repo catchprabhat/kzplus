@@ -62,6 +62,9 @@ export const useAuth = () => {
       setUser(null);
       localStorage.removeItem('driveEasyUser');
       localStorage.removeItem('driveEasyToken');
+      
+      // Reload the page after logout
+      window.location.reload();
     } catch (error) {
       console.error('Failed to clear user session:', error);
     }

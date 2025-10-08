@@ -366,7 +366,7 @@ router.delete('/service-bookings/:id', authenticateUser, async (req, res) => {
     }
 
     // Check if user is admin or owns the booking
-    const isAdmin = user.email === 'catchprabhat@gmail.com';
+    const isAdmin = user.email === 'catchprabhat@gmail.com' || user.email === 'umrsjd455@gmail.com';
     
     if (!isAdmin) {
       // Regular users can only delete their own bookings

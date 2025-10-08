@@ -35,7 +35,7 @@ export const useBookings = () => {
   const { isAuthenticated, getAuthToken, user } = useAuth();
 
   // Check if current user is admin
-  const isAdmin = user?.email === 'catchprabhat@gmail.com';
+  const isAdmin = user?.email === 'catchprabhat@gmail.com' || user?.email === 'umrsjd455@gmail.com';
 
   // Fetch bookings from API
   const fetchBookings = async () => {

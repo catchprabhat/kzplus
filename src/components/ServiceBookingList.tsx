@@ -24,7 +24,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
   const { user } = useAuth();
 
   // Check if current user is admin
-  const isAdmin = user?.email === 'catchprabhat@gmail.com';
+  const isAdmin = user?.email === 'catchprabhat@gmail.com' || user?.email === 'umrsjd455@gmail.com';
 
   // Move this useEffect inside the component
   useEffect(() => {
