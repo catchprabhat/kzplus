@@ -29,10 +29,25 @@ export const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
       return;
     }
 
+    if (!booking) {
+      alert('Booking information is not available');
+      return;
+    }
+
     setIsLoading(true);
     
-    // Create WhatsApp message
-    const message = `Hello ${phoneNumber}, You have been Assigned as the driver.`;
+    // Format the date and time from booking
+    const pickupDate = booking.pickupDate.toLocaleDateString('en-IN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    
+    // Assuming pickup time is morning (you can modify this based on your requirements)
+    const pickupTime = '10:00 AM'; // You might want to add a time field to the Booking interface
+    
+    // Create WhatsApp message with booking details
+    const message = `Hi, you have been assigned as driver for ${booking.carName} on ${pickupDate} at ${pickupTime}. Please reply YES to accept or NO to deny.`;
     const whatsappUrl = `https://api.whatsapp.com/send?phone=+91${phoneNumber}&text=${encodeURIComponent(message)}`;
     
     // Open WhatsApp in new tab
@@ -71,6 +86,9 @@ export const AssignDriverModal: React.FC<AssignDriverModalProps> = ({
           </p>
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Customer: {booking.customerName}
+          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Pickup Date: {booking.pickupDate.toLocaleDateString('en-IN')}
           </p>
         </div>
 
