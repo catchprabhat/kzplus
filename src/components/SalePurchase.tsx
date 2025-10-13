@@ -62,7 +62,7 @@ export const SalePurchase: React.FC = () => {
       color: 'Silver',
       location: 'Bangalore, KA',
 
-      description: 'Well-maintained Honda Civic with full service history. Single owner, garage kept. All maintenance done at authorized service center.',
+      description: 'Well-maintained Crysta with full service history. Single owner, garage kept. All maintenance done at authorized service center.',
       features: ['Air Conditioning', 'GPS Navigation', 'Bluetooth', 'Backup Camera', 'Heated Seats', 'Cruise Control'],
       images: [
         '/images/car1.jpg',
