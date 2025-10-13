@@ -130,6 +130,7 @@ export interface CarSubmission {
     phone: string;
     address: string;
     licenseNumber: string;
+    registration: string;
   };
   status: 'pending' | 'approved' | 'rejected';
   submittedAt: Date;
@@ -171,6 +172,7 @@ export interface CarForSale {
     phone: string;
     whatsapp?: string;
     address: string;
+    registration: string;
     preferredContactTime: string;
     preferredContactMethod: 'phone' | 'email' | 'whatsapp' | 'any';
   };

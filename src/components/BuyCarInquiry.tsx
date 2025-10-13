@@ -213,6 +213,10 @@ export const BuyCarInquiry: React.FC<BuyCarInquiryProps> = ({
                     <span className="font-semibold text-gray-900 dark:text-white capitalize">{car.ownerDetails.preferredContactMethod}</span>
                   </div>
                   <div className="flex justify-between items-center">
+                    <span className="text-gray-600 dark:text-gray-400 font-medium">Registration:</span>
+                    <span className="font-semibold text-gray-900 dark:text-white capitalize">{car.ownerDetails.registration}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">Best Time:</span>
                     <span className="font-semibold text-gray-900 dark:text-white">{car.ownerDetails.preferredContactTime}</span>
                   </div>

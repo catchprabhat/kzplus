@@ -64,6 +64,7 @@ export const SellCarForm: React.FC<SellCarFormProps> = ({
       phone: '',
       whatsapp: '',
       address: '',
+      registration:'',
       preferredContactTime: '',
       preferredContactMethod: 'phone' as 'phone' | 'email' | 'whatsapp' | 'any'
     },

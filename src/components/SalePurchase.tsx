@@ -84,13 +84,14 @@ export const SalePurchase: React.FC = () => {
       exchangeAccepted: false,
       financeAvailable: true,
       ownerDetails: {
-        name: 'John Smith',
-        email: 'john.smith@example.com',
-        phone: '+1-555-0123',
-        whatsapp: '+1-555-0123',
+        name: 'Prasanth Kumar',
+        email: 'pkumargr26@gmail.com',
+        phone: '+1-9972099669',
+        whatsapp: '+1-9972099669',
         address: 'Bangalore, KA',
         preferredContactTime: 'Evenings (6-9 PM)',
-        preferredContactMethod: 'phone'
+        preferredContactMethod: 'phone',
+        registration:'HR-21-xxxx'
       },
       documents: {
         registration: 'rc_honda_civic.pdf',

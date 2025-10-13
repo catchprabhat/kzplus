@@ -23,11 +23,12 @@ const mockSubmissions: CarSubmission[] = [
       pollution: 'puc_honda_civic.pdf'
     },
     ownerDetails: {
-      name: 'John Smith',
-      email: 'john.smith@example.com',
-      phone: '+1-555-0123',
-      address: '123 Main St, Anytown, ST 12345',
-      licenseNumber: 'DL1234567890'
+      name: 'Prasanth Kumar',
+      email: 'pkumargr26@gmail.com',
+      phone: '+1-9972099669',
+      address: 'Electronic City,Bangalore',
+      licenseNumber: 'HR-21-xxxx',
+      registration: ''
     },
     status: 'pending',
     submittedAt: new Date(2025, 0, 10),
@@ -56,7 +57,8 @@ const mockSubmissions: CarSubmission[] = [
       email: 'sarah.johnson@example.com',
       phone: '+1-555-0456',
       address: '456 Oak Ave, Somewhere, ST 67890',
-      licenseNumber: 'DL0987654321'
+      licenseNumber: 'DL0987654321',
+      registration: ''
     },
     status: 'approved',
     submittedAt: new Date(2025, 0, 8),
@@ -88,7 +90,8 @@ const mockSubmissions: CarSubmission[] = [
       email: 'michael.brown@example.com',
       phone: '+1-555-0789',
       address: '789 Pine St, Elsewhere, ST 13579',
-      licenseNumber: 'DL1357924680'
+      licenseNumber: 'DL1357924680',
+      registration: ''
     },
     status: 'rejected',
     submittedAt: new Date(2025, 0, 5),
