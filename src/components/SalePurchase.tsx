@@ -68,7 +68,10 @@ export const SalePurchase: React.FC = () => {
         '/images/car1.jpg',
         '/images/car2.jpg',
         '/images/car3.jpg',
-        '/images/car4.jpg'
+        '/images/car4.jpg',
+        '/images/innova-inner.jpg',
+        '/images/innova-inner1.jpg',
+        '/images/innova-inner2.jpg'
       ],
       condition: 'excellent',
       ownerType: 'individual',
@@ -571,7 +574,7 @@ export const SalePurchase: React.FC = () => {
                 <div className="md:flex">
                   <div className="md:w-1/2">
                     <div className="relative h-48 md:h-full">
-                      <ImageCarousel images={car.images} />
+                      <ImageCarousel images={car.images} alt={''} />
                       <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full z-10">
                         <span className="text-lg font-bold">{formatPrice(car.price)}</span>
                       </div>
