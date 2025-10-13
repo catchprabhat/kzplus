@@ -349,6 +349,7 @@ export const SalePurchase: React.FC = () => {
                     onClick={() => {
                       setSelectedCar(car);
                       setActiveTab('buy');
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
                     }}
                     className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
                   >
@@ -643,29 +644,20 @@ export const SalePurchase: React.FC = () => {
                         <span className="text-gray-600 dark:text-gray-400">Quick Contact:</span>
                         <div className="flex space-x-2">
                           <a
-                            href={`tel:${car.ownerDetails.phone}`}
+                            href="tel:7735537655"
                             className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
                             title="Call"
                           >
                             <Phone className="w-4 h-4" />
                           </a>
-                          {car.ownerDetails.whatsapp && (
-                            <a
-                              href={`https://wa.me/${car.ownerDetails.whatsapp.replace(/[^0-9]/g, '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
-                              title="WhatsApp"
-                            >
-                              <MessageCircle className="w-4 h-4" />
-                            </a>
-                          )}
                           <a
-                            href={`mailto:${car.ownerDetails.email}`}
-                            className="p-2 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
-                            title="Email"
+                            href="https://wa.me/7735537655"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                            title="WhatsApp"
                           >
-                            <Mail className="w-4 h-4" />
+                            <MessageCircle className="w-4 h-4" />
                           </a>
                         </div>
                       </div>
