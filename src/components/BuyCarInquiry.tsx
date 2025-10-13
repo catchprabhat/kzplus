@@ -139,89 +139,83 @@ export const BuyCarInquiry: React.FC<BuyCarInquiryProps> = ({
           <div className="w-full p-4 sm:p-6 overflow-y-auto">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Car Details</h3>
             
-            <div className="space-y-4 sm:space-y-6">
-              <div className="relative">
+            <div className="space-y-6">
+              {/* Fixed Image Container - Same as Featured Cars page */}
+              <div className="relative h-48 overflow-hidden rounded-lg">
                 <ImageCarousel 
                   images={car.images} 
                   alt={car.title}
-                  className="w-full h-48 sm:h-56 md:h-64 rounded-lg"
+                  className="w-full h-full object-cover"
                 />
-                <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 bg-black bg-opacity-70 text-white px-2 sm:px-3 py-1 rounded-full z-10">
-                  <span className="font-bold text-sm sm:text-base">{formatPrice(car.price)}</span>
+                <div className="absolute bottom-3 left-3 bg-black bg-opacity-80 text-white px-3 py-1.5 rounded-full z-20">
+                  <span className="font-bold text-sm">{formatPrice(car.price)}</span>
                 </div>
               </div>
 
-              <div className="pt-4 sm:pt-6">
-                <h4 className="font-semibold text-gray-900 dark:text-white mb-2 text-base sm:text-lg">{car.title}</h4>
-                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3">{car.description}</p>
+              {/* Car Title and Description */}
+              <div className="pt-2">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3 text-lg leading-tight">{car.title}</h4>
+                <p className="text-gray-600 dark:text-gray-400 text-sm line-clamp-3 mb-4">{car.description}</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-sm pt-4">
-                <div className="flex flex-col sm:flex-row sm:items-center bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Year:</span>
-                  <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white">{car.year}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Car Driven:</span>
-                  <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white">{car.mileage.toLocaleString()} km</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Fuel:</span>
-                  <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white">{car.fuelType}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Transmission:</span>
-                  <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white">{car.transmission}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Location:</span>
-                  <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white">{car.location}</span>
-                </div>
-                <div className="flex flex-col sm:flex-row sm:items-center bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
-                  <span className="text-gray-600 dark:text-gray-400 font-medium">Condition:</span>
-                  <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white capitalize">{car.condition}</span>
+              {/* Car Details Grid - Always visible below image */}
+              <div className="bg-white dark:bg-dark-800 -mx-4 px-4 py-4">
+                <div className="grid grid-cols-2 gap-3 text-sm">
+                  <div className="bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Year</span>
+                      <span className="font-semibold text-gray-900 dark:text-white text-base">{car.year}</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Transmission</span>
+                      <span className="font-semibold text-gray-900 dark:text-white text-base">{car.transmission}</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Fuel</span>
+                      <span className="font-semibold text-gray-900 dark:text-white text-base">{car.fuelType}</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-dark-700 p-3 rounded-lg">
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Condition</span>
+                      <span className="font-semibold text-gray-900 dark:text-white text-base capitalize">{car.condition}</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-dark-700 p-3 rounded-lg col-span-2">
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Distance Driven</span>
+                      <span className="font-semibold text-gray-900 dark:text-white text-base">{car.mileage.toLocaleString()} km</span>
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 dark:bg-dark-700 p-3 rounded-lg col-span-2">
+                    <div className="flex flex-col">
+                      <span className="text-gray-500 dark:text-gray-400 text-xs font-medium mb-1">Location</span>
+                      <span className="font-semibold text-gray-900 dark:text-white text-base">{car.location}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* Seller Info */}
-              <div className="bg-gray-50 dark:bg-dark-700 rounded-lg p-3 sm:p-4 mt-4">
-                <h5 className="font-semibold text-gray-900 dark:text-white mb-3 text-sm sm:text-base">Seller Information</h5>
-                <div className="space-y-2 text-sm">
-                  <div className="flex flex-col sm:flex-row sm:items-center">
+              <div className="bg-gray-50 dark:bg-dark-700 rounded-lg p-4 mt-4">
+                <h5 className="font-semibold text-gray-900 dark:text-white mb-3 text-base">Seller Information</h5>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">Name:</span>
-                    <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white">{car.ownerDetails.name}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{car.ownerDetails.name}</span>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">Preferred Contact:</span>
-                    <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white capitalize">{car.ownerDetails.preferredContactMethod}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white capitalize">{car.ownerDetails.preferredContactMethod}</span>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center">
+                  <div className="flex justify-between items-center">
                     <span className="text-gray-600 dark:text-gray-400 font-medium">Best Time:</span>
-                    <span className="sm:ml-2 font-semibold text-gray-900 dark:text-white">{car.ownerDetails.preferredContactTime}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">{car.ownerDetails.preferredContactTime}</span>
                   </div>
-                </div>
-              </div>
-
-              {/* Quick Contact Options */}
-              <div className="space-y-3 mt-4">
-                <h5 className="font-semibold text-gray-900 dark:text-white text-sm sm:text-base">Quick Contact</h5>
-                <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
-                  <a
-                    href="tel:7735537655"
-                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-                  >
-                    <Phone className="w-4 h-4 mr-2" />
-                    Call
-                  </a>
-                  <a
-                    href="https://wa.me/7735537655"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600 text-white py-3 px-4 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-                  >
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    WhatsApp
-                  </a>
                 </div>
               </div>
             </div>
