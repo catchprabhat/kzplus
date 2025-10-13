@@ -1116,46 +1116,44 @@ function App() {
             </div>
           )}
 
-          {/* Desktop Navigation - Show only when not on home page */}
-          {activeTab !== 'home' && (
-            <nav className="bg-white dark:bg-dark-800 border-b dark:border-dark-700 hidden md:block transition-colors duration-300">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-center space-x-8 overflow-x-auto">
-                  {navigationItems.map(({ key, label, icon: Icon, protected: isProtected }) => {
-                    const isDisabled = isProtected && !isAuthenticated;
-                    return (
-                      <button
-                        key={key}
-                        onClick={() => !isDisabled && handleTabChange(key)}
-                        disabled={isDisabled}
-                        className={`flex items-center px-4 py-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
-                          activeTab === key
-                            ? 'border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400'
-                            : isDisabled
-                            ? 'border-transparent text-gray-400 dark:text-gray-600 cursor-not-allowed'
-                            : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-dark-600'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 mr-2" />
-                        {label}
-                       {isProtected && !isAuthenticated && (
-                          <span className="ml-2 text-xs bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
-                            Login Required
-                          </span>
-                        )}
-                        {((key === 'bookings' && bookings.filter(booking => booking.status !== 'deleted').length > 0) || 
-                          (key === 'service-bookings' && serviceBookings.filter(booking => booking.status !== 'deleted').length > 0)) && (
-                          <span className="ml-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
-                            {key === 'bookings' ? bookings.filter(booking => booking.status !== 'deleted').length : serviceBookings.filter(booking => booking.status !== 'deleted').length}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
+          {/* Desktop Navigation - Show on all pages including home */}
+          <nav className="bg-white dark:bg-dark-800 border-b dark:border-dark-700 hidden md:block transition-colors duration-300">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-center space-x-8 overflow-x-auto">
+                {navigationItems.map(({ key, label, icon: Icon, protected: isProtected }) => {
+                  const isDisabled = isProtected && !isAuthenticated;
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => !isDisabled && handleTabChange(key)}
+                      disabled={isDisabled}
+                      className={`flex items-center px-4 py-4 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                        activeTab === key
+                          ? 'border-blue-500 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                          : isDisabled
+                          ? 'border-transparent text-gray-400 dark:text-gray-600 cursor-not-allowed'
+                          : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-dark-600'
+                      }`}
+                    >
+                      <Icon className="w-4 h-4 mr-2" />
+                      {label}
+                     {isProtected && !isAuthenticated && (
+                        <span className="ml-2 text-xs bg-gray-200 dark:bg-dark-600 text-gray-600 dark:text-gray-400 px-2 py-1 rounded">
+                          Login Required
+                        </span>
+                      )}
+                      {((key === 'bookings' && bookings.filter(booking => booking.status !== 'deleted').length > 0) || 
+                        (key === 'service-bookings' && serviceBookings.filter(booking => booking.status !== 'deleted').length > 0)) && (
+                        <span className="ml-2 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-medium px-2 py-0.5 rounded-full">
+                          {key === 'bookings' ? bookings.filter(booking => booking.status !== 'deleted').length : serviceBookings.filter(booking => booking.status !== 'deleted').length}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
               </div>
-            </nav>
-          )}
+            </div>
+          </nav>
 
           {/* Mobile Tab Bar - Always Visible */}
           <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t dark:border-dark-700 shadow-lg z-30 md:hidden transition-colors duration-300">
@@ -1520,6 +1518,7 @@ function App() {
                 <SelfDriveBooking 
                   onBookingComplete={handleBookingComplete}
                   onNavigateToCarSelection={handleSelfDriveBookingData}
+                  initialBookingData={selfDriveBookingData}
                 />
               } />
               

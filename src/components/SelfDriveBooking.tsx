@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, Clock, MapPin, Car, ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { cars } from '../data/cars';
 
 interface SelfDriveBookingProps {
   onBookingComplete?: (booking: any) => void;
   onNavigateToCarSelection?: (bookingData: any) => void;
+  initialBookingData?: any;
 }
 
 export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({ 
   onBookingComplete, 
-  onNavigateToCarSelection 
+  onNavigateToCarSelection,
+  initialBookingData
 }) => {
   const [location, setLocation] = useState('Bangalore');
   const [tripStartDate, setTripStartDate] = useState<Date | null>(null);
@@ -24,11 +27,25 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   const [pincode, setPincode] = useState('');
   const [googleMapsLocation, setGoogleMapsLocation] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  // Remove this line:
-  // const [highlightTimeSection, setHighlightTimeSection] = useState(false);
   
   // Add the missing ref
   const timeSelectionRef = useRef<HTMLDivElement>(null);
+  
+  // Initialize state with existing booking data if available
+  useEffect(() => {
+    if (initialBookingData) {
+      setLocation(initialBookingData.location || 'Bangalore');
+      setTripStartDate(initialBookingData.tripStartDate ? new Date(initialBookingData.tripStartDate) : null);
+      setTripEndDate(initialBookingData.tripEndDate ? new Date(initialBookingData.tripEndDate) : null);
+      setStartTime(initialBookingData.startTime || { hour: 9, minute: 0, period: 'AM' });
+      setEndTime(initialBookingData.endTime || { hour: 9, minute: 0, period: 'AM' });
+      setDeliveryPickup(initialBookingData.deliveryPickup || false);
+      setDeliveryAddress(initialBookingData.deliveryAddress || '');
+      setNearbyLocation(initialBookingData.nearbyLocation || '');
+      setPincode(initialBookingData.pincode || '');
+      setGoogleMapsLocation(initialBookingData.googleMapsLocation || '');
+    }
+  }, [initialBookingData]);
   
   // Update the handleDateSelect function
   const handleDateSelect = (date: Date) => {
@@ -74,19 +91,6 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
             });
           }
         }, 300);
-        // Add highlight effect
-        setHighlightTimeSection(true);
-        
-        timeSelectionRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start',
-          inline: 'nearest'
-        });
-        
-        // Remove highlight after animation
-        setTimeout(() => {
-          setHighlightTimeSection(false);
-        }, 2000);
       }
     }
   };
@@ -336,6 +340,73 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
         >
           SEARCH
         </button>
+      </div>
+
+      {/* Car Showcase Section */}
+      <div className="max-w-4xl mx-auto mb-8">
+        <div className="text-center mb-6">
+          <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Our Fleet
+          </h3>
+          <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+            Choose from our premium collection of self-drive cars
+          </p>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4">
+          {cars.map((car) => (
+            <div 
+              key={car.id} 
+              className="bg-white dark:bg-dark-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"
+            >
+              <div className="relative">
+                <img 
+                  src={car.image} 
+                  alt={car.name}
+                  className="w-full h-48 sm:h-56 object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                  <h4 className="text-white font-bold text-lg sm:text-xl">
+                    {car.name}
+                  </h4>
+                  <div className="flex items-center space-x-2 mt-1">
+                    <span className="text-white/90 text-sm">
+                      {car.seats} Seats
+                    </span>
+                    <span className="text-white/70">•</span>
+                    <span className="text-white/90 text-sm">
+                      {car.type}
+                    </span>
+                    <span className="text-white/70">•</span>
+                    <span className="text-white/90 text-sm">
+                      {car.fuel}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Starting from
+                    </p>
+                    <p className="text-blue-600 font-bold text-lg">
+                      ₹{car.pricePerDay}/day
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-gray-600 dark:text-gray-400 text-sm">
+                      Per hour
+                    </p>
+                    <p className="text-gray-800 dark:text-gray-300 font-semibold">
+                      ₹{car.pricePerHour}/hr
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Calendar Popup */}
