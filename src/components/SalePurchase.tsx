@@ -26,6 +26,7 @@ import { CarForSale, SaleInquiry } from '../types';
 import { SellCarForm } from './SellCarForm';
 import { BuyCarInquiry } from './BuyCarInquiry';
 import { LoadingSpinner } from './LoadingSpinner';
+import { ImageCarousel } from './ImageCarousel';
 
 export const SalePurchase: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'buy' | 'sell'>('overview');
@@ -45,14 +46,14 @@ export const SalePurchase: React.FC = () => {
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(false);
 
-  // Mock data for cars for sale
+  // Mock data for cars for sale - Updated to keep only first car with new images
   const carsForSale: CarForSale[] = [
     {
       id: '1',
-      title: 'Honda Civic 2022 - Excellent Condition',
-      brand: 'Honda',
-      model: 'Civic',
-      year: 2022,
+      title: 'Crysta 2.8 G 2019 - Excellent Condition',
+      brand: 'Toyota',
+      model: 'Crysta',
+      year: 2019,
       price: 22500,
       mileage: 15000,
       fuelType: 'Petrol',
@@ -62,7 +63,12 @@ export const SalePurchase: React.FC = () => {
       location: 'New York, NY',
       description: 'Well-maintained Honda Civic with full service history. Single owner, garage kept. All maintenance done at authorized service center.',
       features: ['Air Conditioning', 'GPS Navigation', 'Bluetooth', 'Backup Camera', 'Heated Seats', 'Cruise Control'],
-      images: ['https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg'],
+      images: [
+        '/src/images/car1.jpg',
+        '/src/images/car2.jpg',
+        '/src/images/car3.jpg',
+        '/src/images/car4.jpg'
+      ],
       condition: 'excellent',
       ownerType: 'individual',
       registrationState: 'NY',
@@ -94,101 +100,6 @@ export const SalePurchase: React.FC = () => {
       postedAt: new Date(2025, 0, 10),
       updatedAt: new Date(2025, 0, 15),
       expiresAt: new Date(2025, 2, 10)
-    },
-    {
-      id: '2',
-      title: 'BMW X5 2020 - Luxury SUV',
-      brand: 'BMW',
-      model: 'X5',
-      year: 2020,
-      price: 45000,
-      mileage: 35000,
-      fuelType: 'Petrol',
-      transmission: 'Automatic',
-      bodyType: 'SUV',
-      color: 'Black',
-      location: 'Los Angeles, CA',
-      description: 'Premium BMW X5 with all luxury features. Excellent condition with premium maintenance package.',
-      features: ['4WD', 'Panoramic Roof', 'Premium Sound', 'Navigation', 'Leather Seats', 'Heated Seats'],
-      images: ['https://images.pexels.com/photos/244206/pexels-photo-244206.jpeg'],
-      condition: 'excellent',
-      ownerType: 'individual',
-      registrationState: 'CA',
-      insuranceValid: true,
-      accidentHistory: false,
-      serviceHistory: 'BMW authorized service center',
-      reasonForSelling: 'Moving overseas',
-      negotiable: true,
-      exchangeAccepted: true,
-      financeAvailable: true,
-      ownerDetails: {
-        name: 'Sarah Johnson',
-        email: 'sarah.johnson@example.com',
-        phone: '+1-555-0456',
-        whatsapp: '+1-555-0456',
-        address: 'Los Angeles, CA',
-        preferredContactTime: 'Weekdays (9 AM - 6 PM)',
-        preferredContactMethod: 'whatsapp'
-      },
-      documents: {
-        registration: 'rc_bmw_x5.pdf',
-        insurance: 'insurance_bmw_x5.pdf',
-        pollution: 'puc_bmw_x5.pdf',
-        serviceRecords: 'service_bmw_x5.pdf'
-      },
-      status: 'active',
-      views: 189,
-      inquiries: 8,
-      postedAt: new Date(2025, 0, 8),
-      updatedAt: new Date(2025, 0, 12),
-      expiresAt: new Date(2025, 2, 8)
-    },
-    {
-      id: '3',
-      title: 'Tesla Model 3 2021 - Electric',
-      brand: 'Tesla',
-      model: 'Model 3',
-      year: 2021,
-      price: 38000,
-      mileage: 25000,
-      fuelType: 'Electric',
-      transmission: 'Automatic',
-      bodyType: 'Sedan',
-      color: 'White',
-      location: 'San Francisco, CA',
-      description: 'Tesla Model 3 with autopilot and premium connectivity. Excellent battery health and performance.',
-      features: ['Autopilot', 'Premium Audio', 'Heated Seats', 'Fast Charging', 'Over-the-air Updates'],
-      images: ['https://images.pexels.com/photos/193991/pexels-photo-193991.jpeg'],
-      condition: 'excellent',
-      ownerType: 'individual',
-      registrationState: 'CA',
-      insuranceValid: true,
-      accidentHistory: false,
-      serviceHistory: 'Tesla service center maintenance',
-      reasonForSelling: 'Upgrading to Model S',
-      negotiable: false,
-      exchangeAccepted: false,
-      financeAvailable: true,
-      ownerDetails: {
-        name: 'Mike Chen',
-        email: 'mike.chen@example.com',
-        phone: '+1-555-0789',
-        whatsapp: '+1-555-0789',
-        address: 'San Francisco, CA',
-        preferredContactTime: 'Anytime',
-        preferredContactMethod: 'email'
-      },
-      documents: {
-        registration: 'rc_tesla_model3.pdf',
-        insurance: 'insurance_tesla_model3.pdf',
-        pollution: 'puc_tesla_model3.pdf'
-      },
-      status: 'active',
-      views: 312,
-      inquiries: 15,
-      postedAt: new Date(2025, 0, 5),
-      updatedAt: new Date(2025, 0, 10),
-      expiresAt: new Date(2025, 2, 5)
     }
   ];
 
@@ -392,10 +303,10 @@ export const SalePurchase: React.FC = () => {
           {carsForSale.slice(0, 3).map(car => (
             <div key={car.id} className="bg-white dark:bg-dark-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div className="relative">
-                <img 
-                  src={car.images[0]} 
+                <ImageCarousel 
+                  images={car.images} 
                   alt={car.title}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48"
                 />
                 <div className="absolute top-4 right-4 bg-white dark:bg-dark-700 bg-opacity-90 backdrop-blur-sm px-3 py-1 rounded-full">
                   <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getConditionColor(car.condition)}`}>
@@ -658,20 +569,16 @@ export const SalePurchase: React.FC = () => {
                 <div className="md:flex">
                   <div className="md:w-1/2">
                     <div className="relative h-48 md:h-full">
-                      <img 
-                        src={car.images[0]} 
-                        alt={car.title}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full">
+                      <ImageCarousel images={car.images} />
+                      <div className="absolute top-4 left-4 bg-black bg-opacity-70 text-white px-3 py-1 rounded-full z-10">
                         <span className="text-lg font-bold">{formatPrice(car.price)}</span>
                       </div>
-                      <div className="absolute top-4 right-4">
+                      <div className="absolute top-4 right-4 z-10">
                         <span className={`text-xs font-semibold px-2 py-1 rounded-full ${getConditionColor(car.condition)}`}>
                           {car.condition}
                         </span>
                       </div>
-                      <div className="absolute bottom-4 left-4 flex items-center space-x-2 text-white text-sm">
+                      <div className="absolute bottom-4 left-4 flex items-center space-x-2 text-white text-sm z-10">
                         <Eye className="w-4 h-4" />
                         <span>{car.views}</span>
                       </div>

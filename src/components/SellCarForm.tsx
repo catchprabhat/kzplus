@@ -211,7 +211,8 @@ export const SellCarForm: React.FC<SellCarFormProps> = ({
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 dark:focus:ring-purple-400 focus:border-transparent transition-all dark:bg-dark-700 dark:text-white ${
                     errors.title ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                   }`}
-                  placeholder="e.g., Honda Civic 2022 - Excellent Condition"
+                  placeholder="e.g., Crysta 2.8 G 2019 - Excellent Condition"
+
                   disabled={loading}
                 />
                 {errors.title && <p className="text-red-500 dark:text-red-400 text-sm mt-1">{errors.title}</p>}
