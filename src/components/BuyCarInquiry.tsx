@@ -4,7 +4,7 @@ import {
   Phone, 
   Mail, 
   User, 
-  DollarSign, 
+  IndianRupee, 
   Calendar,
   Eye,
   FileText,
@@ -92,9 +92,9 @@ export const BuyCarInquiry: React.FC<BuyCarInquiryProps> = ({
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(price);
@@ -161,7 +161,7 @@ export const BuyCarInquiry: React.FC<BuyCarInquiryProps> = ({
                   <span className="ml-2 font-medium text-gray-900 dark:text-white">{car.year}</span>
                 </div>
                 <div>
-                  <span className="text-gray-600 dark:text-gray-400">Mileage:</span>
+                  <span className="text-gray-600 dark:text-gray-400">Car Driven:</span>
                   <span className="ml-2 font-medium text-gray-900 dark:text-white">{car.mileage.toLocaleString()} miles</span>
                 </div>
                 <div>
@@ -321,7 +321,7 @@ export const BuyCarInquiry: React.FC<BuyCarInquiryProps> = ({
               {car.negotiable && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    <DollarSign className="w-4 h-4 inline mr-1" />
+                    <IndianRupee className="w-4 h-4 inline mr-1" />
                     Your Offer (Optional)
                   </label>
                   <input

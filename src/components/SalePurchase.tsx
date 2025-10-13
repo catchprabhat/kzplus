@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   Car, 
-  DollarSign, 
+  IndianRupee, 
   Search, 
   Plus, 
   Phone, 
@@ -50,28 +50,29 @@ export const SalePurchase: React.FC = () => {
   const carsForSale: CarForSale[] = [
     {
       id: '1',
-      title: 'Crysta 2.8 G 2019 - Excellent Condition',
+      title: 'Crysta 2.8 G 2019 - Excellent Condition',
       brand: 'Toyota',
       model: 'Crysta',
       year: 2019,
-      price: 22500,
-      mileage: 15000,
-      fuelType: 'Petrol',
+      price: 1900000,
+      mileage: 140000,
+      fuelType: 'Diesel',
       transmission: 'Automatic',
       bodyType: 'Sedan',
       color: 'Silver',
-      location: 'New York, NY',
+      location: 'Bangalore, KA',
+
       description: 'Well-maintained Honda Civic with full service history. Single owner, garage kept. All maintenance done at authorized service center.',
       features: ['Air Conditioning', 'GPS Navigation', 'Bluetooth', 'Backup Camera', 'Heated Seats', 'Cruise Control'],
       images: [
-        '/src/images/car1.jpg',
-        '/src/images/car2.jpg',
-        '/src/images/car3.jpg',
-        '/src/images/car4.jpg'
+        '/images/car1.jpg',
+        '/images/car2.jpg',
+        '/images/car3.jpg',
+        '/images/car4.jpg'
       ],
       condition: 'excellent',
       ownerType: 'individual',
-      registrationState: 'NY',
+      registrationState: 'KA',
       insuranceValid: true,
       accidentHistory: false,
       serviceHistory: 'Complete service history available',
@@ -84,7 +85,7 @@ export const SalePurchase: React.FC = () => {
         email: 'john.smith@example.com',
         phone: '+1-555-0123',
         whatsapp: '+1-555-0123',
-        address: 'New York, NY',
+        address: 'Bangalore, KA',
         preferredContactTime: 'Evenings (6-9 PM)',
         preferredContactMethod: 'phone'
       },
@@ -188,9 +189,9 @@ export const SalePurchase: React.FC = () => {
   };
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-IN', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(price);
@@ -342,7 +343,7 @@ export const SalePurchase: React.FC = () => {
                 
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-500 dark:text-gray-400">
-                    {formatMileage(car.mileage)} miles
+                    {formatMileage(car.mileage)} km
                   </span>
                   <button
                     onClick={() => {
@@ -615,7 +616,7 @@ export const SalePurchase: React.FC = () => {
 
                     <div className="flex items-center justify-between">
                       <div className="text-sm text-gray-500 dark:text-gray-400">
-                        <div>{formatMileage(car.mileage)} miles</div>
+                        <div>{formatMileage(car.mileage)} km</div>
                         <div className="flex items-center mt-1">
                           <Users className="w-3 h-3 mr-1" />
                           {car.ownerType}
@@ -696,7 +697,7 @@ export const SalePurchase: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 text-center">
           <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <DollarSign className="w-6 h-6 text-green-600 dark:text-green-400" />
+            <IndianRupee className="w-6 h-6 text-green-600 dark:text-green-400" />
           </div>
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Best Price</h3>
           <p className="text-gray-600 dark:text-gray-400 text-sm">
