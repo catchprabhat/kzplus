@@ -54,7 +54,7 @@ export const SalePurchase: React.FC = () => {
       brand: 'Toyota',
       model: 'Crysta',
       year: 2019,
-      price: 1900000,
+      price: 1590000,
       mileage: 140000,
       fuelType: 'Diesel',
       transmission: 'Automatic',
