@@ -105,6 +105,71 @@ export const SalePurchase: React.FC = () => {
       postedAt: new Date(2025, 0, 10),
       updatedAt: new Date(2025, 0, 15),
       expiresAt: new Date(2025, 2, 10)
+    },
+    {
+      id: '2',
+      title: 'Crysta 2.8 G 2016 - Excellent Condition',
+      brand: 'Toyota',
+      model: 'Crysta',
+      year: 2016,
+      price: 1590000,
+      mileage: 135000,
+      fuelType: 'Diesel',
+      transmission: 'Automatic',
+      bodyType: 'Sedan',
+      color: 'Silver',
+      location: 'Bangalore, KA',
+
+      description: 'Well-maintained Crysta with full service history. Single owner, garage kept. All maintenance done at authorized service center.',
+      features: ['Air Conditioning', 'GPS Navigation', 'Bluetooth', 'Backup Camera', 'Heated Seats', 'Cruise Control'],
+      images: [
+        '/images/crista_silver/Crista_silver07.jpg',
+        '/images/crista_silver/Crista_silver02.jpg',
+        '/images/crista_silver/Crista_silver03.jpg',
+        '/images/crista_silver/Crista_silver04.jpg',
+        '/images/crista_silver/Crista_silver05.jpg',
+        '/images/crista_silver/Crista_silver06.jpg',
+        '/images/crista_silver/Crista_silver01.jpg',
+        '/images/crista_silver/Crista_silver08.jpg',
+        '/images/crista_silver/Crista_silver09.jpg',
+        '/images/crista_silver/Crista_silver10.jpg',
+        '/images/crista_silver/Crista_silver11.jpg',
+        '/images/crista_silver/Crista_silver12.jpg',
+        '/images/crista_silver/Crista_silver13.jpg',
+        
+      ],
+      condition: 'excellent',
+      ownerType: 'individual',
+      registrationState: 'KA',
+      insuranceValid: true,
+      accidentHistory: false,
+      serviceHistory: 'Complete service history available',
+      reasonForSelling: 'Upgrading to a larger vehicle',
+      negotiable: true,
+      exchangeAccepted: false,
+      financeAvailable: true,
+      ownerDetails: {
+        name: 'Prasanth Kumar',
+        email: 'pkumargr26@gmail.com',
+        phone: '+1-9972099669',
+        whatsapp: '+1-9972099669',
+        address: 'Bangalore, KA',
+        preferredContactTime: 'Evenings (6-9 PM)',
+        preferredContactMethod: 'phone',
+        registration:'HR-21-xxxx'
+      },
+      documents: {
+        registration: 'rc_honda_civic.pdf',
+        insurance: 'insurance_honda_civic.pdf',
+        pollution: 'puc_honda_civic.pdf',
+        serviceRecords: 'service_honda_civic.pdf'
+      },
+      status: 'active',
+      views: 245,
+      inquiries: 12,
+      postedAt: new Date(2025, 0, 10),
+      updatedAt: new Date(2025, 0, 15),
+      expiresAt: new Date(2025, 2, 10)
     }
   ];
 
