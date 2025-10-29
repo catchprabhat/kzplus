@@ -124,10 +124,7 @@ export const SalePurchase: React.FC = () => {
       features: ['Air Conditioning', 'GPS Navigation', 'Bluetooth', 'Backup Camera', 'Heated Seats', 'Cruise Control'],
       images: [
         '/images/crista_silver/Crista_silver07.jpg',
-        '/images/crista_silver/Crista_silver13.jpg',
         '/images/crista_silver/Crista_silver04.jpg',
-        '/images/crista_silver/Crista_silver08.jpg',
-        
       ],
       condition: 'excellent',
       ownerType: 'individual',
