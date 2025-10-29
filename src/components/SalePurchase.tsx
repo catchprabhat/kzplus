@@ -123,8 +123,8 @@ export const SalePurchase: React.FC = () => {
       description: 'Well-maintained Crysta with full service history. Single owner, garage kept. All maintenance done at authorized service center.',
       features: ['Air Conditioning', 'GPS Navigation', 'Bluetooth', 'Backup Camera', 'Heated Seats', 'Cruise Control'],
       images: [
-        '/images/crista_silver/Crista_silver07.jpg',
-        '/images/crista_silver/Crista_silver04.jpg',
+        '/images/Crista_silver07.jpg',
+        '/images/Crista_silver04.jpg',
       ],
       condition: 'excellent',
       ownerType: 'individual',
