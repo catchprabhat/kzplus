@@ -124,7 +124,7 @@ export const SalePurchase: React.FC = () => {
       features: ['Air Conditioning', 'GPS Navigation', 'Bluetooth', 'Backup Camera', 'Heated Seats', 'Cruise Control'],
       images: [
         '/images/crysta_silver/crysta_silver02.jpg',
-        '/images/crysta_silver/crysta_silver01.jpg',
+        '/images/crysta_silver/crysta_silver01.jpeg',
         
       ],
       condition: 'excellent',
