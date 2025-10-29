@@ -125,6 +125,7 @@ export const SalePurchase: React.FC = () => {
       images: [
         '/images/Crista_silver07.jpg',
         '/images/Crista_silver04.jpg',
+        
       ],
       condition: 'excellent',
       ownerType: 'individual',
