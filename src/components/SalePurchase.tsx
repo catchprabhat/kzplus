@@ -125,6 +125,8 @@ export const SalePurchase: React.FC = () => {
       images: [
         '/images/crysta_silver/crysta_silver02.jpg',
         '/images/crysta_silver/crysta_silver01.jpeg',
+        '/images/crysta_silver/crysta_silver03.jpg',
+        '/images/crysta_silver/crysta_silver04.jpg',
         
       ],
       condition: 'excellent',
