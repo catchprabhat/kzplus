@@ -5,6 +5,7 @@ export interface Car {
   type: string;
   seats: number;
   transmission: string;
+  subscription: number;
   fuel: string;
   pricePerDay: number;
   pricePerHour: number; // Add this new field

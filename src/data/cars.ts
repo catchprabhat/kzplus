@@ -18,7 +18,8 @@ export const cars: Car[] = [
     pricePerDay: 6000,
     pricePerHour: 250,
     features: ['Captain-Seats', 'Premium Audio'],
-    available: true
+    available: true,
+    subscription: 2500
   },
   {
     id: '2',
@@ -31,7 +32,8 @@ export const cars: Car[] = [
     pricePerDay: 7000,
     pricePerHour: 280,
     features: ['AWD', 'Panoramic Roof', 'Premium Sound', '18 Inch Tyres'],
-    available: true
+    available: true,
+    subscription: 2500
   },
   {
     id: '3',
@@ -44,7 +46,8 @@ export const cars: Car[] = [
     pricePerDay: 4000,
     pricePerHour: 200,
     features: ['Auto Climate Control'],
-    available: true
+    available: true,
+    subscription: 1800
   },
   {
     id: '4',
@@ -57,7 +60,8 @@ export const cars: Car[] = [
     pricePerDay: 3000,
     pricePerHour: 150,
     features: ['Auto Climate Control'],
-    available: true
+    available: true,
+    subscription: 1800
   },
   {
     id: '5',
@@ -70,8 +74,10 @@ export const cars: Car[] = [
     pricePerDay: 3000,
     pricePerHour: 150,
     features: ['Auto Climate Control'],
-    available: true
+    available: true,
+    subscription: 1800
   },
+
   {
     id: '6',
     name: 'Glanza',
@@ -83,7 +89,8 @@ export const cars: Car[] = [
     pricePerDay: 4000,
     pricePerHour: 200,
     features: ['Auto Climate Control'],
-    available: true
+    available: true,
+    subscription: 1800
   },
   
 ];
