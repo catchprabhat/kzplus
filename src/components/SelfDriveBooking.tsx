@@ -459,14 +459,15 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">
-                  <div>
+                <div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      Starting from
+                      Monthly subscription
                     </p>
-                    <p className="text-blue-600 font-bold text-lg">
-                      ₹{car.pricePerDay}/day
+                    <p className="text-gray-800 dark:text-gray-300 font-semibold">
+                      ₹{car.subscription}
                     </p>
                   </div>
+                  
                   <div className="text-right">
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
                       Per hour
@@ -479,12 +480,12 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">
-                <div className="text-right">
+                <div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      Subscription
+                     Rental starting from
                     </p>
-                    <p className="text-gray-800 dark:text-gray-300 font-semibold">
-                      ₹{car.subscription}
+                    <p className="text-blue-600 font-bold text-lg">
+                      ₹{car.pricePerDay}/day
                     </p>
                   </div>
                 </div>

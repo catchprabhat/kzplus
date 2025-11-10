@@ -9,20 +9,6 @@ import Crysta from '../images/Innova.jpg';
 export const cars: Car[] = [
   {
     id: '1',
-    name: 'Innova Crysta',
-    image: Crysta,
-    type: 'SUV',
-    seats: 7,
-    transmission: 'Automatic',
-    fuel: 'Diesel',
-    pricePerDay: 6000,
-    pricePerHour: 250,
-    features: ['Captain-Seats', 'Premium Audio'],
-    available: true,
-    subscription: 2500
-  },
-  {
-    id: '2',
     name: 'Tata Safari 2023',
     image: safariKA,
     type: 'SUV',
@@ -33,8 +19,23 @@ export const cars: Car[] = [
     pricePerHour: 280,
     features: ['AWD', 'Panoramic Roof', 'Premium Sound', '18 Inch Tyres'],
     available: true,
-    subscription: 2500
+    subscription: 3400
   },
+  {
+    id: '2',
+    name: 'Innova Crysta',
+    image: Crysta,
+    type: 'SUV',
+    seats: 7,
+    transmission: 'Automatic',
+    fuel: 'Diesel',
+    pricePerDay: 6000,
+    pricePerHour: 250,
+    features: ['Captain-Seats', 'Premium Audio'],
+    available: true,
+    subscription: 3000
+  },
+  
   {
     id: '3',
     name: 'Duster',
