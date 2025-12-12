@@ -352,6 +352,15 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
     if (!selectedUser || selectedServices.length === 0 || !scheduledDate || loading) return;
 
+    // If user appears logged in but token is missing, prompt login
+    const token = localStorage.getItem('driveEasyToken');
+    if (!isAuthenticated || !token) {
+      alert('Please log in to confirm your booking.');
+      setActiveTab('login');
+      window.scrollTo(0, 0);
+      return;
+    }
+
     setShowPaymentPage(true);
   };
 

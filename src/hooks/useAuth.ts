@@ -36,6 +36,28 @@ export const useAuth = () => {
     checkAuth();
   }, []);
 
+  // React to storage changes (e.g., token cleared/expired elsewhere)
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === 'driveEasyToken' || e.key === 'driveEasyUser') {
+        try {
+          const savedUser = localStorage.getItem('driveEasyUser');
+          const savedToken = localStorage.getItem('driveEasyToken');
+          if (savedUser && savedToken) {
+            const userData = JSON.parse(savedUser);
+            setUser({ ...userData, token: savedToken });
+          } else {
+            setUser(null);
+          }
+        } catch {
+          setUser(null);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
   const login = (userData: User) => {
     try {
       setUser(userData);
@@ -84,7 +106,8 @@ export const useAuth = () => {
     return user?.token || localStorage.getItem('driveEasyToken');
   };
 
-  const isAuthenticated = !!user;
+  // Consider token presence for authentication, not just user object
+  const isAuthenticated = !!(user && (user.token || localStorage.getItem('driveEasyToken')));
 
   return {
     user,

@@ -522,160 +522,158 @@ export const getAvailableCars = async (pickupDate: string, dropDate: string) => 
 import { ServiceBooking } from '../hooks/useServiceBookings';
 
 export const serviceBookingApi = {
-  // Get user-specific service bookings
-  getUserBookings: async (): Promise<ServiceBooking[]> => {
-    const token = localStorage.getItem('driveEasyToken');
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
-    console.log('Fetching service bookings with token:', token ? 'Token exists' : 'No token');
-
-    const response = await fetch(`${API_BASE_URL}/bookings/user`, {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error:', response.status, errorText);
-      
-      // If unauthorized, clear the token and redirect to login
-      if (response.status === 401) {
-        localStorage.removeItem('driveEasyToken');
-        localStorage.removeItem('driveEasyUser');
-        throw new Error('Session expired. Please login again.');
-      }
-      
-      throw new Error(`Failed to fetch service bookings: ${response.status} - ${errorText}`);
-    }
-
-    const data = await response.json();
-    console.log('Service bookings from API:', data);
-    console.log('Number of service bookings:', Array.isArray(data) ? data.length : 0);
-    return data;
-  },
-
-  // Create service booking
-  createBooking: async (bookingData: any): Promise<any> => {
-    const token = localStorage.getItem('driveEasyToken');
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
-    console.log('Creating booking with data:', bookingData);
-
-    const response = await fetch(`${API_BASE_URL}/bookings`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(bookingData),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Create booking error:', response.status, errorText);
-      throw new Error(`Failed to create service booking: ${response.status} - ${errorText}`);
-    }
-
-    return response.json();
-  },  // <- Added missing comma here
-
-  // Update service booking status (admin only)
-  // Around line 565, update the updateBookingStatus function
-  // Update service booking status - FIXED
-  updateBookingStatus: async (id: string, status: string): Promise<ServiceBooking> => {
-    try {
-      const url = `${API_BASE_URL}/bookings/service-bookings/${id}/status`;
-      console.log('🔄 Making status update request to:', url);
-      console.log('📊 Request payload:', { status });
-      
+    // Get user-specific service bookings
+    getUserBookings: async (): Promise<ServiceBooking[]> => {
       const token = localStorage.getItem('driveEasyToken');
       if (!token) {
-        throw new Error('Authentication required. Please log in.');
+        throw new Error('Authentication required');
       }
-      
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status }),
-      });
-      
-      console.log('📡 Response status:', response.status);
-      console.log('📡 Response ok:', response.ok);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('❌ Error response text:', errorText);
-        
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText || 'Unknown error' };
-        }
-        
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('✅ Status update successful:', result);
-      return result;
-    } catch (fetchError) {
-      console.error('💥 Fetch error:', fetchError);
-      throw fetchError;
-    }
-  },
-
-  // Delete service booking - FIXED
-  deleteBooking: async (id: string): Promise<void> => {
-    try {
-      const token = localStorage.getItem('driveEasyToken');
-      if (!token) {
-        throw new Error('Authentication required. Please log in.');
-      }
-      
-      console.log('🗑️ Attempting to delete booking:', id);
-      console.log('🔑 Using token:', token ? 'Token present' : 'No token');
-      
-      const response = await fetch(`${API_BASE_URL}/bookings/service-bookings/${id}`, {
-        method: 'DELETE',
+  
+      console.log('Fetching service bookings with token:', token ? 'Token exists' : 'No token');
+  
+      const response = await fetch(`${API_BASE_URL}/bookings/user`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-      
-      console.log('📡 Delete response status:', response.status);
-      console.log('📡 Delete response ok:', response.ok);
   
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('❌ Delete error response:', errorText);
+        console.error('API Error:', response.status, errorText);
         
-        let errorData;
-        try {
-          errorData = JSON.parse(errorText);
-        } catch {
-          errorData = { error: errorText || 'Unknown error' };
+        // If unauthorized, throw without clearing storage; UI will prompt login
+        if (response.status === 401) {
+          throw new Error('Session expired. Please login again.');
         }
         
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        throw new Error(`Failed to fetch service bookings: ${response.status} - ${errorText}`);
       }
   
-      const result = await response.json();
-      console.log('✅ Delete booking success:', result);
-      return result;
-    } catch (error) {
-      console.error('💥 Delete booking network error:', error);
-      throw error;
-    }
-  },
+      const data = await response.json();
+      console.log('Service bookings from API:', data);
+      console.log('Number of service bookings:', Array.isArray(data) ? data.length : 0);
+      return data;
+    },
+
+    // Create service booking
+    createBooking: async (bookingData: any): Promise<any> => {
+      const token = localStorage.getItem('driveEasyToken');
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+  
+      console.log('Creating booking with data:', bookingData);
+  
+      const response = await fetch(`${API_BASE_URL}/bookings`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(bookingData),
+      });
+  
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Create booking error:', response.status, errorText);
+        throw new Error(`Failed to create service booking: ${response.status} - ${errorText}`);
+      }
+  
+      return response.json();
+    },  // <- Added missing comma here
+  
+    // Update service booking status (admin only)
+    // Around line 565, update the updateBookingStatus function
+    // Update service booking status - FIXED
+    updateBookingStatus: async (id: string, status: string): Promise<ServiceBooking> => {
+      try {
+        const url = `${API_BASE_URL}/bookings/service-bookings/${id}/status`;
+        console.log('🔄 Making status update request to:', url);
+        console.log('📊 Request payload:', { status });
+        
+        const token = localStorage.getItem('driveEasyToken');
+        if (!token) {
+          throw new Error('Authentication required. Please log in.');
+        }
+        
+        const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ status }),
+        });
+        
+        console.log('📡 Response status:', response.status);
+        console.log('📡 Response ok:', response.ok);
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Error response text:', errorText);
+          
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText || 'Unknown error' };
+          }
+          
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        console.log('✅ Status update successful:', result);
+        return result;
+      } catch (fetchError) {
+        console.error('💥 Fetch error:', fetchError);
+        throw fetchError;
+      }
+    },
+  
+    // Delete service booking - FIXED
+    deleteBooking: async (id: string): Promise<void> => {
+      try {
+        const token = localStorage.getItem('driveEasyToken');
+        if (!token) {
+          throw new Error('Authentication required. Please log in.');
+        }
+        
+        console.log('🗑️ Attempting to delete booking:', id);
+        console.log('🔑 Using token:', token ? 'Token present' : 'No token');
+        
+        const response = await fetch(`${API_BASE_URL}/bookings/service-bookings/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+        
+        console.log('📡 Delete response status:', response.status);
+        console.log('📡 Delete response ok:', response.ok);
+  
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ Delete error response:', errorText);
+          
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch {
+            errorData = { error: errorText || 'Unknown error' };
+          }
+          
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+  
+        const result = await response.json();
+        console.log('✅ Delete booking success:', result);
+        return result;
+      } catch (error) {
+        console.error('💥 Delete booking network error:', error);
+        throw error;
+      }
+    },
 };

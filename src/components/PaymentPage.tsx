@@ -139,6 +139,15 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
     if (processing) return;
     
     setProcessing(true);
+
+    // Defensive auth check: block if token missing/expired
+    const token = localStorage.getItem('driveEasyToken');
+    if (!token) {
+      alert('Please log in to confirm your booking.');
+      setProcessing(false);
+      onBack();
+      return;
+    }
     
     try {
       const serviceBookingData = {
@@ -152,7 +161,6 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
         services: bookingData.selectedServices,
         totalPrice: discountedTotal,
         notes: bookingData.customerData.notes || '',
-        // Add coupon data
         couponCode: appliedCoupon?.code || null,
         discountAmount: appliedCoupon?.discountAmount || 0,
         originalAmount: originalTotal
