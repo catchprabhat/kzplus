@@ -63,7 +63,18 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customServiceValues, setCustomServiceValues] = useState<Record<string, { price: number, duration: string }>>({});
 
-  const { isAuthenticated, login, logout } = useAuth();
+  const { isAuthenticated, login, logout, user } = useAuth();
+  const ADMIN_EMAILS = [
+    'catchprabhat@gmail.com',
+    'zpluscarcare@gmail.com',
+    'kzplusmotors@gmail.com',
+    'padhisushreeta@gmail.com',
+    'pkumargr26@gmail.com',
+    'little.mishra23@gmail.com',
+    'umrsjd455@gmail.com',
+    'umrsjd562@gmail.com'
+  ];
+  const isAdminUser = ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
   const { bookings } = useBookings();
   const { t, i18n } = useTranslation();
 
@@ -359,6 +370,19 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       setActiveTab('login');
       window.scrollTo(0, 0);
       return;
+    }
+
+    // Ownership check: only admins can book for others
+    if (!isAdminUser) {
+      const normalize = (s?: string) => (s || '').trim().toLowerCase();
+      const matchesEmail = normalize(selectedUser.ownerEmail) && normalize(user?.email) && normalize(selectedUser.ownerEmail) === normalize(user?.email);
+      const matchesPhone = (selectedUser.ownerPhone || '').trim() && (user?.phone || '').trim() && selectedUser.ownerPhone.trim() === (user?.phone || '').trim();
+      const matchesId = selectedUser.id?.toString() && user?.id?.toString() && selectedUser.id.toString() === user?.id.toString();
+
+      if (!(matchesEmail || matchesPhone || matchesId)) {
+        alert('Car not associated to you. You can only book service for your own vehicle.');
+        return;
+      }
     }
 
     setShowPaymentPage(true);

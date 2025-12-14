@@ -33,7 +33,11 @@ router.post(
       notes,
       couponCode,
       discountAmount,
-      originalAmount
+      originalAmount,
+      // Admin-on-behalf fields (now used)
+      targetCustomerEmail,
+      targetCustomerPhone,
+      targetUserId
     } = req.body;
 
     // Validate input
@@ -49,26 +53,50 @@ router.post(
     }
 
     try {
-      // Get user information from the authenticated token
-      const userEmail = req.user?.email;
-      const userPhone = req.user?.phone;
-      
-      if (!userEmail && !userPhone) {
-        return res.status(400).json({ error: 'User identification required' });
-      }
+      // Determine requester identity
+      const requesterEmail = req.user?.email;
+      const requesterPhone = req.user?.phone;
 
-      // Find user by email or phone to get user ID
+      // Admins can book on behalf of customers
+      const isAdminRequester =
+        requesterEmail === 'catchprabhat@gmail.com' ||
+        requesterEmail === 'umrsjd455@gmail.com' ||
+        requesterEmail === 'umrsjd562@gmail.com';
+
+      // Resolve target user
       let user;
-      if (userEmail) {
-        const users = await sql`SELECT * FROM users WHERE email = ${userEmail}` as any[];
-        user = users[0];
-      } else if (userPhone) {
-        const users = await sql`SELECT * FROM users WHERE phone = ${userPhone}` as any[];
-        user = users[0];
-      }
+      if (isAdminRequester && (targetUserId || targetCustomerEmail || targetCustomerPhone)) {
+        if (targetUserId) {
+          const users = await sql`SELECT * FROM users WHERE id = ${targetUserId}` as any[];
+          user = users[0];
+        } else if (targetCustomerEmail) {
+          const users = await sql`SELECT * FROM users WHERE email = ${targetCustomerEmail}` as any[];
+          user = users[0];
+        } else if (targetCustomerPhone) {
+          const users = await sql`SELECT * FROM users WHERE phone = ${targetCustomerPhone}` as any[];
+          user = users[0];
+        }
 
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        if (!user) {
+          return res.status(404).json({ error: 'Target customer not found' });
+        }
+      } else {
+        // Normal user flow: book for self
+        if (!requesterEmail && !requesterPhone) {
+          return res.status(400).json({ error: 'User identification required' });
+        }
+
+        if (requesterEmail) {
+          const users = await sql`SELECT * FROM users WHERE email = ${requesterEmail}` as any[];
+          user = users[0];
+        } else {
+          const users = await sql`SELECT * FROM users WHERE phone = ${requesterPhone}` as any[];
+          user = users[0];
+        }
+
+        if (!user) {
+          return res.status(404).json({ error: 'User not found' });
+        }
       }
 
       await sql`BEGIN`;
@@ -155,7 +183,10 @@ router.get(
       }
 
       // Check if user is admin
-      const isAdmin = user.email === 'catchprabhat@gmail.com';
+      const isAdmin =
+        user.email === 'catchprabhat@gmail.com' ||
+        user.email === 'umrsjd455@gmail.com' ||
+        user.email === 'umrsjd562@gmail.com';
       
       let result;
       if (isAdmin) {
@@ -366,7 +397,10 @@ router.delete('/service-bookings/:id', authenticateUser, async (req, res) => {
     }
 
     // Check if user is admin or owns the booking
-    const isAdmin = user.email === 'catchprabhat@gmail.com' || user.email === 'umrsjd455@gmail.com';
+    const isAdmin =
+      user.email === 'catchprabhat@gmail.com' ||
+      user.email === 'umrsjd455@gmail.com' ||
+      user.email === 'umrsjd562@gmail.com';
     
     if (!isAdmin) {
       // Regular users can only delete their own bookings

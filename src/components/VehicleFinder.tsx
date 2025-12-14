@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 interface VehicleFinderProps {
   onVehicleFound: (data: any) => void;
@@ -170,12 +171,22 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
       </button>
 
       {/* New Customer Button */}
-      <button
-        onClick={onNewCustomer}
-        className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-      >
-        👤 New Customer? Register Here
-      </button>
+      {isAdmin ? (
+        <button
+          onClick={onNewCustomer}
+          className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+        >
+          👤 New Customer? Register Here
+        </button>
+      ) : (
+        <button
+          disabled
+          className="w-full bg-gray-400 text-white py-2 px-4 rounded cursor-not-allowed"
+          title="Only admin can register new customers"
+        >
+          👤 New Customer? Register Here (Admin only)
+        </button>
+      )}
     </div>
   );
 };

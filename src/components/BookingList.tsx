@@ -26,7 +26,10 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [showAssignDriverModal, setShowAssignDriverModal] = useState(false);
   const [selectedBookingForDriver, setSelectedBookingForDriver] = useState<Booking | null>(null);
   const { user } = useAuth();
-  const isAdmin = user?.email === 'catchprabhat@gmail.com' || user?.email === 'umrsjd455@gmail.com';
+  const isAdmin =
+    user?.email === 'catchprabhat@gmail.com' ||
+    user?.email === 'umrsjd455@gmail.com' ||
+    user?.email === 'umrsjd562@gmail.com';
 
   useEffect(() => {
     // Filter bookings based on phoneFilter and exclude deleted bookings

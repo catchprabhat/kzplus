@@ -7,6 +7,7 @@ import { CouponInput } from './CouponInput';
 import axios from 'axios';
 import { API_BASE_URL } from '../services/api';
 import { serviceBookingApi } from '../services/api';
+import { useAuth } from '../hooks/useAuth';
 
 interface PaymentPageProps {
   bookingData: {
@@ -75,6 +76,19 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
     console.log('PaymentPage bookingData:', bookingData);
   }, [bookingData]);
 
+  const { user } = useAuth();
+  const ADMIN_EMAILS = [
+    'catchprabhat@gmail.com',
+    'zpluscarcare@gmail.com',
+    'kzplusmotors@gmail.com',
+    'padhisushreeta@gmail.com',
+    'pkumargr26@gmail.com',
+    'little.mishra23@gmail.com',
+    'umrsjd455@gmail.com',
+    'umrsjd562@gmail.com'
+  ];
+  const isAdminUser = ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
+
   const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit' | 'upi' | 'pay-at-service'>('debit');
   const [upiOption, setUpiOption] = useState<'gpay' | 'paytm' | 'phonepe'>('gpay');
   const [cardDetails, setCardDetails] = useState({
@@ -137,7 +151,6 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
   // Add the missing handlePayment function
   const handlePayment = async () => {
     if (processing) return;
-    
     setProcessing(true);
 
     // Defensive auth check: block if token missing/expired
@@ -148,7 +161,21 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
       onBack();
       return;
     }
-    
+
+    // Defensive ownership check: only admins can book for others
+    if (!isAdminUser) {
+      const normalize = (s?: string) => (s || '').trim().toLowerCase();
+      const matchesEmail = normalize(bookingData.selectedUser.ownerEmail) && normalize(user?.email) && normalize(bookingData.selectedUser.ownerEmail) === normalize(user?.email);
+      const matchesPhone = (bookingData.selectedUser.ownerPhone || '').trim() && (user?.phone || '').trim() && bookingData.selectedUser.ownerPhone.trim() === (user?.phone || '').trim();
+      const matchesId = bookingData.selectedUser.id?.toString() && user?.id?.toString() && bookingData.selectedUser.id.toString() === user?.id.toString();
+      if (!(matchesEmail || matchesPhone || matchesId)) {
+        alert('Car not associated to you. You can only book service for your own vehicle.');
+        setProcessing(false);
+        onBack();
+        return;
+      }
+    }
+
     try {
       const serviceBookingData = {
         userId: bookingData.selectedUser.id,
@@ -163,7 +190,12 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
         notes: bookingData.customerData.notes || '',
         couponCode: appliedCoupon?.code || null,
         discountAmount: appliedCoupon?.discountAmount || 0,
-        originalAmount: originalTotal
+        originalAmount: originalTotal,
+        // NEW: admin-on-behalf fields (used only if admin)
+        bookedByAdmin: isAdminUser,
+        targetCustomerEmail: isAdminUser ? bookingData.customerData.email : undefined,
+        targetCustomerPhone: isAdminUser ? bookingData.customerData.phone : undefined,
+        targetUserId: isAdminUser ? bookingData.selectedUser.id : undefined
       };
   
       // Use the existing service booking API

@@ -23,9 +23,10 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onBackToHome }) => {
 
   // Check if user is admin (in real app, this would be based on user role)
   // Check if user is admin
-  const isAdmin = user?.email === 'catchprabhat@gmail.com' || user?.email === 'umrsjd455@gmail.com';
-
-  // Check authentication and admin access
+  const isAdmin =
+    user?.email === 'catchprabhat@gmail.com' ||
+    user?.email === 'umrsjd455@gmail.com' ||
+    user?.email === 'umrsjd562@gmail.com';
   if (!isAuthenticated || !isAdmin) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 flex items-center justify-center p-4">
