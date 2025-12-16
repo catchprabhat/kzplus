@@ -1,3 +1,5 @@
+// Module: bookings service routes
+
 import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
 import { authenticateUser } from '../middleware/userAuth';
@@ -20,6 +22,18 @@ interface ServiceBooking {
   created_at: string;
   services: any; // Added services field
 }
+
+// Centralized admin list (match frontend)
+const ADMIN_EMAILS = [
+  'catchprabhat@gmail.com',
+  'zpluscarcare@gmail.com',
+  'kzplusmotors@gmail.com',
+  'padhisushreeta@gmail.com',
+  'pkumargr26@gmail.com',
+  'little.mishra23@gmail.com',
+  'umrsjd455@gmail.com',
+  'umrsjd562@gmail.com'
+].map(e => e.toLowerCase());
 
 router.post(
   '/',
@@ -54,14 +68,11 @@ router.post(
 
     try {
       // Determine requester identity
-      const requesterEmail = req.user?.email;
+      const requesterEmail = (req.user?.email || '').toLowerCase();
       const requesterPhone = req.user?.phone;
 
       // Admins can book on behalf of customers
-      const isAdminRequester =
-        requesterEmail === 'catchprabhat@gmail.com' ||
-        requesterEmail === 'umrsjd455@gmail.com' ||
-        requesterEmail === 'umrsjd562@gmail.com';
+      const isAdminRequester = ADMIN_EMAILS.includes(requesterEmail);
 
       // Resolve target user
       let user;
@@ -87,7 +98,7 @@ router.post(
         }
 
         if (requesterEmail) {
-          const users = await sql`SELECT * FROM users WHERE email = ${requesterEmail}` as any[];
+          const users = await sql`SELECT * FROM users WHERE LOWER(email) = ${requesterEmail}` as any[];
           user = users[0];
         } else {
           const users = await sql`SELECT * FROM users WHERE phone = ${requesterPhone}` as any[];
@@ -161,7 +172,7 @@ router.get(
   authenticateUser,
   async (req: Request, res: Response) => {
     try {
-      const userEmail = req.user?.email;
+      const userEmail = (req.user?.email || '').toLowerCase();
       const userPhone = req.user?.phone;
       
       if (!userEmail && !userPhone) {
@@ -171,7 +182,7 @@ router.get(
       // Find user by email or phone
       let user;
       if (userEmail) {
-        const users = await sql`SELECT * FROM users WHERE email = ${userEmail}` as any[];
+        const users = await sql`SELECT * FROM users WHERE LOWER(email) = ${userEmail}` as any[];
         user = users[0];
       } else if (userPhone) {
         const users = await sql`SELECT * FROM users WHERE phone = ${userPhone}` as any[];
@@ -183,11 +194,8 @@ router.get(
       }
 
       // Check if user is admin
-      const isAdmin =
-        user.email === 'catchprabhat@gmail.com' ||
-        user.email === 'umrsjd455@gmail.com' ||
-        user.email === 'umrsjd562@gmail.com';
-      
+      const isAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase() || '');
+
       let result;
       if (isAdmin) {
         // Admin sees all bookings - match your exact schema
@@ -276,10 +284,10 @@ router.put('/service-bookings/:id/status', authenticateUser, async (req: Request
     console.log('User info:', { userId: user.id, email: user.email, phone: user.phone });
     console.log('Request body:', req.body);
 
-    // Check if user is the specific admin
-    if (user.email !== 'catchprabhat@gmail.com') {
-      console.log('❌ Access denied - user is not the authorized admin');
-      console.log('User email:', user.email, 'Required:', 'catchprabhat@gmail.com');
+    // Check if user is an authorized admin
+    if (!ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
+      console.log('❌ Access denied - user is not an authorized admin');
+      console.log('User email:', user.email, 'Allowed admins:', ADMIN_EMAILS);
       return res.status(403).json({ error: 'Admin access required. Only authorized admin can update booking status.' });
     }
 
@@ -375,7 +383,7 @@ router.delete('/service-bookings/:id', authenticateUser, async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const userEmail = userFromToken.email;
+    const userEmail = (userFromToken.email || '').toLowerCase();
     const userPhone = userFromToken.phone;
     
     if (!userEmail && !userPhone) {
@@ -385,7 +393,7 @@ router.delete('/service-bookings/:id', authenticateUser, async (req, res) => {
     // Find user by email or phone to get user ID
     let user;
     if (userEmail) {
-      const users = await sql`SELECT * FROM users WHERE email = ${userEmail}` as any[];
+      const users = await sql`SELECT * FROM users WHERE LOWER(email) = ${userEmail}` as any[];
       user = users[0];
     } else if (userPhone) {
       const users = await sql`SELECT * FROM users WHERE phone = ${userPhone}` as any[];
@@ -397,10 +405,7 @@ router.delete('/service-bookings/:id', authenticateUser, async (req, res) => {
     }
 
     // Check if user is admin or owns the booking
-    const isAdmin =
-      user.email === 'catchprabhat@gmail.com' ||
-      user.email === 'umrsjd455@gmail.com' ||
-      user.email === 'umrsjd562@gmail.com';
+    const isAdmin = ADMIN_EMAILS.includes((user.email || '').toLowerCase());
     
     if (!isAdmin) {
       // Regular users can only delete their own bookings
