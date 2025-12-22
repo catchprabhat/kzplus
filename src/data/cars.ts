@@ -1,9 +1,11 @@
 import { Car } from '../types';
 import safariKA from '../images/safari-KA.jpeg';
 import dusterKA from '../images/duster-KA.jpg';
+import duster1 from '../images/duster1.jpg';
 import baleno from '../images/balenoo.jpg';
 import Poloo from '../images/polo.jpg';
 import Glanzaa from '../images/GL_1.jpg';
+import innovaWhite from '../images/innova-white.jpg';
 import Crysta from '../images/Innova.jpg';
 
 export const cars: Car[] = [
@@ -35,9 +37,23 @@ export const cars: Car[] = [
     available: true,
     subscription: 3000
   },
-  
   {
     id: '3',
+    name: 'Innova Crysta',
+    image: innovaWhite,
+    type: 'SUV',
+    seats: 7,
+    transmission: 'Automatic',
+    fuel: 'Diesel',
+    pricePerDay: 6000,
+    pricePerHour: 250,
+    features: ['Captain-Seats', 'Premium Audio'],
+    available: true,
+    subscription: 3000
+  },
+  
+  {
+    id: '4',
     name: 'Duster',
     image: dusterKA,
     type: 'SUV',
@@ -51,7 +67,21 @@ export const cars: Car[] = [
     subscription: 1800
   },
   {
-    id: '4',
+    id: '5',
+    name: 'Duster',
+    image: duster1,
+    type: 'SUV',
+    seats: 5,
+    transmission: 'Automatic',
+    fuel: 'Diesel',
+    pricePerDay: 4000,
+    pricePerHour: 200,
+    features: ['Auto Climate Control'],
+    available: true,
+    subscription: 1800
+  },
+  {
+    id: '6',
     name: 'Baleno',
     image: baleno,
     type: 'Hatchback',
@@ -65,7 +95,7 @@ export const cars: Car[] = [
     subscription: 1800
   },
   {
-    id: '5',
+    id: '7',
     name: 'Polo',
     image: Poloo,
     type: 'Hatchback',
@@ -80,7 +110,7 @@ export const cars: Car[] = [
   },
 
   {
-    id: '6',
+    id: '8',
     name: 'Glanza',
     image: Glanzaa,
     type: 'Hatchback',
