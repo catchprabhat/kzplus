@@ -575,9 +575,9 @@ function App() {
         totalHours: calculateTotalHours(new Date(booking.pickupDate), new Date(booking.dropDate)),
         pickupDate: formatDateForDatabase(booking.pickupDate),
         dropDate: formatDateForDatabase(booking.dropDate),
-        // Use authenticated user data
+        // Use the edited email from the form for contact purposes; backend will store account email for ownership.
         userName: user?.name || booking.customerName,
-        userEmail: user?.email || booking.customerEmail, // This ensures authenticated user's email is used
+        userEmail: booking.customerEmail,
         userPhone: booking.customerPhone
       };
       

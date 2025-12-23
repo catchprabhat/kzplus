@@ -405,7 +405,13 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
       deliveryPickup = false
     } = req.body;
 
-    // Get user info from authenticated token - use email from token
+    // Use edited contact email if provided, otherwise fall back to account email
+    const contactEmailRaw = req.body.userEmail;
+    const contactEmail =
+      typeof contactEmailRaw === 'string' && contactEmailRaw.trim() !== ''
+        ? contactEmailRaw.trim().toLowerCase()
+        : normalizedEmail;
+
     const userName = req.body.userName || normalizedEmail;
     const userPhone = req.body.userPhone || '';
     
@@ -466,7 +472,7 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
     // Send confirmation email with all required parameters
     try {
       await emailService.sendBookingConfirmation({
-        userEmail: normalizedEmail,
+        userEmail: contactEmail,
         userName: userName,
         userPhone: userPhone,
         carName: carName,
@@ -475,7 +481,7 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
         totalPrice: totalPrice,
         pickupLocation: pickupLocation || 'Bangalore'
       });
-      console.log('Booking confirmation email sent to:', normalizedEmail);
+      console.log('Booking confirmation email sent to:', contactEmail);
     } catch (emailError) {
       console.error('Failed to send booking confirmation email:', emailError);
       // Don't fail the booking if email fails

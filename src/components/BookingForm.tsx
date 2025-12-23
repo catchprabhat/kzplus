@@ -325,12 +325,12 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
             placeholder="Enter your email"
             required
-            disabled={loading || isAuthenticated}
-            readOnly={isAuthenticated}
+            disabled={loading}
+            readOnly={false}
           />
           {isAuthenticated && (
             <p className="text-xs text-gray-500 mt-1">
-              Using your logged-in account email
+              You can edit the contact email for this booking
             </p>
           )}
         </div>
