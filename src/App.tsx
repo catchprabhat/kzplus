@@ -632,24 +632,25 @@ function App() {
     try {
       setServiceBookingLoading(true);
       
-      // Create service booking via API (notifications are sent automatically)
-      const createdServiceBooking = await createServiceBooking(serviceBooking);
-      setLatestServiceBooking(createdServiceBooking);
-      setLatestBooking(null); // Clear regular booking
+      // Do not POST again here. PaymentPage already created the booking.
+      setLatestServiceBooking(serviceBooking);
+      setLatestBooking(null);
       setShowConfirmation(true);
-      
-      // Add scroll to top functionality when service booking is confirmed
+
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
-      
+
+      // Refresh the scheduled services list to include the newly created booking
+      await fetchServiceBookings();
+
       // Hide confirmation after 5 seconds
       setTimeout(() => {
         setShowConfirmation(false);
       }, 5000);
     } catch (error) {
-      console.error('Failed to create service booking:', error);
+      console.error('Failed to handle service booking completion:', error);
     } finally {
       setServiceBookingLoading(false);
     }

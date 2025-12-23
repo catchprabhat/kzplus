@@ -18,6 +18,7 @@ import { API_BASE_URL } from '../services/api';
 
 interface User {
   id: string;
+  vehicleId?: number;
   vehicleNumber: string;
   vehicleType: string;
   ownerName: string;
@@ -39,6 +40,8 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchType, setSearchType] = useState<'vehicle' | 'phone'>('vehicle');
+  // New: store only 10-digit local phone (without +91)
+  const [phoneDigits, setPhoneDigits] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedServices, setSelectedServices] = useState<Service[]>([]);
   const [scheduledDate, setScheduledDate] = useState('');
@@ -63,6 +66,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [comingSoonTitle, setComingSoonTitle] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [customServiceValues, setCustomServiceValues] = useState<Record<string, { price: number, duration: string }>>({});
+  const [isAddVehicleMode, setIsAddVehicleMode] = useState(false);
+  const [prefillFormData, setPrefillFormData] = useState<CustomerFormData | null>(null);
+  const [vehiclesByPhone, setVehiclesByPhone] = useState<Array<{ id: number; vehicleNumber: string; vehicleType: string }>>([]);
 
   const { isAuthenticated, login, logout, user } = useAuth();
   const ADMIN_EMAILS = [
@@ -120,7 +126,8 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   }, [vehicleCategory]);
 
   const searchUser = async () => {
-    if (!searchQuery.trim()) return;
+    // Validate input based on search type
+    if (!searchQuery.trim() && searchType !== 'phone' && !phoneDigits.trim()) return;
 
     try {
       setSearchLoading(true);
@@ -129,7 +136,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
       let response;
       if (searchType === 'phone') {
-        response = await axios.get(`${API_BASE_URL}/users/search/phone/${encodeURIComponent(searchQuery)}`);
+        // Build +91-prefixed phone for searching
+        const normalizedDigits = (phoneDigits || '').replace(/\D/g, '').slice(0, 10);
+        if (!normalizedDigits || normalizedDigits.length !== 10) return;
+        const phoneToSearch = `+91${normalizedDigits}`;
+
+        response = await axios.get(`${API_BASE_URL}/users/search/phone/${encodeURIComponent(phoneToSearch)}`);
         const user = response.data;
         setSelectedUser({
           id: user.id.toString(),
@@ -148,6 +160,42 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           phone: user.phone,
           notes: ''
         });
+
+        // Prefill modal data from stored address "address, city, state, pincode"
+        const parts = (user.address || '').split(',').map((s: string) => s.trim());
+        const addr = parts[0] || '';
+        const city = parts[1] || 'Bangalore';
+        const state = parts[2] || 'Karnataka';
+        const pincode = parts[3] || '';
+
+        setPrefillFormData({
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          address: addr,
+          city,
+          state,
+          pincode,
+          vehicleNumber: user.vehicle_number,
+          vehicleType: user.vehicle_type,
+        });
+
+        // Keep the full +91 number in the searchQuery for visibility
+        setSearchQuery(phoneToSearch);
+
+        // Fetch all vehicles associated with the phone
+        try {
+          const vRes = await axios.get(`${API_BASE_URL}/vehicles/by-phone/${encodeURIComponent(user.phone)}`);
+          const list = (vRes.data?.vehicles || []).map((v: any) => ({
+            id: v.id,
+            vehicleNumber: v.vehicle_number,
+            vehicleType: v.vehicle_type
+          }));
+          setVehiclesByPhone(list);
+        } catch (vehErr: any) {
+          console.warn('Failed to list vehicles by phone:', vehErr?.response?.data || vehErr);
+          setVehiclesByPhone([]);
+        }
       } else {
         response = await axios.get(`${API_BASE_URL}/users/search/vehicle/${encodeURIComponent(searchQuery)}`);
         const user = response.data;
@@ -168,10 +216,12 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           phone: user.phone,
           notes: ''
         });
+        setVehiclesByPhone([]);
       }
     } catch (error: any) {
       setSearchError(error.response?.data?.error || 'Search failed');
       setSelectedUser(null);
+      setVehiclesByPhone([]);
     } finally {
       setSearchLoading(false);
     }
@@ -180,6 +230,64 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const handleCustomerRegistration = async (formData: CustomerFormData) => {
     try {
       setCustomerFormLoading(true);
+
+      // Add-vehicle flow for existing user
+      if (isAddVehicleMode && selectedUser) {
+        await axios.post(`${API_BASE_URL}/vehicles/add`, {
+          userId: parseInt(selectedUser.id, 10),
+          vehicleNumber: formData.vehicleNumber,
+          vehicleType: formData.vehicleType,
+        });
+
+        setShowCustomerForm(false);
+        setIsAddVehicleMode(false);
+
+        // Refresh vehicles list and preselect newly added vehicle
+        try {
+          const vRes = await axios.get(`${API_BASE_URL}/vehicles/by-phone/${encodeURIComponent(selectedUser.ownerPhone)}`);
+          const list = (vRes.data?.vehicles || []).map((v: any) => ({
+            id: v.id,
+            vehicleNumber: v.vehicle_number,
+            vehicleType: v.vehicle_type,
+          }));
+          setVehiclesByPhone(list);
+
+          const newlyAdded = list.find(v => (v.vehicleNumber || '').toUpperCase() === formData.vehicleNumber.toUpperCase());
+          if (newlyAdded) {
+            // Fetch full user row for the new vehicle so the card shows details immediately
+            try {
+              const uRes = await axios.get(`${API_BASE_URL}/users/search/vehicle/${encodeURIComponent(newlyAdded.vehicleNumber)}`);
+              const user = uRes.data;
+              setSelectedUser({
+                id: user.id.toString(),
+                vehicleNumber: user.vehicle_number,
+                vehicleType: user.vehicle_type,
+                ownerName: user.name,
+                ownerPhone: user.phone,
+                ownerEmail: user.email,
+                createdAt: new Date(user.created_at),
+                lastServicedDate: user.last_serviced_date,
+                lastServiceType: user.last_service_type,
+              });
+            } catch (e) {
+              // Fallback: at least update number/type right away
+              setSelectedUser({
+                ...selectedUser,
+                vehicleNumber: newlyAdded.vehicleNumber,
+                vehicleType: newlyAdded.vehicleType || selectedUser.vehicleType,
+              });
+            }
+          }
+        } catch (vehErr: any) {
+          console.warn('Failed to refresh vehicles after add:', vehErr?.response?.data || vehErr);
+        }
+
+        setSearchError(null);
+        setSearchAttempted(true);
+        setSearchQuery(selectedUser.ownerPhone);
+
+        return; // Done
+      }
 
       const response = await axios.post(`${API_BASE_URL}/users/register`, {
         name: formData.name,
@@ -273,6 +381,149 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       setSearchError(error.response?.data?.error || 'Registration failed');
     } finally {
       setCustomerFormLoading(false);
+    }
+  };
+
+  // Helper: open add-vehicle form
+  const openAddVehicleForm = async () => {
+    setIsAddVehicleMode(true);
+
+    try {
+      // Prefer existing prefill from search; otherwise derive from selectedUser or logged-in profile
+      let initial = prefillFormData;
+
+      if (!initial) {
+        if (selectedUser) {
+          initial = {
+            name: selectedUser.ownerName || '',
+            email: selectedUser.ownerEmail || '',
+            phone: selectedUser.ownerPhone || '+91',
+            address: '',
+            city: 'Bangalore',
+            state: 'Karnataka',
+            pincode: '',
+            vehicleNumber: '',
+            vehicleType: 'Sedan Car',
+          };
+        } else if (isAuthenticated) {
+          const token = (user as any)?.token || localStorage.getItem('driveEasyToken') || '';
+          if (token) {
+            try {
+              const resp = await fetch(`${API_BASE_URL}/users/profile`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+              });
+
+              if (resp.ok) {
+                const profile = await resp.json();
+                const parts = (profile.address || '').split(',').map((s: string) => s.trim());
+                const addr = parts[0] || '';
+                const city = parts[1] || 'Bangalore';
+                const state = parts[2] || 'Karnataka';
+                const pincode = parts[3] || '';
+
+                initial = {
+                  name: profile.name || '',
+                  email: profile.email || '',
+                  phone: profile.phone || '+91',
+                  address: addr,
+                  city,
+                  state,
+                  pincode,
+                  vehicleNumber: '',
+                  vehicleType: 'Sedan Car',
+                };
+              } else {
+                initial = {
+                  name: user?.name || '',
+                  email: user?.email || '',
+                  phone: user?.phone || '+91',
+                  address: '',
+                  city: 'Bangalore',
+                  state: 'Karnataka',
+                  pincode: '',
+                  vehicleNumber: '',
+                  vehicleType: 'Sedan Car',
+                };
+              }
+            } catch (e) {
+              console.error('Failed to fetch profile for prefill:', e);
+              initial = {
+                name: user?.name || '',
+                email: user?.email || '',
+                phone: user?.phone || '+91',
+                address: '',
+                city: 'Bangalore',
+                state: 'Karnataka',
+                pincode: '',
+                vehicleNumber: '',
+                vehicleType: 'Sedan Car',
+              };
+            }
+          } else if (user) {
+            initial = {
+              name: user.name || '',
+              email: user.email || '',
+              phone: user.phone || '+91',
+              address: '',
+              city: 'Bangalore',
+              state: 'Karnataka',
+              pincode: '',
+              vehicleNumber: '',
+              vehicleType: 'Sedan Car',
+            };
+          }
+        } else if (user) {
+          initial = {
+            name: user.name || '',
+            email: user.email || '',
+            phone: user.phone || '+91',
+            address: '',
+            city: 'Bangalore',
+            state: 'Karnataka',
+            pincode: '',
+            vehicleNumber: '',
+            vehicleType: 'Sedan Car',
+          };
+        }
+      }
+
+      if (initial) setPrefillFormData(initial);
+    } catch (err) {
+      console.error('Failed to prepare prefill for add-vehicle form:', err);
+    }
+
+    setShowCustomerForm(true);
+  };
+
+  // Selecting vehicle from list
+  const selectVehicleForService = async (vehicle: { id?: number; vehicleNumber: string; vehicleType?: string }) => {
+    try {
+      const resp = await axios.get(`${API_BASE_URL}/users/search/vehicle/${encodeURIComponent(vehicle.vehicleNumber)}`);
+      const user = resp.data;
+
+      setSelectedUser({
+        id: user.id.toString(),
+        vehicleNumber: user.vehicle_number,
+        vehicleType: user.vehicle_type,
+        ownerName: user.name,
+        ownerPhone: user.phone,
+        ownerEmail: user.email,
+        createdAt: new Date(user.created_at),
+        lastServicedDate: user.last_serviced_date,
+        lastServiceType: user.last_service_type,
+      });
+
+      setCustomerData({
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        notes: ''
+      });
+    } catch (err: any) {
+      console.warn('Failed to load selected vehicle details:', err?.response?.data || err);
     }
   };
 
@@ -540,7 +791,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   return (
     <motion.div 
-      className="min-h-screen bg-gray-100 dark:bg-dark-900 space-y-6 sm:space-y-8 relative py-4 sm:py-6 px-3 sm:px-4 lg:px-8 pb-20 md:pb-8"
+      className="min-h-screen bg-gray-100 dark:bg-dark-900 space-y-6 sm:space-y-8 relative py-4 sm:py-6 px-4 sm:px-6 lg:px-8 pb-24 w-full max-w-screen-lg mx-auto overflow-x-hidden"
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -753,8 +1004,13 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       {showCustomerForm && (
         <CustomerDetailsForm
           onSubmit={handleCustomerRegistration}
-          onCancel={() => setShowCustomerForm(false)}
+          onCancel={() => {
+            setShowCustomerForm(false);
+            setIsAddVehicleMode(false);
+          }}
           loading={customerFormLoading}
+          initialData={prefillFormData ?? undefined}
+          vehicleOnlyMode={isAddVehicleMode}
         />
       )}
 
@@ -804,7 +1060,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
               <motion.button
-                onClick={() => setSearchType('vehicle')}
+                onClick={() => { setSearchType('vehicle'); setPhoneDigits(''); }}
                 className={`flex-1 py-2 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 ${
                   searchType === 'vehicle'
                     ? 'bg-blue-600 text-white'
@@ -825,7 +1081,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 />
               </motion.button>
               <motion.button
-                onClick={() => setSearchType('phone')}
+                onClick={() => { setSearchType('phone'); setPhoneDigits(''); }}
                 className={`flex-1 py-2 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 ${
                   searchType === 'phone'
                     ? 'bg-blue-600 text-white'
@@ -847,38 +1103,47 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               </motion.button>
             </div>
 
-            <div className="flex space-x-2">
-              <motion.input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setSearchAttempted(false);
-                }}
-                placeholder={searchType === 'vehicle' ? t('search_placeholder_vehicle') : t('search_placeholder_phone')}
-                className="flex-1 px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
-                disabled={searchLoading}
-                whileFocus={{ scale: 1.01, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
-              />
+            <div className="flex space-x-1">
+              {searchType === 'phone' ? (
+                <div className="relative flex-1">
+                  <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 select-none">+91</span>
+                  <motion.input
+                    type="tel"
+                    value={phoneDigits}
+                    onChange={(e) => {
+                      const digitsOnly = e.target.value.replace(/\D/g, '').slice(0, 10);
+                      setPhoneDigits(digitsOnly);
+                      setSearchAttempted(false);
+                    }}
+                    placeholder="Enter 10-digit phone number"
+                    className="w-full pl-12 pr-3 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                    disabled={searchLoading}
+                    whileFocus={{ scale: 1.01, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
+                  />
+                </div>
+              ) : (
+                <motion.input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setSearchAttempted(false);
+                  }}
+                  placeholder={t('search_placeholder_vehicle')}
+                  className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg"
+                  disabled={searchLoading}
+                  whileFocus={{ scale: 1.01, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
+                />
+              )}
+
               <motion.button
                 onClick={searchUser}
-                disabled={!searchQuery.trim() || searchLoading}
-                className="px-3 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 flex items-center relative overflow-hidden min-w-[44px]"
+                className="shrink-0 px-2 sm:px-3 py-2 sm:py-3 rounded-lg bg-gray-200 text-gray-700 dark:bg-dark-600 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-dark-500 transition-all duration-200 flex items-center justify-center"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                disabled={searchLoading}
               >
-                <span className="relative z-10">
-                  {searchLoading ? (
-                    <LoadingSpinner size="sm" />
-                  ) : (
-                    <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-                  )}
-                </span>
-                <motion.span
-                  className="absolute inset-0 bg-blue-500 opacity-0"
-                  whileTap={{ opacity: 0.3, scale: 2 }}
-                  transition={{ duration: 0.2 }}
-                />
+                <Search className="w-4 h-4 sm:w-5 sm:h-5" />
               </motion.button>
             </div>
 
@@ -940,66 +1205,155 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
               )}
             </AnimatePresence>
 
-            {selectedUser && (
-              <motion.div
-                className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h4 className="font-semibold text-green-900 mb-2">{t('vehicle_found')}</h4>
-                <div className="space-y-2 text-sm text-green-800">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <span className="text-green-700">Name:</span>
-                      <span className="ml-2 font-semibold">{selectedUser.ownerName}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="text-green-700">Vehicle Number:</span>
-                      <span className="ml-2 font-semibold">{selectedUser.vehicleNumber}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <span className="text-green-700">Phone:</span>
-                      <span className="ml-2 font-semibold">{selectedUser.ownerPhone}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <span className="text-green-700">Last Serviced Date:</span>
-                      <span className="ml-2 font-semibold">
-                        {selectedUser.lastServicedDate 
-                          ? new Date(selectedUser.lastServicedDate).toISOString().split('T')[0]
-                          : 'N/A'}
-                      </span>
-                    </div>
+            {selectedUser && searchType !== 'phone' && (
+              <motion.div className="mt-4 p-4 sm:p-5 bg-white dark:bg-dark-800 border rounded-lg">
+                {/* Details grid: desktop side-by-side in rows */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm md:text-base">
+                  <div className="flex items-center">
+                    <span className="text-green-700">Name:</span>
+                    <span className="ml-2 font-semibold break-words">{selectedUser.ownerName}</span>
                   </div>
                   <div className="flex items-center">
+                    <span className="text-green-700">Vehicle Number:</span>
+                    <span className="ml-2 font-semibold break-all">{selectedUser.vehicleNumber}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-green-700">Phone:</span>
+                    <span className="ml-2 font-semibold break-all">{selectedUser.ownerPhone}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-green-700">Last Serviced Date:</span>
+                    <span className="ml-2 font-semibold">
+                      {selectedUser.lastServicedDate
+                        ? new Date(selectedUser.lastServicedDate).toISOString().split('T')[0]
+                        : 'N/A'}
+                    </span>
+                  </div>
+                  <div className="flex items-center md:col-span-2">
                     <span className="text-green-700">Last Service Type:</span>
-                    <span className="ml-2 font-semibold">{selectedUser.lastServiceType || 'N/A'}</span>
+                    <span className="ml-2 font-semibold break-words">{selectedUser.lastServiceType || 'N/A'}</span>
                   </div>
                 </div>
-                <div className="mt-4 flex items-center space-x-4">
+
+                {/* Buttons row */}
+                <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <motion.button
                     onClick={handleRepeatService}
-                    className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center relative overflow-hidden"
+                    className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-2" />
+                    <Calendar className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2" />
                     {t('repeat_service')}
                   </motion.button>
                   <motion.button
                     onClick={handleSelectService}
-                    className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center relative overflow-hidden"
+                    className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                   >
-                    <Wrench className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-2" />
+                    <Wrench className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2" />
                     {t('more_service')}
                   </motion.button>
                 </div>
+                {/* Add Vehicle */}
+                <div className="mt-3">
+                  <motion.button
+                    onClick={openAddVehicleForm}
+                    className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium flex items-center justify-center relative overflow-hidden"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-2" />
+                    Add Vehicle
+                  </motion.button>
+                </div>
               </motion.div>
+            )}
+
+            {searchType === 'phone' && vehiclesByPhone.length > 0 && (
+              <div className="mt-4 p-4 sm:p-5 bg-white dark:bg-dark-800 border rounded-lg max-w-full overflow-hidden">
+                <h4 className="font-semibold text-gray-900 dark:text-white mb-3">Vehicles Found ({vehiclesByPhone.length})</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                  {vehiclesByPhone.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => selectVehicleForService({ id: v.id, vehicleNumber: v.vehicleNumber, vehicleType: v.vehicleType })}
+                      className={`w-full min-w-0 p-3 border rounded-lg text-left transition-all hover:shadow focus:outline-none focus:ring-2 focus:ring-blue-400
+            ${selectedUser?.vehicleNumber === v.vehicleNumber ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50'}`}
+                    >
+                      <div className="font-medium text-gray-900 dark:text-black break-words">{v.vehicleNumber}</div>
+                      <div className="text-sm text-gray-600 dark:text-black break-words">{v.vehicleType || 'N/A'}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {selectedUser && searchType === 'phone' && (
+                  <div className="mt-4 p-4 sm:p-5 bg-green-50 dark:bg-dark-700 border rounded-lg max-w-full overflow-hidden">
+                    {/* Details grid: desktop side-by-side in rows */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-3 text-sm md:text-base">
+                      <div className="flex items-center">
+                        <span className="text-green-700">Name:</span>
+                        <span className="ml-2 font-semibold break-words">{selectedUser.ownerName}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-green-700">Vehicle Number:</span>
+                        <span className="ml-2 font-semibold break-all">{selectedUser.vehicleNumber}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-green-700">Phone:</span>
+                        <span className="ml-2 font-semibold break-all">{selectedUser.ownerPhone}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <span className="text-green-700">Last Serviced Date:</span>
+                        <span className="ml-2 font-semibold">
+                          {selectedUser.lastServicedDate
+                            ? new Date(selectedUser.lastServicedDate).toISOString().split('T')[0]
+                            : 'N/A'}
+                        </span>
+                      </div>
+                      <div className="flex items-center md:col-span-2">
+                        <span className="text-green-700">Last Service Type:</span>
+                        <span className="ml-2 font-semibold break-words">{selectedUser.lastServiceType || 'N/A'}</span>
+                      </div>
+                    </div>
+
+                    {/* Buttons row */}
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                      <motion.button
+                        onClick={handleRepeatService}
+                        className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2" />
+                        {t('repeat_service')}
+                      </motion.button>
+                      <motion.button
+                        onClick={handleSelectService}
+                        className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base"
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
+                        <Wrench className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2" />
+                        {t('more_service')}
+                      </motion.button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="mt-4">
+                  <motion.button
+                    onClick={openAddVehicleForm}
+                    className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200 font-medium flex items-center justify-center relative overflow-hidden"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                  >
+                    <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 md:w-4 md:h-4 mr-2" />
+                    Add Vehicle
+                  </motion.button>
+                </div>
+              </div>
             )}
           </div>
         </motion.div>

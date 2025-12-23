@@ -48,7 +48,6 @@ router.post(
       couponCode,
       discountAmount,
       originalAmount,
-      // Admin-on-behalf fields (now used)
       targetCustomerEmail,
       targetCustomerPhone,
       targetUserId
@@ -67,36 +66,34 @@ router.post(
     }
 
     try {
-      // Determine requester identity
       const requesterEmail = (req.user?.email || '').toLowerCase();
       const requesterPhone = req.user?.phone;
-
-      // Admins can book on behalf of customers
       const isAdminRequester = ADMIN_EMAILS.includes(requesterEmail);
 
-      // Resolve target user
+      // Prefer explicit targetUserId whenever provided (selected vehicle card)
       let user;
-      if (isAdminRequester && (targetUserId || targetCustomerEmail || targetCustomerPhone)) {
-        if (targetUserId) {
-          const users = await sql`SELECT * FROM users WHERE id = ${targetUserId}` as any[];
-          user = users[0];
-        } else if (targetCustomerEmail) {
+      if (targetUserId) {
+        const users = await sql`SELECT * FROM users WHERE id = ${targetUserId}` as any[];
+        user = users[0];
+        if (!user) {
+          return res.status(404).json({ error: 'Target customer not found' });
+        }
+      } else if (isAdminRequester && (targetCustomerEmail || targetCustomerPhone)) {
+        if (targetCustomerEmail) {
           const users = await sql`SELECT * FROM users WHERE email = ${targetCustomerEmail}` as any[];
           user = users[0];
         } else if (targetCustomerPhone) {
           const users = await sql`SELECT * FROM users WHERE phone = ${targetCustomerPhone}` as any[];
           user = users[0];
         }
-
         if (!user) {
           return res.status(404).json({ error: 'Target customer not found' });
         }
       } else {
-        // Normal user flow: book for self
+        // Fallback: requester’s own user row
         if (!requesterEmail && !requesterPhone) {
           return res.status(400).json({ error: 'User identification required' });
         }
-
         if (requesterEmail) {
           const users = await sql`SELECT * FROM users WHERE LOWER(email) = ${requesterEmail}` as any[];
           user = users[0];
@@ -104,7 +101,6 @@ router.post(
           const users = await sql`SELECT * FROM users WHERE phone = ${requesterPhone}` as any[];
           user = users[0];
         }
-
         if (!user) {
           return res.status(404).json({ error: 'User not found' });
         }
@@ -179,26 +175,12 @@ router.get(
         return res.status(400).json({ error: 'User identification required' });
       }
 
-      // Find user by email or phone
-      let user;
-      if (userEmail) {
-        const users = await sql`SELECT * FROM users WHERE LOWER(email) = ${userEmail}` as any[];
-        user = users[0];
-      } else if (userPhone) {
-        const users = await sql`SELECT * FROM users WHERE phone = ${userPhone}` as any[];
-        user = users[0];
-      }
-
-      if (!user) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-
       // Check if user is admin
-      const isAdmin = ADMIN_EMAILS.includes(user.email?.toLowerCase() || '');
+      const isAdmin = ADMIN_EMAILS.includes(userEmail);
 
       let result;
       if (isAdmin) {
-        // Admin sees all bookings - match your exact schema
+        // Admin sees all bookings
         result = await sql`
           SELECT 
             sb.id,
@@ -220,28 +202,52 @@ router.get(
           ORDER BY sb.created_at DESC
         ` as any[];
       } else {
-        // Regular user sees only their bookings
-        result = await sql`
-          SELECT 
-            sb.id,
-            sb.user_id,
-            sb.scheduled_date,
-            sb.scheduled_time,
-            sb.total_price,
-            sb.status,
-            sb.notes,
-            sb.created_at,
-            sb.services,
-            u.name,
-            u.email,
-            u.phone,
-            u.vehicle_number,
-            u.vehicle_type
-          FROM service_bookings sb
-          LEFT JOIN users u ON sb.user_id = u.id
-          WHERE sb.user_id = ${user.id}
-          ORDER BY sb.created_at DESC
-        ` as any[];
+        // Regular user sees bookings across ALL their vehicle rows (matching email/phone)
+        if (userEmail) {
+          result = await sql`
+            SELECT 
+              sb.id,
+              sb.user_id,
+              sb.scheduled_date,
+              sb.scheduled_time,
+              sb.total_price,
+              sb.status,
+              sb.notes,
+              sb.created_at,
+              sb.services,
+              u.name,
+              u.email,
+              u.phone,
+              u.vehicle_number,
+              u.vehicle_type
+            FROM service_bookings sb
+            LEFT JOIN users u ON sb.user_id = u.id
+            WHERE LOWER(u.email) = ${userEmail}
+            ORDER BY sb.created_at DESC
+          ` as any[];
+        } else {
+          result = await sql`
+            SELECT 
+              sb.id,
+              sb.user_id,
+              sb.scheduled_date,
+              sb.scheduled_time,
+              sb.total_price,
+              sb.status,
+              sb.notes,
+              sb.created_at,
+              sb.services,
+              u.name,
+              u.email,
+              u.phone,
+              u.vehicle_number,
+              u.vehicle_type
+            FROM service_bookings sb
+            LEFT JOIN users u ON sb.user_id = u.id
+            WHERE u.phone = ${userPhone}
+            ORDER BY sb.created_at DESC
+          ` as any[];
+        }
       }
 
       // Transform data to match frontend expectations

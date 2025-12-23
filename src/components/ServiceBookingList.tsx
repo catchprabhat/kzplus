@@ -19,7 +19,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 }) => {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const [filteredBookings, setFilteredBookings] = useState<ServiceBooking[]>(bookings);
+  const [filteredBookings, setFilteredBookings] = useState<ServiceBooking[]>([]);
   const [phoneFilter, setPhoneFilter] = useState('');
   const { user } = useAuth();
 
@@ -31,12 +31,8 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 
   // Move this useEffect inside the component
   useEffect(() => {
-    const filtered = bookings.filter((booking) => {
-      const matchesPhone = booking.customerPhone?.toLowerCase()?.includes(phoneFilter.toLowerCase()) || false;
-      // Filter out deleted bookings from frontend display
-      const isNotDeleted = booking.status !== 'deleted';
-      return matchesPhone && isNotDeleted;
-    });
+    // Temporarily disable phone filtering to guarantee all non-deleted bookings display
+    const filtered = bookings.filter((booking) => booking.status !== 'deleted');
     setFilteredBookings(filtered);
   }, [bookings, phoneFilter]);
 
@@ -187,7 +183,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
       
       {/* Responsive Booking Cards */}
       <div className="space-y-4">
-        {filteredBookings.map((booking) => (
+        { (filteredBookings.length ? filteredBookings : bookings).map((booking) => (
           <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-4 sm:p-6 hover:shadow-md transition-shadow">
             {/* Mobile-First Header */}
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 mb-4">

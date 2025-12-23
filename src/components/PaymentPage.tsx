@@ -76,18 +76,13 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
     console.log('PaymentPage bookingData:', bookingData);
   }, [bookingData]);
 
+  // Auth and admin check inside component
   const { user } = useAuth();
-  const ADMIN_EMAILS = [
+  const isAdminUser = [
     'catchprabhat@gmail.com',
-    'zpluscarcare@gmail.com',
-    'kzplusmotors@gmail.com',
-    'padhisushreeta@gmail.com',
-    'pkumargr26@gmail.com',
-    'little.mishra23@gmail.com',
     'umrsjd455@gmail.com',
     'umrsjd562@gmail.com'
-  ];
-  const isAdminUser = ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
+  ].includes(user?.email ?? '');
 
   const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit' | 'upi' | 'pay-at-service'>('debit');
   const [upiOption, setUpiOption] = useState<'gpay' | 'paytm' | 'phonepe'>('gpay');
@@ -150,71 +145,94 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
 
   // Add the missing handlePayment function
   const handlePayment = async () => {
-    if (processing) return;
-    setProcessing(true);
+    try {
+      setProcessing(true);
 
-    // Defensive auth check: block if token missing/expired
-    const token = localStorage.getItem('driveEasyToken');
-    if (!token) {
-      alert('Please log in to confirm your booking.');
-      setProcessing(false);
-      onBack();
-      return;
-    }
-
-    // Defensive ownership check: only admins can book for others
-    if (!isAdminUser) {
-      const normalize = (s?: string) => (s || '').trim().toLowerCase();
-      const matchesEmail = normalize(bookingData.selectedUser.ownerEmail) && normalize(user?.email) && normalize(bookingData.selectedUser.ownerEmail) === normalize(user?.email);
-      const matchesPhone = (bookingData.selectedUser.ownerPhone || '').trim() && (user?.phone || '').trim() && bookingData.selectedUser.ownerPhone.trim() === (user?.phone || '').trim();
-      const matchesId = bookingData.selectedUser.id?.toString() && user?.id?.toString() && bookingData.selectedUser.id.toString() === user?.id.toString();
-      if (!(matchesEmail || matchesPhone || matchesId)) {
-        alert('Car not associated to you. You can only book service for your own vehicle.');
+      // Defensive auth check: block if token missing/expired
+      const token = localStorage.getItem('driveEasyToken');
+      if (!token) {
+        alert('Please log in to confirm your booking.');
         setProcessing(false);
         onBack();
         return;
       }
-    }
 
-    try {
+      // Defensive ownership check: only admins can book for others
+      if (!isAdminUser) {
+        const normalize = (s?: string) => (s || '').trim().toLowerCase();
+        const matchesEmail = normalize(bookingData.selectedUser.ownerEmail) && normalize(user?.email) && normalize(bookingData.selectedUser.ownerEmail) === normalize(user?.email);
+        const matchesPhone = (bookingData.selectedUser.ownerPhone || '').trim() && (user?.phone || '').trim() && bookingData.selectedUser.ownerPhone.trim() === (user?.phone || '').trim();
+        const matchesId = bookingData.selectedUser.id?.toString() && user?.id?.toString() && bookingData.selectedUser.id.toString() === user?.id.toString();
+        if (!(matchesEmail || matchesPhone || matchesId)) {
+          alert('Car not associated to you. You can only book service for your own vehicle.');
+          setProcessing(false);
+          onBack();
+          return;
+        }
+      }
+
+      // Build minimal services payload and validate required fields
+      const servicesPayload = (bookingData.selectedServices || []).map(s => ({
+        id: s.id,
+        name: s.name,
+        price: Number(s.price)
+      }));
+
+      if (!bookingData.scheduledDate || !bookingData.scheduledTime || servicesPayload.length === 0 || !Number(discountedTotal)) {
+        alert('Please select at least one service, a date & time, and ensure total amount is valid.');
+        setProcessing(false);
+        return;
+      }
+
       const serviceBookingData = {
-        userId: bookingData.selectedUser.id,
-        vehicleId: bookingData.selectedUser.id,
-        customerName: bookingData.customerData.name,
-        customerPhone: bookingData.customerData.phone,
-        customerEmail: bookingData.customerData.email,
         scheduledDate: bookingData.scheduledDate,
         scheduledTime: bookingData.scheduledTime,
-        services: bookingData.selectedServices,
-        totalPrice: discountedTotal,
+        services: servicesPayload,
+        totalPrice: Number(discountedTotal),
         notes: bookingData.customerData.notes || '',
         couponCode: appliedCoupon?.code || null,
         discountAmount: appliedCoupon?.discountAmount || 0,
         originalAmount: originalTotal,
-        // NEW: admin-on-behalf fields (used only if admin)
         bookedByAdmin: isAdminUser,
+
+        // Always send the selected user row ID (the specific vehicle card the user chose)
+        targetUserId: bookingData.selectedUser.id,
+
+        // Admin-on-behalf hints (optional)
         targetCustomerEmail: isAdminUser ? bookingData.customerData.email : undefined,
-        targetCustomerPhone: isAdminUser ? bookingData.customerData.phone : undefined,
-        targetUserId: isAdminUser ? bookingData.selectedUser.id : undefined
+        targetCustomerPhone: isAdminUser ? bookingData.customerData.phone : undefined
       };
-  
+
+      console.log('Creating booking with data:', serviceBookingData);
+
       // Use the existing service booking API
       const result = await serviceBookingApi.createBooking(serviceBookingData);
-      
+
+      // Normalize backend response shape (it returns { message, booking })
+      const created = result?.booking || result;
+
       const serviceBooking: ServiceBookingType = {
-        ...result,
-        originalAmount: appliedCoupon ? originalTotal : discountedTotal,
-        discountAmount: appliedCoupon ? appliedCoupon.discountAmount : 0,
-        couponCode: appliedCoupon ? appliedCoupon.code : null,
-        paymentMethod,
-        paymentStatus: paymentMethod === 'pay-at-service' ? 'pending' : 'completed'
+        id: String(created.id),
+        vehicleNumber: bookingData.selectedUser.vehicleNumber,
+        vehicleType: bookingData.selectedUser.vehicleType,
+        vehicleName: bookingData.selectedUser.vehicleType,
+        customerName: bookingData.customerData.name || bookingData.selectedUser.ownerName,
+        customerPhone: bookingData.customerData.phone || bookingData.selectedUser.ownerPhone,
+        customerEmail: bookingData.customerData.email || bookingData.selectedUser.ownerEmail,
+        services: servicesPayload,
+        totalPrice: Number(discountedTotal),
+        scheduledDate: new Date(created.scheduled_date || bookingData.scheduledDate),
+        scheduledTime: created.scheduled_time || bookingData.scheduledTime,
+        status: created.status || 'pending',
+        notes: bookingData.customerData.notes || '',
+        createdAt: new Date(created.created_at || new Date())
       };
-  
+
       setShowSuccess(true);
       setTimeout(() => {
         onPaymentComplete(serviceBooking);
       }, 2000);
-      
+
     } catch (error) {
       console.error('Payment processing failed:', error);
       alert('Payment processing failed. Please try again.');

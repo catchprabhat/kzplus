@@ -56,49 +56,23 @@ export const useServiceBookings = () => {
       
       console.log('Frontend transformed bookings:', transformedBookings);
       console.log('Number of bookings before deduplication:', transformedBookings.length);
-      
-      // Enhanced deduplication - remove duplicates based on multiple criteria
+
+      // Deduplicate strictly by booking ID to avoid collapsing different vehicle bookings with similar schedule/price
       const uniqueBookings = transformedBookings.reduce((acc: ServiceBooking[], current) => {
-        const existingIndex = acc.findIndex(booking => 
-          booking.id === current.id || 
-          (
-            booking.customerEmail === current.customerEmail &&
-            booking.scheduledDate.getTime() === current.scheduledDate.getTime() &&
-            booking.scheduledTime === current.scheduledTime &&
-            booking.totalPrice === current.totalPrice
-          )
-        );
-        
+        const existingIndex = acc.findIndex(b => b.id === current.id);
         if (existingIndex === -1) {
           acc.push(current);
         } else {
-          // Keep the one with the higher ID (more recent)
-          if (parseInt(current.id) > parseInt(acc[existingIndex].id)) {
-            acc[existingIndex] = current;
-          }
+          // If the same ID appears twice, keep the latest record
+          acc[existingIndex] = current;
         }
-        
         return acc;
       }, []);
-      
+
       console.log('Number of bookings after deduplication:', uniqueBookings.length);
-      
-      // Only update state if the data has actually changed
-      setServiceBookings(prevBookings => {
-        const hasChanged = prevBookings.length !== uniqueBookings.length ||
-          !prevBookings.every((prev, index) => {
-            const current = uniqueBookings[index];
-            return current && prev.id === current.id && prev.status === current.status;
-          });
-        
-        if (hasChanged) {
-          console.log('Service bookings updated:', uniqueBookings);
-          return uniqueBookings;
-        }
-        
-        console.log('No changes detected, keeping existing bookings');
-        return prevBookings;
-      });
+
+      // Replace stale guard with a direct state update to ensure UI is refreshed
+      setServiceBookings(uniqueBookings);
     } catch (err: any) {
       console.error('Error fetching service bookings:', err);
       console.error('Error response:', err.response?.data);

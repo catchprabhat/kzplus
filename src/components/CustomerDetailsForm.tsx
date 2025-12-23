@@ -5,6 +5,7 @@ import { User, Mail, Phone, Car, Save, X, CheckCircle } from 'lucide-react';
 import { LoadingSpinner } from './LoadingSpinner';
 import { CustomerFormData } from '../types';
 
+// Component: CustomerDetailsForm
 interface CustomerDetailsFormProps {
   onSubmit: (customerData: CustomerFormData) => void;
   onCancel: () => void;
@@ -14,7 +15,9 @@ interface CustomerDetailsFormProps {
 export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
   onSubmit,
   onCancel,
-  loading = false
+  loading = false,
+  initialData,
+  vehicleOnlyMode = false
 }) => {
   const [formData, setFormData] = useState<CustomerFormData>({
     name: '',
@@ -29,6 +32,24 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
     vehicleType: 'Sedan',
   });
 
+  // Prefill from initialData when it is provided (e.g., Add Vehicle mode or after phone search)
+  React.useEffect(() => {
+    if (initialData) {
+      setFormData(prev => ({
+        ...prev,
+        name: initialData.name ?? prev.name,
+        email: initialData.email ?? prev.email,
+        phone: initialData.phone ?? prev.phone,
+        alternatePhone: initialData.alternatePhone ?? prev.alternatePhone,
+        address: initialData.address ?? prev.address,
+        city: initialData.city ?? prev.city,
+        state: initialData.state ?? prev.state,
+        pincode: initialData.pincode ?? prev.pincode,
+        vehicleNumber: initialData.vehicleNumber ?? '',
+        vehicleType: initialData.vehicleType ?? prev.vehicleType,
+      }));
+    }
+  }, [initialData]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [showSuccess, setShowSuccess] = useState(false);
 
@@ -36,22 +57,24 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
     const newErrors: { [key: string]: string } = {};
 
     // Personal Information Validation
-    if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email address';
-    }
-    if (!formData.phone.trim() || formData.phone === '+91') {
-      newErrors.phone = 'Phone number is required';
-    } else if (!/^\+91\d{10}$/.test(formData.phone)) {
-      newErrors.phone = 'Please enter a valid 10-digit phone number';
-    }
-    if (!formData.address.trim()) newErrors.address = 'Address is required';
-    if (!formData.pincode.trim()) {
-      newErrors.pincode = 'Pincode is required';
-    } else if (!/^\d{6}$/.test(formData.pincode)) {
-      newErrors.pincode = 'Pincode must be 6 digits';
+    if (!vehicleOnlyMode) {
+      if (!formData.name.trim()) newErrors.name = 'Name is required';
+      if (!formData.email.trim()) {
+        newErrors.email = 'Email is required';
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+      if (!formData.phone.trim() || formData.phone === '+91') {
+        newErrors.phone = 'Phone number is required';
+      } else if (!/^\+91\d{10}$/.test(formData.phone)) {
+        newErrors.phone = 'Please enter a valid 10-digit phone number';
+      }
+      if (!formData.address.trim()) newErrors.address = 'Address is required';
+      if (!formData.pincode.trim()) {
+        newErrors.pincode = 'Pincode is required';
+      } else if (!/^\d{6}$/.test(formData.pincode)) {
+        newErrors.pincode = 'Pincode must be 6 digits';
+      }
     }
 
     // Vehicle Information Validation
@@ -203,7 +226,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                       errors.name ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="Enter your full name"
-                    disabled={loading}
+                    disabled={loading || vehicleOnlyMode}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
                   <AnimatePresence>
@@ -232,7 +255,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                       errors.email ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="your.email@example.com"
-                    disabled={loading}
+                    disabled={loading || vehicleOnlyMode}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
                   <AnimatePresence>
@@ -261,7 +284,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                       errors.phone ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="+91 Enter 10 digit number"
-                    disabled={loading}
+                    disabled={loading || vehicleOnlyMode}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
                   <AnimatePresence>
@@ -288,7 +311,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                     onChange={(e) => handleInputChange('alternatePhone', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
                     placeholder="+91 Enter 10 digit number"
-                    disabled={loading}
+                    disabled={loading || vehicleOnlyMode}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
                 </div>
@@ -305,7 +328,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                       errors.address ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="Enter your complete address"
-                    disabled={loading}
+                    disabled={loading || vehicleOnlyMode}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
                   <AnimatePresence>
@@ -322,30 +345,38 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                   </AnimatePresence>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    readOnly
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-dark-600 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-all duration-200"
-                    disabled
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    State *
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.state}
-                    readOnly
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg bg-gray-100 dark:bg-dark-600 text-gray-500 dark:text-gray-400 cursor-not-allowed transition-all duration-200"
-                    disabled
-                  />
+                {/* City and State (auto-filled defaults; read-only in Add Vehicle mode) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            City *
+                        </label>
+                        <motion.input
+                            type="text"
+                            value={formData.city}
+                            onChange={(e) => handleInputChange('city', e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 dark:text-white hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
+                            placeholder="Bangalore"
+                            disabled={loading || vehicleOnlyMode}
+                            readOnly={vehicleOnlyMode}
+                            whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            State *
+                        </label>
+                        <motion.input
+                            type="text"
+                            value={formData.state}
+                            onChange={(e) => handleInputChange('state', e.target.value)}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 bg-white dark:bg-dark-700 dark:text-white hover:shadow-md focus:shadow-lg focus:scale-[1.02]"
+                            placeholder="Karnataka"
+                            disabled={loading || vehicleOnlyMode}
+                            readOnly={vehicleOnlyMode}
+                            whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
+                        />
+                    </div>
                 </div>
 
                 <div>
@@ -361,21 +392,9 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
                     placeholder="123456"
                     maxLength={6}
-                    disabled={loading}
+                    disabled={loading || vehicleOnlyMode}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
-                  <AnimatePresence>
-                    {errors.pincode && (
-                      <motion.p
-                        className="text-red-500 dark:text-red-400 text-sm mt-1"
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                      >
-                        {errors.pincode}
-                      </motion.p>
-                    )}
-                  </AnimatePresence>
                 </div>
 
                 <div className="md:col-span-2">
