@@ -78,11 +78,17 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
 
   // Auth and admin check inside component
   const { user } = useAuth();
-  const isAdminUser = [
+  const ADMIN_EMAILS = [
     'catchprabhat@gmail.com',
+    'zpluscarcare@gmail.com',
+    'kzplusmotors@gmail.com',
+    'padhisushreeta@gmail.com',
+    'pkumargr26@gmail.com',
+    'little.mishra23@gmail.com',
     'umrsjd455@gmail.com',
     'umrsjd562@gmail.com'
-  ].includes(user?.email ?? '');
+  ].map(e => e.toLowerCase());
+  const isAdminUser = ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
 
   const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit' | 'upi' | 'pay-at-service'>('debit');
   const [upiOption, setUpiOption] = useState<'gpay' | 'paytm' | 'phonepe'>('gpay');
