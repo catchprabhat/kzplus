@@ -70,6 +70,31 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   const [prefillFormData, setPrefillFormData] = useState<CustomerFormData | null>(null);
   const [vehiclesByPhone, setVehiclesByPhone] = useState<Array<{ id: number; vehicleNumber: string; vehicleType: string }>>([]);
 
+  // Normalize API/UI vehicle types to our category keys
+  const normalizeVehicleCategory = (
+    vt: string | null | undefined
+  ): keyof typeof servicesByCategory => {
+    const raw = (vt || '').toLowerCase().trim();
+
+    if (raw.includes('sedan')) return 'Sedan Car';
+    if (raw.includes('compact suv')) return 'Compact SUV';
+    if (raw === 'suv' || raw.includes(' suv')) return 'SUV';
+    if (raw.includes('luxury')) return 'Luxury';
+    if (raw.includes('yellow')) return 'Yellow Board';
+    if (raw.includes('bike')) return 'Bike';
+    if (raw.includes('scooty') || raw.includes('scooter')) return 'Scooty';
+    if (raw.includes('small')) return 'Small Car';
+
+    // Fallback if unrecognized
+    return 'Small Car';
+  };
+
+  // Auto-sync the Select Services vehicle category with the selected vehicle
+  useEffect(() => {
+    const autoCategory = normalizeVehicleCategory(selectedUser?.vehicleType);
+    setVehicleCategory(autoCategory);
+  }, [selectedUser?.vehicleType]);
+
   const { isAuthenticated, login, logout, user } = useAuth();
   const ADMIN_EMAILS = [
     'catchprabhat@gmail.com',
@@ -665,10 +690,34 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   const handleRepeatService = () => {
     setIsRepeatServiceMode(true);
-    const previousService = services.find(s => s.id === 'wash-premium');
-    if (previousService && !selectedServices.find(s => s.id === previousService.id)) {
-      setSelectedServices([previousService]);
+
+    // If no valid last service type, do nothing (button is disabled in UI)
+    if (!hasRepeatableService) {
+      return;
     }
+
+    // Use the user's vehicle type to pick the right category; fallback to 'Small Car'
+    const category =
+      selectedUser?.vehicleType && servicesByCategory[selectedUser.vehicleType]
+        ? selectedUser.vehicleType
+        : 'Small Car';
+
+    const availableServices = servicesByCategory[category] || services;
+
+    const lastType = selectedUser?.lastServiceType?.trim()?.toLowerCase();
+    const targetService = availableServices.find(
+      (s) => s.name.toLowerCase() === lastType
+    );
+
+    if (targetService) {
+      if (!selectedServices.find((s) => s.id === targetService.id)) {
+        setSelectedServices([targetService]);
+      }
+    } else {
+      // If last service name does not exist in the current category, inform user to choose manually
+      alert('Previous service is not available for this vehicle category. Please select a service.');
+    }
+
     setTimeout(() => {
       document.getElementById('booking-form')?.scrollIntoView({ behavior: 'smooth' });
     }, 500);
@@ -728,6 +777,9 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
 
   const today = new Date().toISOString().split('T')[0];
   const isFormValid = selectedUser && selectedServices.length > 0 && scheduledDate && customerData.name && customerData.phone;
+  const hasRepeatableService =
+    !!(selectedUser?.lastServiceType &&
+       selectedUser.lastServiceType.trim().toLowerCase() !== 'n/a');
 
   const containerVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
@@ -1060,7 +1112,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
           <div className="space-y-3 sm:space-y-4">
             <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
               <motion.button
-                onClick={() => { setSearchType('vehicle'); setPhoneDigits(''); }}
+                onClick={() => { setSearchType('vehicle'); setPhoneDigits(''); setSearchQuery(''); }}
                 className={`flex-1 py-2 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 ${
                   searchType === 'vehicle'
                     ? 'bg-blue-600 text-white'
@@ -1081,7 +1133,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 />
               </motion.button>
               <motion.button
-                onClick={() => { setSearchType('phone'); setPhoneDigits(''); }}
+                onClick={() => { setSearchType('phone'); setPhoneDigits(''); setSearchQuery(''); }}
                 className={`flex-1 py-2 sm:py-2 px-3 sm:px-4 rounded-lg font-medium text-sm sm:text-base transition-all duration-200 ${
                   searchType === 'phone'
                     ? 'bg-blue-600 text-white'
@@ -1239,9 +1291,11 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                 <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                   <motion.button
                     onClick={handleRepeatService}
-                    className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base"
+                    className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base disabled:bg-gray-300 disabled:cursor-not-allowed"
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    disabled={!hasRepeatableService}
+                    title={!hasRepeatableService ? 'No previous service found for this vehicle' : undefined}
                   >
                     <Calendar className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2" />
                     {t('repeat_service')}
@@ -1322,9 +1376,11 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                     <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                       <motion.button
                         onClick={handleRepeatService}
-                        className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base"
+                        className="w-full min-h-[44px] py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-all duration-200 font-medium flex items-center justify-center overflow-visible sm:overflow-hidden text-xs sm:text-sm md:text-base disabled:bg-gray-300 disabled:cursor-not-allowed"
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
+                        disabled={!hasRepeatableService}
+                        title={!hasRepeatableService ? 'No previous service found for this vehicle' : undefined}
                       >
                         <Calendar className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5 mr-2" />
                         {t('repeat_service')}

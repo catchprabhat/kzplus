@@ -1,4 +1,5 @@
 
+// CustomerDetailsForm component
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { User, Mail, Phone, Car, Save, X, CheckCircle } from 'lucide-react';
@@ -10,6 +11,8 @@ interface CustomerDetailsFormProps {
   onSubmit: (customerData: CustomerFormData) => void;
   onCancel: () => void;
   loading?: boolean;
+  initialData?: CustomerFormData;
+  vehicleOnlyMode?: boolean;
 }
 
 export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
@@ -408,7 +411,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 dark:bg-dark-700 dark:text-white ${
                       errors.vehicleNumber ? 'border-red-300 dark:border-red-600' : 'border-gray-300 dark:border-dark-600'
                     } hover:shadow-md focus:shadow-lg focus:scale-[1.02]`}
-                    placeholder="KA01AB1234"
+                    placeholder="Enter vehicle number"
                     disabled={loading}
                     whileFocus={{ scale: 1.02, boxShadow: '0 0 10px rgba(59, 130, 246, 0.3)' }}
                   />
@@ -489,7 +492,7 @@ export const CustomerDetailsForm: React.FC<CustomerDetailsFormProps> = ({
                 ) : (
                   <>
                     <Save className="w-4 h-4 mr-2 inline" />
-                    Complete Registration
+                    {vehicleOnlyMode ? 'Add Vehicle' : 'Complete Registration'}
                   </>
                 )}
               </span>
