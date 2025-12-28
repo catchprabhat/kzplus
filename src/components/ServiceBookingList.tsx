@@ -29,13 +29,51 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
     user?.email === 'umrsjd455@gmail.com' ||
     user?.email === 'umrsjd562@gmail.com';
 
-  // Move this useEffect inside the component
+  // Admin-only month filter
+  const [monthFilter, setMonthFilter] = useState<string>(''); // '' means no month filter
   useEffect(() => {
-    // Temporarily disable phone filtering to guarantee all non-deleted bookings display
-    const filtered = bookings.filter((booking) => booking.status !== 'deleted');
-    setFilteredBookings(filtered);
-  }, [bookings, phoneFilter]);
+    // Base: exclude deleted bookings
+    let filtered = bookings.filter((booking) => booking.status !== 'deleted');
 
+    // Apply phone filter
+    if (phoneFilter.trim()) {
+      const term = phoneFilter.toLowerCase();
+      filtered = filtered.filter((b) =>
+        (b.customerPhone || '').toLowerCase().includes(term)
+      );
+    }
+
+    // Admin-only month filter: show repeated customers (2+ bookings) in selected month
+    if (isAdmin && monthFilter !== '') {
+      const monthIndex = parseInt(monthFilter, 10); // 0..11 for Jan..Dec
+      const monthFiltered = filtered.filter((b) => {
+        const d = new Date(b.scheduledDate);
+        return d.getMonth() === monthIndex;
+      });
+
+      // Group by customer (prefer phone, fallback to email/name)
+      const counts: Record<string, number> = {};
+      monthFiltered.forEach((b) => {
+        const key =
+          (b.customerPhone || '').trim() ||
+          (b.customerEmail || '').trim() ||
+          (b.customerName || '').trim();
+        if (!key) return;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      // Keep only bookings from customers with 2+ bookings in that month
+      filtered = monthFiltered.filter((b) => {
+        const key =
+          (b.customerPhone || '').trim() ||
+          (b.customerEmail || '').trim() ||
+          (b.customerName || '').trim();
+        return key && counts[key] >= 2;
+      });
+    }
+
+    setFilteredBookings(filtered);
+  }, [bookings, phoneFilter, monthFilter, isAdmin]);
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -166,18 +204,45 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
           <span className="truncate">Service Bookings</span>
         </h3>
         
-        {/* Phone Filter Input */}
-        <div className="relative flex-shrink-0">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Phone className="h-4 w-4 text-gray-400" />
+        {/* Filters row */}
+        <div className="flex items-center gap-3">
+          {/* Month Filter - Admin only */}
+          {isAdmin && (
+            <select
+              value={monthFilter}
+              onChange={(e) => setMonthFilter(e.target.value)}
+              className="w-36 sm:w-40 px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              title="Filter repeated customers by month"
+            >
+              <option value="">All months</option>
+              <option value="0">January</option>
+              <option value="1">February</option>
+              <option value="2">March</option>
+              <option value="3">April</option>
+              <option value="4">May</option>
+              <option value="5">June</option>
+              <option value="6">July</option>
+              <option value="7">August</option>
+              <option value="8">September</option>
+              <option value="9">October</option>
+              <option value="10">November</option>
+              <option value="11">December</option>
+            </select>
+          )}
+
+          {/* Phone Filter Input */}
+          <div className="relative flex-shrink-0">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Phone className="h-4 w-4 text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Filter by phone number"
+              value={phoneFilter}
+              onChange={(e) => setPhoneFilter(e.target.value)}
+              className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Filter by phone number"
-            value={phoneFilter}
-            onChange={(e) => setPhoneFilter(e.target.value)}
-            className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-          />
         </div>
       </div>
       

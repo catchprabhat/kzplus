@@ -458,64 +458,32 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
                   state,
                   pincode,
                   vehicleNumber: '',
-                  vehicleType: 'Sedan Car',
-                };
-              } else {
-                initial = {
-                  name: user?.name || '',
-                  email: user?.email || '',
-                  phone: user?.phone || '+91',
-                  address: '',
-                  city: 'Bangalore',
-                  state: 'Karnataka',
-                  pincode: '',
-                  vehicleNumber: '',
-                  vehicleType: 'Sedan Car',
+                  vehicleType: 'Small Car',
                 };
               }
-            } catch (e) {
-              console.error('Failed to fetch profile for prefill:', e);
-              initial = {
-                name: user?.name || '',
-                email: user?.email || '',
-                phone: user?.phone || '+91',
-                address: '',
-                city: 'Bangalore',
-                state: 'Karnataka',
-                pincode: '',
-                vehicleNumber: '',
-                vehicleType: 'Sedan Car',
-              };
+            } catch (err) {
+              console.error('Failed to load profile for add-vehicle prefill:', err);
             }
-          } else if (user) {
-            initial = {
-              name: user.name || '',
-              email: user.email || '',
-              phone: user.phone || '+91',
-              address: '',
-              city: 'Bangalore',
-              state: 'Karnataka',
-              pincode: '',
-              vehicleNumber: '',
-              vehicleType: 'Sedan Car',
-            };
           }
-        } else if (user) {
-          initial = {
-            name: user.name || '',
-            email: user.email || '',
-            phone: user.phone || '+91',
-            address: '',
-            city: 'Bangalore',
-            state: 'Karnataka',
-            pincode: '',
-            vehicleNumber: '',
-            vehicleType: 'Sedan Car',
-          };
         }
       }
 
-      if (initial) setPrefillFormData(initial);
+      // Ensure vehicle fields are blank when adding a new vehicle (even if we had prefill from phone search)
+      initial = {
+        ...(initial || {
+          name: '',
+          email: '',
+          phone: '+91',
+          address: '',
+          city: 'Bangalore',
+          state: 'Karnataka',
+          pincode: '',
+        }),
+        vehicleNumber: '',
+        vehicleType: (initial?.vehicleType || 'Small Car'),
+      };
+
+      setPrefillFormData(initial);
     } catch (err) {
       console.error('Failed to prepare prefill for add-vehicle form:', err);
     }

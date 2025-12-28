@@ -1652,11 +1652,8 @@ function App() {
                     {/* Promotional Banner */}
                     <div className="bg-blue-500 text-white p-4 rounded-lg mb-4 mx-auto max-w-4xl">
                       <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                        🚗 Drive More, Save More! Enjoy 20% OFF exclusively for our regular customers
+                        🚗 Drive More, Save More! Enjoy 20% OFF exclusively for our regular customers on our monthly subscription program
                       </h2>
-                      <p className="text-lg sm:text-xl">
-                        🛣 Planning a Long Trip? Get 20% OFF on bookings over 3 consecutive days
-                      </p>
                     </div>
                     
                     {/* Show booking summary */}

@@ -123,5 +123,32 @@ export const cars: Car[] = [
     available: true,
     subscription: 1800
   },
-  
+  {
+    id: '9',
+    name: 'Octavia - Diesel',
+    image: '/images/octavia.jpeg',
+    type: 'Sedan',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Diesel',
+    pricePerDay: 3000,
+    pricePerHour: 200,
+    features: ['Auto Climate Control'],
+    available: true,
+    subscription: 3000
+  },
+  {
+    id: '10',
+    name: 'Liva - Petrol - 5 Seater',
+    image: '/images/liva.jpeg',
+    type: 'Hatchback',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    pricePerDay: 3000,
+    pricePerHour: 200,
+    features: ['Auto Climate Control'],
+    available: true,
+    subscription: 3000
+  },
 ];
