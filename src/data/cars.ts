@@ -1,3 +1,4 @@
+// Top-level module (imports and cars array)
 import { Car } from '../types';
 import safariKA from '../images/safari-KA.jpeg';
 import dusterKA from '../images/duster-KA.jpg';
@@ -109,31 +110,18 @@ export const cars: Car[] = [
     subscription: 1800
   },
 
-  {
-    id: '8',
-    name: 'Glanza',
-    image: Glanzaa,
-    type: 'Hatchback',
-    seats: 5,
-    transmission: 'Automatic',
-    fuel: 'Petrol',
-    pricePerDay: 4000,
-    pricePerHour: 200,
-    features: ['Auto Climate Control'],
-    available: true,
-    subscription: 1800
-  },
+  // REMOVED: Glanza entry
   {
     id: '9',
     name: 'Octavia - Diesel',
     image: '/images/octavia.jpeg',
     type: 'Sedan',
     seats: 5,
-    transmission: 'Manual',
+    transmission: 'Automatic',
     fuel: 'Diesel',
     pricePerDay: 3000,
     pricePerHour: 200,
-    features: ['Auto Climate Control'],
+    features: ['Seat Cover'],
     available: true,
     subscription: 3000
   },
