@@ -810,12 +810,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   }
 
   return (
-    <motion.div 
-      className="min-h-screen bg-gray-100 dark:bg-dark-900 space-y-6 sm:space-y-8 relative py-4 sm:py-6 px-4 sm:px-6 lg:px-8 pb-24 w-full max-w-screen-lg mx-auto overflow-x-hidden"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <div className="min-h-screen bg-gray-100 dark:bg-dark-900 space-y-6 sm:space-y-8 relative py-4 sm:py-6 px-3 sm:px-4 lg:px-6 pb-24 w-full max-w-full sm:max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto overflow-x-hidden">
       {mobileMenuOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" onClick={() => setMobileMenuOpen(false)}>
           <div className="fixed top-0 right-0 h-full w-80 bg-white dark:bg-dark-800 shadow-xl transform transition-transform duration-300 ease-in-out">
@@ -1706,6 +1701,6 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
       </div>
 
     
-    </motion.div>
+    </div>
   );
 };

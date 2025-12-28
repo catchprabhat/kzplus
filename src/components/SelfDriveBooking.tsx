@@ -9,8 +9,8 @@ interface SelfDriveBookingProps {
   initialBookingData?: any;
 }
 
-export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({ 
-  onBookingComplete, 
+export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
+  onBookingComplete,
   onNavigateToCarSelection,
   initialBookingData
 }) => {
@@ -193,7 +193,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 p-3 sm:p-4 lg:p-6">
+    <div className="min-h-screen w-full max-w-full sm:max-w-2xl md:max-w-4xl mx-auto bg-gradient-to-br from-blue-50 via-white to-blue-50 dark:from-dark-900 dark:via-dark-800 dark:to-dark-900 p-3 sm:p-4 lg:p-6">
       {/* Header - Mobile Responsive */}
       <div className="text-center mb-6 sm:mb-8">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 dark:text-white mb-2 sm:mb-4 px-2">
@@ -663,6 +663,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 </h4>
                 
                 {/* Start Time */}
+                // Start Time section (wrap controls on mobile)
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Start Time

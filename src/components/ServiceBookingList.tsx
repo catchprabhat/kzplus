@@ -38,6 +38,9 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
 
   // Admin-only month filter
   const [monthFilter, setMonthFilter] = useState<string>(''); // '' means no month filter
+  const [vehicleFilter, setVehicleFilter] = useState<string>(''); // '' means all vehicles
+  // NEW: Admin-only global search state
+  const [adminSearch, setAdminSearch] = useState<string>(''); // '' means no global search
 
   // Track if any filter is applied
   const filtersApplied = (isAdmin && monthFilter !== '') || phoneFilter.trim() !== '';
@@ -52,6 +55,53 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
       filtered = filtered.filter((b) =>
         (b.customerPhone || '').toLowerCase().includes(term)
       );
+    }
+
+    // NEW: Admin-only global search
+    if (isAdmin && adminSearch.trim() !== '') {
+      const term = adminSearch.trim().toLowerCase();
+      filtered = filtered.filter((b) => {
+        const date = new Date(b.scheduledDate);
+        const dateStr = date
+          .toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+          .toLowerCase();
+        const isoDate = date.toISOString().slice(0, 10); // YYYY-MM-DD
+        const time12 = new Date(`2000-01-01T${b.scheduledTime}`)
+          .toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
+          .toLowerCase();
+        const time24 = (b.scheduledTime || '').toLowerCase(); // e.g., "13:30"
+        const servicesText = (b.services || [])
+          .map((s) => `${s.name} ${s.category || ''}`)
+          .join(' ')
+          .toLowerCase();
+        const priceText = String(b.totalPrice ?? '').toLowerCase();
+        const vehicleType = (b.vehicleType || '').toLowerCase();
+        const vehicleNumber = (b.vehicleNumber || '').toLowerCase();
+        const name = (b.customerName || '').toLowerCase();
+        const email = (b.customerEmail || '').toLowerCase();
+        const phone = (b.customerPhone || '').toLowerCase().replace(/\s+/g, '');
+        const termNoSpaces = term.replace(/\s+/g, '');
+
+        return (
+          name.includes(term) ||
+          email.includes(term) ||
+          phone.includes(termNoSpaces) ||
+          dateStr.includes(term) ||
+          isoDate.includes(term) ||
+          time12.includes(term) ||
+          time24.includes(term) ||
+          servicesText.includes(term) ||
+          priceText.includes(term) ||
+          vehicleType.includes(term) ||
+          vehicleNumber.includes(term)
+        );
+      });
+    }
+
+    // Admin-only vehicle filter (applied before month filter)
+    if (isAdmin && vehicleFilter !== '') {
+      const vf = vehicleFilter.toLowerCase();
+      filtered = filtered.filter((b) => (b.vehicleType || '').toLowerCase() === vf);
     }
 
     // Admin-only month filter: show repeated customers (2+ bookings) in selected month
@@ -84,7 +134,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
     }
 
     setFilteredBookings(filtered);
-  }, [bookings, phoneFilter, monthFilter, isAdmin]);
+  }, [bookings, phoneFilter, adminSearch, vehicleFilter, monthFilter, isAdmin]);
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -228,31 +278,59 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
           <span className="truncate">Service Bookings</span>
         </h3>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3 w-full">
           {isAdmin && (
-            <select
-              value={monthFilter}
-              onChange={(e) => setMonthFilter(e.target.value)}
-              className="w-36 sm:w-40 px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              title="Filter repeated customers by month"
-            >
-              <option value="">All months</option>
-              <option value="0">January</option>
-              <option value="1">February</option>
-              <option value="2">March</option>
-              <option value="3">April</option>
-              <option value="4">May</option>
-              <option value="5">June</option>
-              <option value="6">July</option>
-              <option value="7">August</option>
-              <option value="8">September</option>
-              <option value="9">October</option>
-              <option value="10">November</option>
-              <option value="11">December</option>
-            </select>
+            <>
+              <input
+                type="text"
+                value={adminSearch}
+                onChange={(e) => setAdminSearch(e.target.value)}
+                placeholder="Search"
+                className="w-full sm:w-64 px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                title="Search across bookings"
+              />
+
+              <select
+                value={vehicleFilter}
+                onChange={(e) => setVehicleFilter(e.target.value)}
+                className="w-full sm:w-64 px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                title="Filter by vehicle"
+              >
+                <option value="">All Vehicles</option>
+                <option value="Small Car">Small Car</option>
+                <option value="Sedan Car">Sedan Car</option>
+                <option value="Compact SUV">Compact SUV</option>
+                <option value="SUV">SUV</option>
+                <option value="Luxury">Luxury</option>
+                <option value="Yellow Board">Yellow Board</option>
+                <option value="Bike">Bike</option>
+                <option value="Scooty">Scooty</option>
+              </select>
+
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="w-full sm:w-64 px-3 py-2 border border-gray-300 dark:border-dark-600 rounded-lg bg-white dark:bg-dark-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                title="Filter repeated customers by month"
+              >
+                <option value="">All months</option>
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+              </select>
+            </>
           )}
 
-          <div className="relative flex-shrink-0">
+          <div className="relative flex-shrink-0 w-full sm:w-auto">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Phone className="h-4 w-4 text-gray-400" />
             </div>

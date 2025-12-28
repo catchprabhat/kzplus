@@ -31,16 +31,86 @@ export const BookingList: React.FC<BookingListProps> = ({
     user?.email === 'umrsjd455@gmail.com' ||
     user?.email === 'umrsjd562@gmail.com';
 
+  // Admin-only filters
+  const [adminSearch, setAdminSearch] = useState('');
+  const [vehicleFilter, setVehicleFilter] = useState('');
+  const [monthFilter, setMonthFilter] = useState('');
+
   useEffect(() => {
-    // Filter bookings based on phoneFilter and exclude deleted bookings
-    const filtered = bookings.filter((booking) => {
-      const matchesPhone = booking.customerPhone?.toLowerCase()?.includes(phoneFilter.toLowerCase()) || false;
-      // Filter out deleted bookings from frontend display
-      const isNotDeleted = booking.status !== 'deleted';
-      return matchesPhone && isNotDeleted;
+    // Base: exclude deleted bookings
+    let filtered = bookings.filter((booking) => booking.status !== 'deleted');
+
+    // Phone filter (applies to everyone)
+    filtered = filtered.filter((booking) => {
+      const matchesPhone =
+        booking.customerPhone?.toLowerCase()?.includes(phoneFilter.toLowerCase()) || false;
+      return matchesPhone;
     });
+
+    // Admin-only global search
+    if (isAdmin && adminSearch.trim() !== '') {
+      const term = adminSearch.trim().toLowerCase();
+      filtered = filtered.filter((b) => {
+        const pickupDateStr = formatDate(b.pickupDate).toLowerCase();
+        const dropDateStr = formatDate(b.dropDate).toLowerCase();
+        const pickupTimeStr = formatTime(b.pickupDate).toLowerCase();
+        const dropTimeStr = formatTime(b.dropDate).toLowerCase();
+        const durationStr = calculateDuration(b.pickupDate, b.dropDate).toLowerCase();
+        const priceStr = String(b.totalPrice).toLowerCase();
+        const modelStr = (b.carName || '').toLowerCase();
+        const typeStr = (b.carType || '').toLowerCase();
+        const emailStr = (b.customerEmail || '').toLowerCase();
+        const phoneStr = (b.customerPhone || '').toLowerCase();
+
+        return (
+          modelStr.includes(term) ||
+          typeStr.includes(term) ||
+          emailStr.includes(term) ||
+          phoneStr.includes(term) ||
+          pickupDateStr.includes(term) ||
+          dropDateStr.includes(term) ||
+          pickupTimeStr.includes(term) ||
+          dropTimeStr.includes(term) ||
+          durationStr.includes(term) ||
+          priceStr.includes(term)
+        );
+      });
+    }
+
+    // Admin-only vehicle type filter
+    if (isAdmin && vehicleFilter !== '') {
+      const vf = vehicleFilter.toLowerCase();
+      filtered = filtered.filter((b) => (b.carType || '').toLowerCase() === vf);
+    }
+
+    // Admin-only month filter for repeated customers (2+)
+    if (isAdmin && monthFilter !== '') {
+      const monthIndex = parseInt(monthFilter, 10); // 0..11 for Jan..Dec
+      const monthFiltered = filtered.filter(
+        (b) => new Date(b.pickupDate).getMonth() === monthIndex
+      );
+
+      const counts: Record<string, number> = {};
+      monthFiltered.forEach((b) => {
+        const key =
+          (b.customerPhone || '').trim() ||
+          (b.customerEmail || '').trim() ||
+          (b.customerName || '').trim();
+        if (!key) return;
+        counts[key] = (counts[key] || 0) + 1;
+      });
+
+      filtered = monthFiltered.filter((b) => {
+        const key =
+          (b.customerPhone || '').trim() ||
+          (b.customerEmail || '').trim() ||
+          (b.customerName || '').trim();
+        return key && counts[key] >= 2;
+      });
+    }
+
     setFilteredBookings(filtered);
-  }, [bookings, phoneFilter]);
+  }, [bookings, phoneFilter, adminSearch, vehicleFilter, monthFilter, isAdmin]);
 
   const handleAssignDriver = (booking: Booking) => {
     setSelectedBookingForDriver(booking);
@@ -161,193 +231,244 @@ export const BookingList: React.FC<BookingListProps> = ({
     );
   }
 
-  if (filteredBookings.length === 0) {
-    return (
-      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6 text-center">
-        <Calendar className="w-12 h-12 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
-        <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">No Bookings Yet</h3>
-        <p className="text-gray-500 dark:text-gray-400">Your car bookings will appear here once you make a reservation.</p>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-4 sm:p-6">
-      {/* Mobile-first responsive header */}
+      {/* header + filters */}
       <div className="flex flex-col space-y-4 mb-6 sm:flex-row sm:justify-between sm:items-center sm:space-y-0">
         <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center">
           <Calendar className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
           Recent Bookings
         </h3>
         
-        {/* Mobile-responsive filter input */}
-        <div className="relative w-full sm:w-auto">
-          <input
-            type="text"
-            value={phoneFilter}
-            onChange={(e) => setPhoneFilter(e.target.value)}
-            placeholder="Filter by phone number"
-            className="w-full sm:w-64 px-4 py-2 pr-10 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-          />
-          <Phone className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+        {/* Filter group: admin filters then phone filter */}
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 w-full sm:w-auto min-w-0">
+          {isAdmin && (
+            <>
+              <input
+                type="text"
+                value={adminSearch}
+                onChange={(e) => setAdminSearch(e.target.value)}
+                placeholder="Search"
+                className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+                title="Search by vehicle model, date, time, price, duration, email, phone number, vehicle type"
+              />
+
+              <select
+                value={vehicleFilter}
+                onChange={(e) => setVehicleFilter(e.target.value)}
+                className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                title="Filter by vehicle type"
+              >
+                <option value="">All vehicles</option>
+                <option value="SUV">SUV</option>
+                <option value="Hatchback">Hatchback</option>
+                <option value="Sedan">Sedan</option>
+              </select>
+
+              <select
+                value={monthFilter}
+                onChange={(e) => setMonthFilter(e.target.value)}
+                className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+                title="Show repeated customers (2+) in selected month"
+              >
+                <option value="">All months</option>
+                <option value="0">January</option>
+                <option value="1">February</option>
+                <option value="2">March</option>
+                <option value="3">April</option>
+                <option value="4">May</option>
+                <option value="5">June</option>
+                <option value="6">July</option>
+                <option value="7">August</option>
+                <option value="8">September</option>
+                <option value="9">October</option>
+                <option value="10">November</option>
+                <option value="11">December</option>
+              </select>
+            </>
+          )}
+
+          {/* Mobile-responsive phone filter input */}
+          <div className="relative w-full sm:w-auto">
+            <input
+              type="text"
+              value={phoneFilter}
+              onChange={(e) => setPhoneFilter(e.target.value)}
+              placeholder="Filter by phone number"
+              className="w-full sm:w-64 px-4 py-2 pr-10 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
+            />
+            <Phone className="w-4 h-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+          </div>
         </div>
       </div>
 
-      {/* Mobile-optimized booking cards */}
+      {/* Mobile-optimized booking cards / inline empty state */}
       <div className="space-y-4">
-        {filteredBookings.map((booking) => (
-          <div key={booking.id} className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow">
-            {/* Card header - mobile optimized */}
-            <div className="flex flex-col space-y-2 mb-3 sm:flex-row sm:justify-between sm:items-start sm:space-y-0">
-              <div className="flex-1">
-                <h4 className="font-semibold text-gray-900 dark:text-white flex items-center text-sm sm:text-base">
-                  <Car className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{booking.carName}</span>
-                </h4>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                  {formatDate(booking.pickupDate)} - {formatDate(booking.dropDate)}
-                </p>
-              </div>
-              
-              {/* Status and actions - mobile optimized */}
-              <div className="flex items-center justify-between sm:justify-end space-x-2">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
-                  {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                </span>
-                {(onUpdateStatus || onDelete) && booking.status !== 'deleted' && (
-                  <div className="relative">
-                    <button
-                      onClick={() => setOpenDropdown(openDropdown === booking.id ? null : booking.id)}
-                      className="p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
-                      disabled={actionLoading === booking.id}
-                    >
-                      {actionLoading === booking.id ? (
-                        <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
-                      ) : (
-                        <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                      )}
-                    </button>
-                    
-                    {/* Dropdown menu - mobile optimized */}
-                    {openDropdown === booking.id && (
-                      <div className="absolute right-0 top-8 w-48 bg-white dark:bg-dark-700 rounded-md shadow-lg border dark:border-dark-600 z-10">
-                        <div className="py-1">
-                          {isAdmin && (
-                            <>
-                              <button
-                                onClick={() => handleAssignDriver(booking)}
-                                className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
-                              >
-                                <UserPlus className="w-4 h-4 mr-2" />
-                                Assign Driver
-                              </button>
-                              {onUpdateStatus && (
-                                <>
-                                  <button
-                                    onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
-                                    className="w-full text-left px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
-                                    disabled={booking.status === 'confirmed'}
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Mark Confirmed
-                                  </button>
-                                  <button
-                                    onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
-                                    className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
-                                    disabled={booking.status === 'cancelled'}
-                                  >
-                                    <Edit className="w-4 h-4 mr-2" />
-                                    Mark Cancelled
-                                  </button>
-                                </>
-                              )}
-                            </>
-                          )}
-                          {/* Move delete option outside admin check */}
-                          {onDelete && (
-                            <>
-                              {isAdmin && <hr className="my-1 border-gray-200 dark:border-dark-600" />}
-                              <button
-                                onClick={() => handleDelete(booking.id)}
-                                className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
-                              >
-                                <Trash2 className="w-4 h-4 mr-2" />
-                                Delete Booking
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Booking details - mobile-first grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm text-gray-400">
-              {/* Customer info */}
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <User className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate">{booking.customerName}</span>
+        {filteredBookings.length > 0 ? (
+          filteredBookings.map((booking) => (
+            <div
+              key={booking.id}
+              className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-3 sm:p-4 hover:shadow-md transition-shadow"
+            >
+              {/* booking card content */}
+              <div className="flex flex-col space-y-2 mb-3 sm:flex-row sm:justify-between sm:items-start sm:space-y-0">
+                <div className="flex-1">
+                  <h4 className="font-semibold text-gray-900 dark:text-white flex items-center text-sm sm:text-base">
+                    <Car className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{booking.carName}</span>
+                  </h4>
+                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {formatDate(booking.pickupDate)} - {formatDate(booking.dropDate)}
+                  </p>
                 </div>
-                <div className="flex items-center">
-                  <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="truncate text-xs sm:text-sm">{booking.customerEmail}</span>
-                </div>
-                <div className="flex items-center">
-                  <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span>{booking.customerPhone}</span>
-                </div>
-              </div>
-
-              {/* Booking details */}
-              <div className="space-y-2">
-                {/* Pickup and Drop Times */}
-                <div className="flex items-center text-sm text-gray-400">
-                  <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">
-                    {formatTime(booking.pickupDate)} - {formatTime(booking.dropDate)}
+                
+                {/* Status and actions - mobile optimized */}
+                <div className="flex items-center justify-between sm:justify-end space-x-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(booking.status)}`}>
+                    {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
                   </span>
-                </div>
-                
-                {/* Duration */}
-                <div className="flex items-center">
-                  <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">{calculateDuration(booking.pickupDate, booking.dropDate)}</span>
-                </div>
-                
-                {/* Price Section - mobile optimized */}
-                <div className="space-y-1">
-                  {booking.originalPrice && booking.discountAmount ? (
-                    <>
-                      <div className="flex items-center text-sm text-gray-500 line-through">
-                        <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm">₹{booking.originalPrice}</span>
-                      </div>
-                      <div className="flex items-center text-sm text-green-600">
-                        <span className="mr-2">💰</span>
-                        <span className="text-xs sm:text-sm">
-                          Saved ₹{booking.discountAmount} {booking.couponCode && `(${booking.couponCode})`}
-                        </span>
-                      </div>
-                      <div className="flex items-center font-semibold text-blue-600">
-                        <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="text-sm sm:text-base">₹{booking.totalPrice}</span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="flex items-center font-semibold text-blue-600">
-                      <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
-                      <span className="text-sm sm:text-base">₹{booking.totalPrice}</span>
+                  {(onUpdateStatus || onDelete) && booking.status !== 'deleted' && (
+                    <div className="relative">
+                      <button
+                        onClick={() => setOpenDropdown(openDropdown === booking.id ? null : booking.id)}
+                        className="p-1 hover:bg-gray-100 dark:hover:bg-dark-600 rounded-full transition-colors"
+                        disabled={actionLoading === booking.id}
+                      >
+                        {actionLoading === booking.id ? (
+                          <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" />
+                        ) : (
+                          <MoreVertical className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                        )}
+                      </button>
+                      
+                      {/* Dropdown menu - mobile optimized */}
+                      {openDropdown === booking.id && (
+                        <div className="absolute right-0 top-8 w-48 bg-white dark:bg-dark-700 rounded-md shadow-lg border dark:border-dark-600 z-10">
+                          <div className="py-1">
+                            {isAdmin && (
+                              <>
+                                <button
+                                  onClick={() => handleAssignDriver(booking)}
+                                  className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <UserPlus className="w-4 h-4 mr-2" />
+                                  Assign Driver
+                                </button>
+                                {onUpdateStatus && (
+                                  <>
+                                    <button
+                                      onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
+                                      className="w-full text-left px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                      disabled={booking.status === 'confirmed'}
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Mark Confirmed
+                                    </button>
+                                    <button
+                                      onClick={() => handleUpdateStatus(booking.id, 'cancelled')}
+                                      className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                      disabled={booking.status === 'cancelled'}
+                                    >
+                                      <Edit className="w-4 h-4 mr-2" />
+                                      Mark Cancelled
+                                    </button>
+                                  </>
+                                )}
+                              </>
+                            )}
+                            {/* Move delete option outside admin check */}
+                            {onDelete && (
+                              <>
+                                {isAdmin && <hr className="my-1 border-gray-200 dark:border-dark-600" />}
+                                <button
+                                  onClick={() => handleDelete(booking.id)}
+                                  className="w-full text-left px-4 py-2 text-sm text-red-700 dark:text-red-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <Trash2 className="w-4 h-4 mr-2" />
+                                  Delete Booking
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
+
+              {/* Booking details - mobile-first grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-sm text-gray-400">
+                {/* Customer info */}
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <User className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{booking.customerName}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Mail className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate text-xs sm:text-sm">{booking.customerEmail}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Phone className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span>{booking.customerPhone}</span>
+                  </div>
+                </div>
+
+                {/* Booking details */}
+                <div className="space-y-2">
+                  {/* Pickup and Drop Times */}
+                  <div className="flex items-center text-sm text-gray-400">
+                    <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">
+                      {formatTime(booking.pickupDate)} - {formatTime(booking.dropDate)}
+                    </span>
+                  </div>
+                  
+                  {/* Duration */}
+                  <div className="flex items-center">
+                    <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm">{calculateDuration(booking.pickupDate, booking.dropDate)}</span>
+                  </div>
+                  
+                  {/* Price Section - mobile optimized */}
+                  <div className="space-y-1">
+                    {booking.originalPrice && booking.discountAmount ? (
+                      <>
+                        <div className="flex items-center text-sm text-gray-500 line-through">
+                          <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm">₹{booking.originalPrice}</span>
+                        </div>
+                        <div className="flex items-center text-sm text-green-600">
+                          <span className="mr-2">💰</span>
+                          <span className="text-xs sm:text-sm">
+                            Saved ₹{booking.discountAmount} {booking.couponCode && `(${booking.couponCode})`}
+                          </span>
+                        </div>
+                        <div className="flex items-center font-semibold text-blue-600">
+                          <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
+                          <span className="text-sm sm:text-base">₹{booking.totalPrice}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center font-semibold text-blue-600">
+                        <CreditCard className="w-4 h-4 mr-2 flex-shrink-0" />
+                        <span className="text-sm sm:text-base">₹{booking.totalPrice}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+      ) : (
+        <div className="border border-gray-200 dark:border-dark-600 bg-white dark:bg-dark-700 rounded-lg p-6 text-center">
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300">
+            No bookings match your filters.
+          </p>
+        </div>
+      )}
+    
       </div>
 
       {/* Assign Driver Modal */}
