@@ -23,11 +23,18 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
   const [phoneFilter, setPhoneFilter] = useState('');
   const { user } = useAuth();
 
-  // Check if current user is admin
-  const isAdmin =
-    user?.email === 'catchprabhat@gmail.com' ||
-    user?.email === 'umrsjd455@gmail.com' ||
-    user?.email === 'umrsjd562@gmail.com';
+  // Admin list and check (expanded to include all admins)
+  const ADMIN_EMAILS = [
+    'catchprabhat@gmail.com',
+    'zpluscarcare@gmail.com',
+    'kzplusmotors@gmail.com',
+    'padhisushreeta@gmail.com',
+    'pkumargr26@gmail.com',
+    'little.mishra23@gmail.com',
+    'umrsjd455@gmail.com',
+    'umrsjd562@gmail.com'
+  ];
+  const isAdmin = ADMIN_EMAILS.includes((user?.email || '').toLowerCase());
 
   // Admin-only month filter
   const [monthFilter, setMonthFilter] = useState<string>(''); // '' means no month filter
