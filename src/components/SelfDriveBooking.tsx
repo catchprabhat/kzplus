@@ -1,16 +1,16 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Calendar, Clock, MapPin, Car, ChevronLeft, ChevronRight, Check, CheckCircle, CreditCard, MessageCircle, Mail, CarIcon } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Calendar, ChevronLeft, ChevronRight, CheckCircle, CreditCard, MessageCircle, Mail, CarIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cars } from '../data/cars';
+import type { Booking, SelfDriveBooking as SelfDriveBookingType } from '../types';
 
 interface SelfDriveBookingProps {
-  onBookingComplete?: (booking: any) => void;
-  onNavigateToCarSelection?: (bookingData: any) => void;
-  initialBookingData?: any;
+  onBookingComplete?: (booking: Booking) => void;
+  onNavigateToCarSelection?: (bookingData: Partial<SelfDriveBookingType>) => void;
+  initialBookingData?: Partial<SelfDriveBookingType>;
 }
 
 export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
-  onBookingComplete,
   onNavigateToCarSelection,
   initialBookingData
 }) => {
@@ -27,6 +27,8 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   const [pincode, setPincode] = useState('');
   const [googleMapsLocation, setGoogleMapsLocation] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [fleetType, setFleetType] = useState('');
+  const typeOptions = useMemo(() => Array.from(new Set(cars.map(c => c.type))).sort(), []);
   
   // Add the missing ref
   const timeSelectionRef = useRef<HTMLDivElement>(null);
@@ -95,41 +97,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
     }
   };
 
-  // Add function to generate available time options based on selected date
-  const generateTimeOptions = (type: 'start' | 'end', selectedDate: Date | null) => {
-    const options = [];
-    const today = new Date();
-    const isToday = selectedDate?.toDateString() === today.toDateString();
-    
-    if (type === 'start' && isToday) {
-      // For start time on today, only show times after current time + 1 hour
-      const minHour = Math.min(today.getHours() + 1, 23);
-      const currentPeriod = minHour >= 12 ? 'PM' : 'AM';
-      const adjustedMinHour = minHour > 12 ? minHour - 12 : minHour === 0 ? 12 : minHour;
-      
-      // Generate hours from minimum hour to 12
-      for (let hour = adjustedMinHour; hour <= 12; hour++) {
-        options.push({ value: hour, period: currentPeriod });
-      }
-      
-      // If we're in AM and there's room, add PM hours
-      if (currentPeriod === 'AM') {
-        for (let hour = 1; hour <= 12; hour++) {
-          options.push({ value: hour, period: 'PM' });
-        }
-      }
-    } else {
-      // Normal time options
-      for (let hour = 1; hour <= 12; hour++) {
-        options.push({ value: hour, period: 'AM' });
-        options.push({ value: hour, period: 'PM' });
-      }
-    }
-    
-    return options;
-  };
-
-  const handleTimeChange = (type: 'start' | 'end', field: 'hour' | 'minute' | 'period', value: any) => {
+  const handleTimeChange = (type: 'start' | 'end', field: 'hour' | 'minute' | 'period', value: number | string) => {
     if (type === 'start') {
       setStartTime(prev => ({ ...prev, [field]: value }));
     } else {
@@ -141,7 +109,6 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
     const year = month.getFullYear();
     const monthIndex = month.getMonth();
     const firstDay = new Date(year, monthIndex, 1);
-    const lastDay = new Date(year, monthIndex + 1, 0);
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - firstDay.getDay());
     
@@ -212,14 +179,14 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                       </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 sm:gap-8 px-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
                       {/* Step 1 */}
                       <div className="text-center p-4 sm:p-6 bg-white dark:bg-dark-800 rounded-2xl shadow">
                         <div className="w-12 sm:w-16 h-12 sm:h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                           <Mail className="w-6 sm:w-8 h-6 sm:h-8 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Login via Email</h3>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Secure OTP-based login with your email address</p>
+                        <h3 className="text-lg sm:text-xl font-semibold leading-tight break-words hyphens-auto text-gray-900 dark:text-white mb-2">Login via Email</h3>
+                        <p className="text-sm sm:text-base leading-snug break-words hyphens-auto text-gray-600 dark:text-gray-500">Secure OTP-based login with your email address</p>
                       </div>
 
                       {/* Step 2 */}
@@ -227,8 +194,8 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                         <div className="w-12 sm:w-16 h-12 sm:h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                           <Calendar className="w-6 sm:w-8 h-6 sm:h-8 text-green-600 dark:text-green-400" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Choose Your Dates</h3>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Pick trip start and end with preferred times</p>
+                        <h3 className="text-lg sm:text-xl font-semibold leading-tight break-words hyphens-auto text-gray-900 dark:text-white mb-2">Choose Your Dates</h3>
+                        <p className="text-sm sm:text-base leading-snug break-words hyphens-auto text-gray-600 dark:text-gray-500">Pick trip start and end with preferred times</p>
                       </div>
 
                       {/* Step 3 */}
@@ -236,8 +203,8 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                         <div className="w-12 sm:w-16 h-12 sm:h-16 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                           <CarIcon className="w-6 sm:w-8 h-6 sm:h-8 text-purple-600 dark:text-purple-400" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Select a Car</h3>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Browse and choose from our curated fleet</p>
+                        <h3 className="text-lg sm:text-xl font-semibold leading-tight break-words hyphens-auto text-gray-900 dark:text-white mb-2">Select a Car</h3>
+                        <p className="text-sm sm:text-base leading-snug break-words hyphens-auto text-gray-600 dark:text-gray-500">Browse and choose from our curated fleet</p>
                       </div>
 
                       {/* Step 4 */}
@@ -245,8 +212,8 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                         <div className="w-12 sm:w-16 h-12 sm:h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                           <Mail className="w-6 sm:w-8 h-6 sm:h-8 text-yellow-600 dark:text-yellow-400" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Email Confirmation</h3>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Get booking details instantly in your inbox</p>
+                        <h3 className="text-lg sm:text-xl font-semibold leading-tight break-words hyphens-auto text-gray-900 dark:text-white mb-2">Email Confirmation</h3>
+                        <p className="text-sm sm:text-base leading-snug break-words hyphens-auto text-gray-600 dark:text-gray-500">Get booking details instantly in your inbox</p>
                       </div>
 
                       {/* Step 5 */}
@@ -254,8 +221,8 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                         <div className="w-12 sm:w-16 h-12 sm:h-16 bg-emerald-100 dark:bg-emerald-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                           <MessageCircle className="w-6 sm:w-8 h-6 sm:h-8 text-emerald-600 dark:text-emerald-400" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">WhatsApp for Documents</h3>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Receive a link on WhatsApp to upload your ID</p>
+                        <h3 className="text-lg sm:text-xl font-semibold leading-tight break-words hyphens-auto text-gray-900 dark:text-white mb-2">WhatsApp for Documents</h3>
+                        <p className="text-sm sm:text-base leading-snug break-words hyphens-auto text-gray-600 dark:text-gray-500">Receive a link on WhatsApp to upload your ID</p>
                       </div>
 
                       {/* Step 6 */}
@@ -263,8 +230,8 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                         <div className="w-12 sm:w-16 h-12 sm:h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
                           <CreditCard className="w-6 sm:w-8 h-6 sm:h-8 text-orange-600 dark:text-orange-400" />
                         </div>
-                        <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white mb-2">Pay Advance</h3>
-                        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-500">Complete advance payment to confirm booking</p>
+                        <h3 className="text-lg sm:text-xl font-semibold leading-tight break-words hyphens-auto text-gray-900 dark:text-white mb-2">Pay Advance</h3>
+                        <p className="text-sm sm:text-base leading-snug break-words hyphens-auto text-gray-600 dark:text-gray-500">Complete advance payment to confirm booking</p>
                       </div>
                     </div>
 
@@ -426,8 +393,21 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
           </p>
         </div>
         
+        <div className="px-4 mb-4">
+          <select
+            value={fleetType}
+            onChange={(e) => setFleetType(e.target.value)}
+            className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
+          >
+            <option value="">All Types</option>
+            {typeOptions.map(t => (
+              <option key={t} value={t}>{t}</option>
+            ))}
+          </select>
+        </div>
+        
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4">
-          {cars.map((car) => (
+          {(fleetType ? cars.filter(car => car.available && car.type === fleetType) : cars.filter(car => car.available)).map((car) => (
             <div 
               key={car.id} 
               className="bg-white dark:bg-dark-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"

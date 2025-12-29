@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock, UserPlus } from 'lucide-react';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 import { AssignDriverModal } from './AssignDriverModal';
+import { cars } from '../data/cars';
 
 interface BookingListProps {
   bookings: Booking[];
@@ -18,7 +19,6 @@ export const BookingList: React.FC<BookingListProps> = ({
   onUpdateStatus,
   onDelete,
 }) => {
-  const [searchTerm, setSearchTerm] = useState('');
   const [phoneFilter, setPhoneFilter] = useState('');
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -35,6 +35,49 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [adminSearch, setAdminSearch] = useState('');
   const [vehicleFilter, setVehicleFilter] = useState('');
   const [monthFilter, setMonthFilter] = useState('');
+
+  const vehicleTypeOptions = useMemo(() => {
+    const typesFromCars = cars.map((c) => c.type).filter(Boolean);
+    return Array.from(new Set([...typesFromCars])).sort((a, b) => a.localeCompare(b));
+  }, []);
+
+  const getCanonicalCarType = (booking: Booking) => {
+    // Prefer carId when available
+    if (booking.carId) {
+      const byId = cars.find((c) => c.id === booking.carId);
+      if (byId?.type) return byId.type;
+    }
+    // Fallback: normalize and fuzzy-match by name
+    const normalize = (s: string) =>
+      s.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+    const bookingName = normalize(booking.carName || '');
+    if (bookingName) {
+      const hints: Array<{ key: string; type: string }> = [
+        { key: 'innovacrysta', type: 'SUV' },
+        { key: 'innova', type: 'SUV' },
+        { key: 'tatasafari2023', type: 'SUV' },
+        { key: 'tatasafari', type: 'SUV' },
+        { key: 'safari', type: 'SUV' },
+        { key: 'duster', type: 'Hatchback' },
+        { key: 'baleno', type: 'Hatchback' },
+        { key: 'polo', type: 'Hatchback' },
+        { key: 'liva', type: 'Hatchback' },
+        { key: 'octavia', type: 'Sedan' },
+      ];
+      for (const h of hints) {
+        if (bookingName.includes(h.key) || h.key.includes(bookingName)) {
+          return h.type;
+        }
+      }
+      const match =
+        cars.find((c) => normalize(c.name) === bookingName) ||
+        cars.find((c) => normalize(c.name).includes(bookingName)) ||
+        cars.find((c) => bookingName.includes(normalize(c.name)));
+      if (match?.type) return match.type;
+    }
+    // Last resort: stored booking type
+    return booking.carType || '';
+  };
 
   useEffect(() => {
     // Base: exclude deleted bookings
@@ -77,10 +120,10 @@ export const BookingList: React.FC<BookingListProps> = ({
       });
     }
 
-    // Admin-only vehicle type filter
-    if (isAdmin && vehicleFilter !== '') {
+    // Vehicle type filter (apply whenever a type is selected)
+    if (vehicleFilter !== '') {
       const vf = vehicleFilter.toLowerCase();
-      filtered = filtered.filter((b) => (b.carType || '').toLowerCase() === vf);
+      filtered = filtered.filter((b) => getCanonicalCarType(b).toLowerCase() === vf);
     }
 
     // Admin-only month filter for repeated customers (2+)
@@ -121,23 +164,6 @@ export const BookingList: React.FC<BookingListProps> = ({
   const closeAssignDriverModal = () => {
     setShowAssignDriverModal(false);
     setSelectedBookingForDriver(null);
-  };
-
-  const getStatusBadge = (status: string) => {
-    const statusConfig = {
-      confirmed: { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-800 dark:text-green-300', label: 'Confirmed' },
-      pending: { bg: 'bg-yellow-100 dark:bg-yellow-900/30', text: 'text-yellow-800 dark:text-yellow-300', label: 'Pending' },
-      cancelled: { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-800 dark:text-red-300', label: 'Cancelled' },
-      deleted: { bg: 'bg-gray-100 dark:bg-gray-900/30', text: 'text-gray-800 dark:text-gray-300', label: 'Deleted' }
-    };
-    
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
-    
-    return (
-      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.bg} ${config.text}`}>
-        {config.label}
-      </span>
-    );
   };
 
   const formatDate = (date: Date) => {
@@ -260,9 +286,11 @@ export const BookingList: React.FC<BookingListProps> = ({
                 title="Filter by vehicle type"
               >
                 <option value="">All vehicles</option>
-                <option value="SUV">SUV</option>
-                <option value="Hatchback">Hatchback</option>
-                <option value="Sedan">Sedan</option>
+                {vehicleTypeOptions.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
               </select>
 
               <select
