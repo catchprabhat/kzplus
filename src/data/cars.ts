@@ -57,7 +57,7 @@ export const cars: Car[] = [
     id: '4',
     name: 'Duster',
     image: dusterKA,
-    type: 'Hatchback',
+    type: 'SUV',
     seats: 5,
     transmission: 'Automatic',
     fuel: 'Diesel',
@@ -71,7 +71,7 @@ export const cars: Car[] = [
     id: '5',
     name: 'Duster',
     image: duster1,
-    type: 'Hatchback',
+    type: 'SUV',
     seats: 5,
     transmission: 'Automatic',
     fuel: 'Diesel',
@@ -107,7 +107,7 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
-    subscription: 1800
+    subscription: 1000
   },
 
   // REMOVED: Glanza entry
@@ -120,10 +120,10 @@ export const cars: Car[] = [
     transmission: 'Automatic',
     fuel: 'Diesel',
     pricePerDay: 3000,
-    pricePerHour: 200,
+    pricePerHour: 150,
     features: ['Seat Cover'],
     available: true,
-    subscription: 3000
+    subscription: 1000
   },
   {
     id: '10',
@@ -134,9 +134,9 @@ export const cars: Car[] = [
     transmission: 'Manual',
     fuel: 'Petrol',
     pricePerDay: 3000,
-    pricePerHour: 200,
+    pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
-    subscription: 3000
+    subscription: 1000
   },
 ];

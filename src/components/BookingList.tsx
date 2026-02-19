@@ -37,20 +37,20 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [monthFilter, setMonthFilter] = useState('');
 
   const vehicleTypeOptions = useMemo(() => {
-    const typesFromCars = cars.map((c) => c.type).filter(Boolean);
+    const normalize = (s: string) =>
+      s.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+    const typesFromCars = cars
+      .map((c) => (normalize(c.name).includes('duster') ? 'SUV' : c.type))
+      .filter(Boolean);
     return Array.from(new Set([...typesFromCars])).sort((a, b) => a.localeCompare(b));
   }, []);
 
   const getCanonicalCarType = (booking: Booking) => {
-    // Prefer carId when available
-    if (booking.carId) {
-      const byId = cars.find((c) => c.id === booking.carId);
-      if (byId?.type) return byId.type;
-    }
-    // Fallback: normalize and fuzzy-match by name
     const normalize = (s: string) =>
       s.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
     const bookingName = normalize(booking.carName || '');
+
+    // Prefer model-name inference (protects against bad/mismatched carId on old bookings)
     if (bookingName) {
       const hints: Array<{ key: string; type: string }> = [
         { key: 'innovacrysta', type: 'SUV' },
@@ -58,7 +58,7 @@ export const BookingList: React.FC<BookingListProps> = ({
         { key: 'tatasafari2023', type: 'SUV' },
         { key: 'tatasafari', type: 'SUV' },
         { key: 'safari', type: 'SUV' },
-        { key: 'duster', type: 'Hatchback' },
+        { key: 'duster', type: 'SUV' },
         { key: 'baleno', type: 'Hatchback' },
         { key: 'polo', type: 'Hatchback' },
         { key: 'liva', type: 'Hatchback' },
@@ -69,6 +69,24 @@ export const BookingList: React.FC<BookingListProps> = ({
           return h.type;
         }
       }
+    }
+
+    // Next: trust carId only when it matches the booking name (or name is missing)
+    if (booking.carId) {
+      const byId = cars.find((c) => c.id === booking.carId);
+      if (byId?.type) {
+        const fleetName = normalize(byId.name);
+        const looksConsistent =
+          !bookingName || fleetName === bookingName || fleetName.includes(bookingName) || bookingName.includes(fleetName);
+        if (looksConsistent) {
+          if (fleetName.includes('duster')) return 'SUV';
+          return byId.type;
+        }
+      }
+    }
+
+    // Fallback: fuzzy-match by name against fleet
+    if (bookingName) {
       const match =
         cars.find((c) => normalize(c.name) === bookingName) ||
         cars.find((c) => normalize(c.name).includes(bookingName)) ||

@@ -15,6 +15,8 @@ export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected, isB
       onSelect(car);
     }
   };
+  const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+  const displayType = normalize(car.name).includes('duster') ? 'SUV' : car.type;
 
   return (
     <div 
@@ -34,7 +36,7 @@ export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected, isB
           className="w-full h-48 object-cover"
         />
         <div className="absolute top-4 right-4 bg-black dark:bg-dark-700 bg-opacity-90 backdrop-blur-sm px-3 py-1 rounded-full">
-          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{car.type}</span>
+          <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{displayType}</span>
         </div>
       </div>
       
