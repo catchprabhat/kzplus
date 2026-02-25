@@ -111,32 +111,5 @@ export const cars: Car[] = [
   },
 
   // REMOVED: Glanza entry
-  {
-    id: '9',
-    name: 'Octavia - Diesel',
-    image: '/images/octavia.jpeg',
-    type: 'Sedan',
-    seats: 5,
-    transmission: 'Automatic',
-    fuel: 'Diesel',
-    pricePerDay: 3000,
-    pricePerHour: 150,
-    features: ['Seat Cover'],
-    available: true,
-    subscription: 1000
-  },
-  {
-    id: '10',
-    name: 'Liva - Petrol - 5 Seater',
-    image: '/images/liva.jpeg',
-    type: 'Hatchback',
-    seats: 5,
-    transmission: 'Manual',
-    fuel: 'Petrol',
-    pricePerDay: 3000,
-    pricePerHour: 150,
-    features: ['Auto Climate Control'],
-    available: true,
-    subscription: 1000
-  },
+  
 ];
