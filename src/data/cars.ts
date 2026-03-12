@@ -6,6 +6,7 @@ import duster1 from '../images/duster1.jpg';
 import baleno from '../images/balenoo.jpg';
 import Poloo from '../images/polo.jpg';
 import Glanzaa from '../images/GL_1.jpg';
+import XUV400 from '../images/XUV400.jpg';
 import innovaWhite from '../images/innova-white.jpg';
 import Crysta from '../images/Innova.jpg';
 
@@ -111,19 +112,17 @@ export const cars: Car[] = [
   },
   {
     id: '8',
-    name: 'XUV 400 EV',
-    image: '/images/hq720.jpg',
+    name: 'XUV 400',
+    image: XUV400,
     type: 'SUV',
     seats: 5,
     transmission: 'Automatic',
     fuel: 'Electric',
     pricePerDay: 4000,
-    pricePerHour: 200,
-    features: ['EV'],
+    pricePerHour: 300,
+    features: ['Fast Charging', 'Touchscreen Infotainment'],
     available: true,
-    subscription: 2000
+    subscription: 2500
   },
-
-  // REMOVED: Glanza entry
   
 ];
