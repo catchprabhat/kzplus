@@ -109,6 +109,20 @@ export const cars: Car[] = [
     available: true,
     subscription: 1000
   },
+  {
+    id: '8',
+    name: 'XUV 400 EV',
+    image: '/images/hq720.jpg',
+    type: 'SUV',
+    seats: 5,
+    transmission: 'Automatic',
+    fuel: 'Electric',
+    pricePerDay: 4000,
+    pricePerHour: 200,
+    features: ['EV'],
+    available: true,
+    subscription: 2000
+  },
 
   // REMOVED: Glanza entry
   
