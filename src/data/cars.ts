@@ -108,20 +108,5 @@ export const cars: Car[] = [
     features: ['Auto Climate Control'],
     available: true,
     subscription: 1000
-  },
-  {
-    id: '8',
-    name: 'XUV 400 EV',
-    image: '/images/xuv400.png',
-    type: 'SUV',
-    seats: 5,
-    transmission: 'Automatic',
-    fuel: 'Electric',
-    pricePerDay: 4000,
-    pricePerHour: 200,
-    features: ['EV'],
-    available: true,
-    subscription: 2000
-  },
-  
+  }
 ];

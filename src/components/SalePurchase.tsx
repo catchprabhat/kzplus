@@ -161,6 +161,62 @@ export const SalePurchase: React.FC = () => {
       postedAt: new Date(2025, 0, 10),
       updatedAt: new Date(2025, 0, 15),
       expiresAt: new Date(2025, 2, 10)
+    },
+    {
+      id: '3',
+      title: 'Ford EcoSport 1.0 EcoBoost 2015 - Diamond White',
+      brand: 'Ford',
+      model: 'EcoSport',
+      year: 2015,
+      price: 580000,
+      mileage: 65000,
+      fuelType: 'Petrol',
+      transmission: 'Manual',
+      bodyType: 'SUV',
+      color: 'Diamond White',
+      location: 'Bangalore, KA',
+      description: 'Ford EcoSport 1.0 EcoBoost Petrol, manufactured May 2015, registered January 2016. 999cc 3-cylinder turbocharged engine. Single owner, well maintained. FC valid till December 2030. Registration: KA01MM8507.',
+      features: ['Air Conditioning', 'Bluetooth', 'Power Steering', 'Power Windows', 'ABS', 'Airbags', 'Rear Parking Sensors'],
+      images: [
+        '/images/eco-sport/1.jpeg',
+        '/images/eco-sport/2.jpeg',
+        '/images/eco-sport/3jpeg.jpeg',
+        '/images/eco-sport/4.jpeg',
+        '/images/eco-sport/5.jpeg',
+        '/images/eco-sport/6.jpeg',
+      ],
+      condition: 'good',
+      ownerType: 'individual',
+      registrationState: 'KA',
+      insuranceValid: true,
+      accidentHistory: false,
+      serviceHistory: 'Service history available',
+      reasonForSelling: 'Upgrading to a newer vehicle',
+      negotiable: true,
+      exchangeAccepted: false,
+      financeAvailable: true,
+      ownerDetails: {
+        name: 'Vignesh J',
+        email: '',
+        phone: '',
+        whatsapp: '',
+        address: 'Hongasandra, Begur Road, Bangalore 560068',
+        preferredContactTime: 'Evenings (6-9 PM)',
+        preferredContactMethod: 'phone',
+        registration: 'KA01MM8507'
+      },
+      documents: {
+        registration: 'rc_ecosport_ka01mm8507.pdf',
+        insurance: 'insurance_ecosport.pdf',
+        pollution: 'puc_ecosport.pdf',
+        serviceRecords: 'service_ecosport.pdf'
+      },
+      status: 'active',
+      views: 0,
+      inquiries: 0,
+      postedAt: new Date(2025, 3, 24),
+      updatedAt: new Date(2025, 3, 24),
+      expiresAt: new Date(2025, 6, 24)
     }
   ];
 
