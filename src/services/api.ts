@@ -322,8 +322,8 @@ export const bookingApi = {
 // Configure API base URL to work in both environments
 const API_BASE_URL = import.meta.env.VITE_API_URL || (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:5000/api'  // Local development
-    : 'https://api.kzplusautocare.in/api'  // Production backend with custom domain
+    ? '/api'                              // Dev: Vite proxy forwards to http://localhost:5000/api
+    : 'https://api.kzplusautocare.in/api' // Production backend with custom domain
 );
 
 // Export it so other components can use it
@@ -362,14 +362,18 @@ export const apiService = {
 
   // Search vehicle by number
   async searchVehicleByNumber(vehicleNumber: string) {
-    const response = await fetch(`${API_BASE_URL}/vehicles/search/${vehicleNumber}`);
+    const token = localStorage.getItem('driveEasyToken') || localStorage.getItem('adminToken');
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_BASE_URL}/vehicles/search/${vehicleNumber}`, { headers });
     
     if (response.status === 404) {
       return null;
     }
     
     if (!response.ok) {
-      throw new Error('Search failed');
+      throw new Error(`Search failed (${response.status})`);
     }
 
     return response.json();
@@ -377,14 +381,18 @@ export const apiService = {
 
   // Search user by phone
   async searchUserByPhone(phone: string) {
-    const response = await fetch(`${API_BASE_URL}/users/search/phone/${phone}`);
+    const token = localStorage.getItem('driveEasyToken') || localStorage.getItem('adminToken');
+    const headers: Record<string, string> = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_BASE_URL}/users/search/phone/${phone}`, { headers });
     
     if (response.status === 404) {
       return null;
     }
     
     if (!response.ok) {
-      throw new Error('Search failed');
+      throw new Error(`Search failed (${response.status})`);
     }
 
     return response.json();

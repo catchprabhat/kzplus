@@ -5,7 +5,7 @@ import dusterKA from '../images/duster-KA.jpg';
 import duster1 from '../images/duster1.jpg';
 import baleno from '../images/balenoo.jpg';
 import Poloo from '../images/polo.jpg';
-import Glanzaa from '../images/GL_1.jpg';
+import ciaz from '../images/ciaz.jpg';
 import innovaWhite from '../images/innova-white.jpg';
 import Crysta from '../images/Innova.jpg';
 
@@ -108,5 +108,19 @@ export const cars: Car[] = [
     features: ['Auto Climate Control'],
     available: true,
     subscription: 1000
+  },
+  {
+    id: '8',
+    name: 'Maruti Ciaz',
+    image: ciaz,
+    type: 'Sedan',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    pricePerDay: 3500,
+    pricePerHour: 150,
+    features: ['Auto Climate Control'],
+    available: true,
+    subscription: 1800
   }
 ];

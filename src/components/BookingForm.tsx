@@ -249,7 +249,6 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             <div className="flex justify-between">
               <span>Rate:</span>
               <div className="text-right">
-                <div className="font-medium">₹{selectedCar.pricePerDay}/day</div>
                 <div className="font-medium text-xs">₹{selectedCar.pricePerHour}/hour</div>
               </div>
             </div>
@@ -258,7 +257,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                 <div className="flex justify-between">
                   <span>{pricingBreakdown.days} day{pricingBreakdown.days !== 1 ? 's' : ''}:</span>
-                  <span>₹{pricingBreakdown.days * selectedCar.pricePerDay}</span>
+                  <span>Included</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{Math.ceil(pricingBreakdown.hours)} hour{Math.ceil(pricingBreakdown.hours) !== 1 ? 's' : ''}:</span>

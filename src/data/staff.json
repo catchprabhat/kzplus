@@ -1,0 +1,76 @@
+{
+  "staff": [
+    {
+      "id": "S001",
+      "name": "Ravi Kumar",
+      "role": "Senior Technician",
+      "phone": "9876543210",
+      "email": "ravi.kumar@kzplus.in",
+      "department": "Service",
+      "joinDate": "2022-01-15",
+      "avatar": "RK",
+      "attendanceCode": "5e884898da28047151d0e56f8dc6292773603d0d21991614e5e8d",
+      "photoRef": ""
+    },
+    {
+      "id": "S002",
+      "name": "Meena Sharma",
+      "role": "Front Desk Executive",
+      "phone": "9876543211",
+      "email": "meena.sharma@kzplus.in",
+      "department": "Operations",
+      "joinDate": "2022-03-20",
+      "avatar": "MS",
+      "attendanceCode": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92",
+      "photoRef": ""
+    },
+    {
+      "id": "S003",
+      "name": "Arjun Patel",
+      "role": "Driver",
+      "phone": "9876543212",
+      "email": "arjun.patel@kzplus.in",
+      "department": "Transport",
+      "joinDate": "2021-11-10",
+      "avatar": "AP",
+      "attendanceCode": "ef92b778bafe771207c92e5f6e450c9df33d2c4c52ac3c74a77a75cc16f2f",
+      "photoRef": ""
+    },
+    {
+      "id": "S004",
+      "name": "Sunita Nair",
+      "role": "Detailing Specialist",
+      "phone": "9876543213",
+      "email": "sunita.nair@kzplus.in",
+      "department": "Service",
+      "joinDate": "2023-02-01",
+      "avatar": "SN",
+      "attendanceCode": "b14a7b8059d9c055954c92674ce60032e98f8c1564de5f57c98c99",
+      "photoRef": ""
+    },
+    {
+      "id": "S005",
+      "name": "Rahul Verma",
+      "role": "Mechanic",
+      "phone": "9876543214",
+      "email": "rahul.verma@kzplus.in",
+      "department": "Service",
+      "joinDate": "2022-07-18",
+      "avatar": "RV",
+      "attendanceCode": "4a44dc15364204a80fe80e9039455cc1608281820fe2b24f1e52",
+      "photoRef": ""
+    },
+    {
+      "id": "S006",
+      "name": "Priya Reddy",
+      "role": "Customer Relations",
+      "phone": "9876543215",
+      "email": "priya.reddy@kzplus.in",
+      "department": "Operations",
+      "joinDate": "2023-05-10",
+      "avatar": "PR",
+      "attendanceCode": "1ba3d16e9881bb0c5ac0826ccbd8f87a0a3da5a11a3e9da39ae6e1",
+      "photoRef": ""
+    }
+  ]
+}

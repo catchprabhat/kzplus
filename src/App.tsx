@@ -29,6 +29,8 @@ import { useCalendarBookings } from './hooks/useCalendarBookings';
 import { useServiceBookings } from './hooks/useServiceBookings';
 import { useAuth } from './hooks/useAuth';
 import { SelfDriveBooking } from './components/SelfDriveBooking';
+import { StaffAttendance } from './components/StaffAttendance';
+import { SubscriptionPage } from './components/SubscriptionPage';
 import { getAvailableCars, createCarBooking } from './services/api';
 
 // Add API_BASE_URL constant
@@ -362,6 +364,8 @@ function App() {
       case '/contact': return 'contact';
       case '/terms': return 'terms';
       case '/admin': return 'admin';
+      case '/staff': return 'staff';
+      case '/subscriptions': return 'subscriptions';
       case '/car-selection': return 'book';
       default: return 'home';
     }
@@ -1743,6 +1747,12 @@ function App() {
                 </div>
               } />
               
+              {/* Staff Attendance */}
+              <Route path="/staff" element={<StaffAttendance />} />
+
+              {/* Subscription Manager */}
+              <Route path="/subscriptions" element={<SubscriptionPage />} />
+
               {/* Catch all route for 404 */}
               <Route path="*" element={
                 <div className="text-center py-12">

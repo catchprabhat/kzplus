@@ -458,18 +458,6 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="p-4">
-                <div className="flex items-center justify-between">
-                <div>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm">
-                     Rental starting from
-                    </p>
-                    <p className="text-blue-600 font-bold text-lg">
-                      ₹{car.pricePerDay}/day
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           ))}
         </div>

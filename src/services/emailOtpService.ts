@@ -83,7 +83,8 @@ class EmailOTPService {
 
   // For local development/testing without backend
   // This simulates the backend functionality using localStorage
-  simulateBackend = false;
+  // Set to true to skip the real API and use the built-in simulator
+  simulateBackend = import.meta.env.DEV === true;
 
   // Simulate backend for local testing
   private simulateOTPStorage: Map<string, {otp: string, expiresAt: Date, attempts: number}> = new Map();

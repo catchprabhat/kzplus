@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
 
@@ -7,10 +8,20 @@ interface VehicleFinderProps {
   onNewCustomer: () => void;
 }
 
+const ADMIN_EMAILS = [
+  'catchprabhat@gmail.com',
+  'umrsjd455@gmail.com',
+  'umrsjd562@gmail.com',
+];
+
 export const VehicleFinder: React.FC<VehicleFinderProps> = ({
   onVehicleFound,
   onNewCustomer
 }) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const isAdmin = ADMIN_EMAILS.includes(user?.email ?? '');
+
   const [searchType, setSearchType] = useState<'vehicle' | 'phone'>('vehicle');
   const [searchValue, setSearchValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -74,7 +85,6 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
       if (searchType === 'vehicle') {
         result = await apiService.searchVehicleByNumber(searchValue.trim().toUpperCase());
       } else {
-        // For phone search, ensure the +91 prefix is present
         let phoneNumber = searchValue.trim();
         if (!phoneNumber.startsWith('+91')) {
           phoneNumber = '+91' + phoneNumber;
@@ -94,7 +104,6 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
     }
   };
 
-  // Prevent backspace from deleting the +91 prefix
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (searchType === 'phone' && e.key === 'Backspace' && searchValue.length <= 3) {
       e.preventDefault();
@@ -103,7 +112,7 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-w-md mx-auto">
-      <h2 className="text-xl font-bold text-center mb-4 ">🔍 Find Your Vehicle</h2>
+      <h2 className="text-xl font-bold text-center mb-4">🔍 Find Your Vehicle</h2>
       
       {/* Search Type Toggle */}
       <div className="flex mb-4">
@@ -141,7 +150,6 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
           value={searchType === 'phone' ? searchValue.substring(3) : searchValue}
           onChange={(e) => {
             if (searchType === 'phone') {
-              // When in phone mode, prepend +91 to whatever the user types
               setSearchValue('+91' + e.target.value.replace(/\D/g, ''));
             } else {
               setSearchValue(e.target.value);
@@ -165,7 +173,7 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
       <button
         onClick={handleSearch}
         disabled={loading}
-        className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:opacity-50 mb-4"
+        className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 disabled:opacity-50 mb-3"
       >
         {loading ? 'Searching...' : '🔍 Search'}
       </button>
@@ -174,19 +182,27 @@ export const VehicleFinder: React.FC<VehicleFinderProps> = ({
       {isAdmin ? (
         <button
           onClick={onNewCustomer}
-          className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
+          className="w-full bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600 mb-3"
         >
           👤 New Customer? Register Here
         </button>
       ) : (
         <button
           disabled
-          className="w-full bg-gray-400 text-white py-2 px-4 rounded cursor-not-allowed"
+          className="w-full bg-gray-400 text-white py-2 px-4 rounded cursor-not-allowed mb-3"
           title="Only admin can register new customers"
         >
           👤 New Customer? Register Here (Admin only)
         </button>
       )}
+
+      {/* Subscription Manager Button */}
+      <button
+        onClick={() => navigate('/subscriptions')}
+        className="w-full bg-purple-600 text-white py-2 px-4 rounded hover:bg-purple-700 flex items-center justify-center gap-2 transition-colors"
+      >
+        📅 Manage Subscriptions
+      </button>
     </div>
   );
 };
