@@ -32,7 +32,7 @@ const ADMIN_EMAILS = [
   'little.mishra23@gmail.com',
   'umrsjd455@gmail.com',
   'umrsjd562@gmail.com',
-  'KVKUMARSG@GMAIL.COM',
+  'KVKUMARSG@gmail.com',
   'bikashpatra.tcs@gmail.com',
   'pamazon502@gmail.com'
 ].map(e => e.toLowerCase());
