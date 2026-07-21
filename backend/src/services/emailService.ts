@@ -454,7 +454,7 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
 
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <jixdriveblr@gmail.com>', // CHANGE THIS LINE
+        from: 'JIXDRIVE <noreply@kzplusautocare.in>', // CHANGE THIS LINE
         to: userEmail,
         subject: subject,
         html: html,
@@ -465,8 +465,8 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
 
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <jixdriveblr@gmail.com>', // CHANGE THIS LINE
-        to: 'jixdriveblr@gmail.com',
+        from: 'JIXDRIVE <noreply@kzplusautocare.in>', // CHANGE THIS LINE
+        to: 'kzplusmotors@gmail.com',
         subject: adminSubject,
         html: adminHtml,
         text: adminText,
