@@ -32,7 +32,10 @@ const ADMIN_EMAILS = [
   'pkumargr26@gmail.com',
   'little.mishra23@gmail.com',
   'umrsjd455@gmail.com',
-  'umrsjd562@gmail.com'
+  'umrsjd562@gmail.com',
+  'KVKUMARSG@GMAIL.COM',
+  'bikashpatra.tcs@gmail.com',
+  'pamazon502@gmail.com'
 ].map(e => e.toLowerCase());
 
 router.post(
