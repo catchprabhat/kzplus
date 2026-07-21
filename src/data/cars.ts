@@ -4,6 +4,7 @@ import safariKA from '../images/safari-KA.jpeg';
 import dusterKA from '../images/duster-KA.jpg';
 import duster1 from '../images/duster1.jpg';
 import baleno from '../images/balenoo.jpg';
+import balenoAuto from '../images/balenoAuto.png';
 import Poloo from '../images/polo.jpg';
 import PoloNew from '../images/poloNew.png';
 import ciaz from '../images/ciaz.jpg';
@@ -167,5 +168,19 @@ export const cars: Car[] = [
     features: ['Auto Climate Control'],
     available: true,
     subscription: 1800
+  },
+  {
+    id: '12',
+    name: 'Baleno Automatic',
+    image: balenoAuto,
+    type: 'Hatchback',
+    seats: 5,
+    transmission: 'Automatic',
+    fuel: 'Petrol',
+    pricePerDay: 3500,
+    pricePerHour: 200,
+    features: ['Brand-new', 'Premium Audio'],
+    available: true,
+    subscription: 1500
   }
 ];
