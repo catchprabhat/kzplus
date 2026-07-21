@@ -7,16 +7,17 @@ import baleno from '../images/balenoo.jpg';
 import balenoAuto from '../images/balenoAuto.png';
 import Poloo from '../images/polo.jpg';
 import PoloNew from '../images/poloNew.png';
-import ciaz from '../images/ciaz.jpg';
+import blackciaz from '../images/ciaz.jpg';
 import blueCiaz from '../images/blueCiaz.jpg';
 import Crysta from '../images/Innova.png';
 import swift from '../images/swiftM.png';
 import ertiga from '../images/ertigaNew.png';
+import i20 from '../images/i20.png';
 
 export const cars: Car[] = [
   {
     id: '1',
-    name: 'Tata Safari 2023',
+    name: 'Safari 23',
     image: safariKA,
     type: 'SUV',
     seats: 7,
@@ -30,7 +31,7 @@ export const cars: Car[] = [
   },
   {
     id: '2',
-    name: 'Innova Crysta',
+    name: 'DL Crysta',
     image: Crysta,
     type: 'SUV',
     seats: 7,
@@ -44,7 +45,7 @@ export const cars: Car[] = [
   },
   {
     id: '3',
-    name: 'Ertiga',
+    name: '26 Ertiga',
     image: ertiga,
     type: 'SUV',
     seats: 7,
@@ -59,7 +60,7 @@ export const cars: Car[] = [
   
   {
     id: '4',
-    name: 'Duster',
+    name: 'HR Grey Duster',
     image: dusterKA,
     type: 'SUV',
     seats: 5,
@@ -73,7 +74,7 @@ export const cars: Car[] = [
   },
   {
     id: '5',
-    name: 'Duster',
+    name: 'HR SilverDuster',
     image: duster1,
     type: 'SUV',
     seats: 5,
@@ -87,7 +88,7 @@ export const cars: Car[] = [
   },
   {
     id: '6',
-    name: 'Baleno',
+    name: 'Baleno 18',
     image: baleno,
     type: 'Hatchback',
     seats: 5,
@@ -101,7 +102,7 @@ export const cars: Car[] = [
   },
   {
     id: '7',
-    name: 'Polo',
+    name: 'Polo Grey',
     image: Poloo,
     type: 'Hatchback',
     seats: 5,
@@ -115,8 +116,8 @@ export const cars: Car[] = [
   },
   {
     id: '8',
-    name: 'Maruti Ciaz',
-    image: ciaz,
+    name: 'Black Ciaz',
+    image: blackciaz,
     type: 'Sedan',
     seats: 5,
     transmission: 'Manual',
@@ -129,7 +130,7 @@ export const cars: Car[] = [
   },
   {
     id: '9',
-    name: 'Swift',
+    name: 'White Swift',
     image: swift,
     type: 'Hatchback',
     seats: 5,
@@ -171,7 +172,7 @@ export const cars: Car[] = [
   },
   {
     id: '12',
-    name: 'Baleno Automatic',
+    name: 'Baleno Auto',
     image: balenoAuto,
     type: 'Hatchback',
     seats: 5,
@@ -182,5 +183,19 @@ export const cars: Car[] = [
     features: ['Brand-new', 'Premium Audio'],
     available: true,
     subscription: 1500
+  },
+  {
+    id: '13',
+    name: 'i20',
+    image: i20,
+    type: 'Hatchback',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    pricePerDay: 3000,
+    pricePerHour: 150,
+    features: ['Auto Climate Control'],
+    available: true,
+    subscription: 1000
   }
 ];
