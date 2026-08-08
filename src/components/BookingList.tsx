@@ -1,10 +1,163 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock, UserPlus } from 'lucide-react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock, UserPlus, Play, Square, ArrowRightLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 import { AssignDriverModal } from './AssignDriverModal';
 import { cars } from '../data/cars';
+
+// =====================================================================
+// GOOGLE FORM / GOOGLE SHEET CONFIGURATION FOR TRIP MANAGEMENT
+// ---------------------------------------------------------------------
+// Setup instructions: (full step-by-step after this file diffs)
+//   1) Create ONE Google Form called "Trip Management"
+//   2) Add these questions to the form:
+//        - Trip Action   (dropdown: Start Trip, End Trip, Extend Trip) — use "Go to section based on answer" OR just have all fields
+//        - Name / Customer Name   (short answer)
+//        - Vehicle Number         (short answer)   — optional if you don't track plates yet
+//        - Vehicle Model          (short answer or dropdown: list all 13 cars)
+//        - Booking ID             (short answer)   — for reference
+//        - Trip Start Date        (short answer / date)
+//        - Trip End Date          (short answer / date)
+//        - KMs Reading            (short answer / number)
+//        - Fast Tag Balance       (short answer / number)
+//        - Fuel Level             (dropdown: Reserve, Empty, Half, Full)
+//        - Notes / Extension Reason (paragraph, for Extend Trip)
+//   3) Link form responses to a Google Sheet
+//   4) In the sheet, create 13 tabs named exactly after the 13 cars (Safari 23, DL Crysta, ... i20)
+//   5) Use Google Sheets QUERY/FILTER on each tab: =FILTER('Form Responses 1'!A:Z, 'Form Responses 1'!D:D="Safari 23")
+//        where D:D is the column that stores the Vehicle Model answer.
+//
+// After creating the form, copy its pre-filled links (via 3 dots → "Get pre-filled link")
+// and replace the 3 URLs below. The field entry IDs (entry.XXXXXX) come from the prefill link.
+// The preFill fn below automatically appends customer/car data so the admin doesn't type them.
+// =====================================================================
+interface TripFormConfig {
+  formId: string;                      // your Google Form ID
+  entries: {
+    tripAction?: string;               // entry.XXXXXX for Trip Action (Start/End/Extend)
+    customerName?: string;             // entry.XXXXXX for Customer Name / Name
+    vehicleNumber?: string;            // entry.XXXXXX for Vehicle Number
+    vehicleModel?: string;             // entry.XXXXXX for Vehicle Model
+    bookingId?: string;                // entry.XXXXXX for Booking ID
+    startDate?: string;                // entry.XXXXXX for Trip Start Date
+    endDate?: string;                  // entry.XXXXXX for Trip End Date
+    kmsReading?: string;               // entry.XXXXXX for KMs reading
+    fastTagBalance?: string;           // entry.XXXXXX for Fast Tag Balance
+    fuelLevel?: string;                // entry.XXXXXX for Fuel Level dropdown
+    notes?: string;                    // entry.XXXXXX for Notes / Extension reason
+  };
+}
+
+// Put the SAME single form ID here — start/end/extend can all share one form
+// because the "Trip Action" field records which operation it is.
+const TRIP_FORM: TripFormConfig = {
+  formId: '1FAIpQLSdiPQbP2y16pcrxQRglIcKgw8Pu8dc6BmFfytpd2JYXpUMMqg',
+  entries: {
+    tripAction:      'entry.256677891',
+    customerName:    'entry.894864762',
+    vehicleNumber:   'entry.940194593',
+    vehicleModel:    'entry.1528137563',
+    // bookingId and notes are currently NOT in your Google Form.
+    // If you add those questions to the form later and re-generate a prefill
+    // link, paste their entry.XXXXXX values here.
+    // bookingId:    'entry.XXXXXXXXXX',
+    // notes:        'entry.XXXXXXXXXX',
+    startDate:       'entry.1540679829',
+    endDate:         'entry.2002784253',
+    kmsReading:      'entry.2068312801',
+    fastTagBalance:  'entry.1320513511',
+    fuelLevel:       'entry.1598073815',
+  },
+};
+
+type TripAction = 'start' | 'end' | 'extend';
+
+const TRIP_ACTION_FORM_VALUE: Record<TripAction, string> = {
+  start: 'Start Trip',
+  end: 'End Trip',
+  extend: 'Extend Trip',
+};
+
+/** Append Google Forms date prefill params.
+ *
+ *  Google supports TWO date question formats in prefilled links:
+ *  1) NATIVE DATE PICKER → requires THREE separate params:
+ *        entry.XXXXXX_year / _month / _day     (NOT a single YYYY-MM-DD value)
+ *  2) SHORT ANSWER (text field) → accepts ONE param:
+ *        entry.XXXXXX=YYYY-MM-DD
+ *
+ *  To support EITHER question type (regardless of how the form is built),
+ *  we append BOTH formats. Google Forms will simply ignore the param style
+ *  that doesn't match the configured question type.
+ *  (This is why Trip Start Date previously appeared empty if the form used
+ *   a different date input format than the prefill builder expected.)
+ */
+function appendDatePrefill(
+  params: URLSearchParams,
+  entryId: string | undefined,
+  dateStr: string | Date | null | undefined
+): void {
+  if (!entryId || !dateStr) return;
+  const x = new Date(typeof dateStr === 'string' ? dateStr : dateStr.toString());
+  if (Number.isNaN(x.getTime())) return;
+  const yyyy = x.getFullYear();
+  const mm = String(x.getMonth() + 1).padStart(2, '0');
+  const dd = String(x.getDate()).padStart(2, '0');
+
+  // Format 1: native Google Forms Date picker (_year / _month / _day split params)
+  params.append(`${entryId}_year`,  String(yyyy));
+  params.append(`${entryId}_month`, mm);
+  params.append(`${entryId}_day`,   dd);
+
+  // Format 2: Short-answer text date field (raw YYYY-MM-DD single param)
+  // (also append M/D/YYYY variant since sheets may display/prefill in US format)
+  params.append(entryId, `${yyyy}-${mm}-${dd}`);
+}
+
+/** Build the pre-filled Google Form URL for a given booking + trip action. */
+export function buildTripFormUrl(
+  action: TripAction,
+  booking: Booking,
+  overrides?: Partial<{
+    kmsReading: string;
+    fastTagBalance: string;
+    fuelLevel: string;
+    startDate: string;
+    endDate: string;
+    vehicleNumber: string;
+  }>
+): string {
+  const base = `https://docs.google.com/forms/d/e/${TRIP_FORM.formId}/viewform?usp=pp_url`;
+  const params = new URLSearchParams();
+  const e = TRIP_FORM.entries;
+
+  if (e.tripAction)    params.append(e.tripAction, TRIP_ACTION_FORM_VALUE[action]);
+  if (e.customerName)  params.append(e.customerName, booking.customerName ?? '');
+  if (e.bookingId)     params.append(e.bookingId, String(booking.id ?? ''));
+  if (e.vehicleModel)  params.append(e.vehicleModel, booking.carName ?? '');
+  if (e.vehicleNumber && overrides?.vehicleNumber) params.append(e.vehicleNumber, overrides.vehicleNumber);
+  // Dates: use the 3-param Google Forms date prefill format
+  appendDatePrefill(params, e.startDate, overrides?.startDate ?? booking.pickupDate);
+  appendDatePrefill(params, e.endDate,   overrides?.endDate   ?? booking.dropDate);
+  // End-trip readouts (only when explicitly provided via overrides)
+  if (e.kmsReading && overrides?.kmsReading != null)       params.append(e.kmsReading, overrides.kmsReading);
+  if (e.fastTagBalance && overrides?.fastTagBalance != null) params.append(e.fastTagBalance, overrides.fastTagBalance);
+  if (e.fuelLevel && overrides?.fuelLevel != null)         params.append(e.fuelLevel, overrides.fuelLevel);
+  return `${base}&${params.toString()}`;
+}
+
+/** Helper: format date to YYYY-MM-DD (used for display + sheet parsing, NOT form prefill). */
+export function formatDateIso(d: Date | string): string {
+  const x = new Date(typeof d === 'string' ? d : d.toString());
+  const yyyy = x.getFullYear();
+  const mm = String(x.getMonth() + 1).padStart(2, '0');
+  const dd = String(x.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+export const TRIP_FORM_CONFIG_EXPORT = { TRIP_FORM, TRIP_ACTION_FORM_VALUE };
 
 interface BookingListProps {
   bookings: Booking[];
@@ -25,6 +178,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showAssignDriverModal, setShowAssignDriverModal] = useState(false);
   const [selectedBookingForDriver, setSelectedBookingForDriver] = useState<Booking | null>(null);
+  const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin =
     user?.email === 'catchprabhat@gmail.com' ||
@@ -250,6 +404,36 @@ export const BookingList: React.FC<BookingListProps> = ({
     }
   };
 
+  /** Open Google Form for a trip action. For End Trip and Extend Trip,
+   *  navigate to dedicated summary pages that prefetch existing Start Trip
+   *  data first, then provide a prefilled Google Form link. */
+  const handleTripAction = useCallback(
+    (action: TripAction, booking: Booking) => {
+      if (TRIP_FORM.formId.startsWith('REPLACE_')) {
+        alert(
+          'Trip Management Google Form is not yet configured!\n\n'
+          + '1) Create a Google Form using the setup instructions at the top of BookingList.tsx\n'
+          + '2) Open the form → 3 dots → "Get pre-filled link" → copy the entry IDs\n'
+          + '3) Paste the Form ID + entry.XXXXXX values into the TRIP_FORM object in BookingList.tsx.'
+        );
+        setOpenDropdown(null);
+        return;
+      }
+      setOpenDropdown(null);
+      if (action === 'end') {
+        navigate('/end-trip', { state: { booking } });
+        return;
+      }
+      if (action === 'extend') {
+        navigate('/extend-trip', { state: { booking } });
+        return;
+      }
+      const url = buildTripFormUrl(action, booking);
+      window.open(url, '_blank', 'noopener,noreferrer');
+    },
+    [navigate]
+  );
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'confirmed':
@@ -400,8 +584,37 @@ export const BookingList: React.FC<BookingListProps> = ({
                                   <UserPlus className="w-4 h-4 mr-2" />
                                   Assign Driver
                                 </button>
+
+                                {/* ====== TRIP MANAGEMENT (ADMIN ONLY) ====== */}
+                                <div className="border-t border-gray-200 dark:border-dark-600 my-1" />
+                                <p className="px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                                  Trip Management
+                                </p>
+                                <button
+                                  onClick={() => handleTripAction('start', booking)}
+                                  className="w-full text-left px-4 py-2 text-sm text-indigo-700 dark:text-indigo-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <Play className="w-4 h-4 mr-2" />
+                                  Start Trip
+                                </button>
+                                <button
+                                  onClick={() => handleTripAction('end', booking)}
+                                  className="w-full text-left px-4 py-2 text-sm text-teal-700 dark:text-teal-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <Square className="w-4 h-4 mr-2" />
+                                  End Trip
+                                </button>
+                                <button
+                                  onClick={() => handleTripAction('extend', booking)}
+                                  className="w-full text-left px-4 py-2 text-sm text-amber-700 dark:text-amber-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <ArrowRightLeft className="w-4 h-4 mr-2" />
+                                  Extend Trip
+                                </button>
+
                                 {onUpdateStatus && (
                                   <>
+                                    <div className="border-t border-gray-200 dark:border-dark-600 my-1" />
                                     <button
                                       onClick={() => handleUpdateStatus(booking.id, 'confirmed')}
                                       className="w-full text-left px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"

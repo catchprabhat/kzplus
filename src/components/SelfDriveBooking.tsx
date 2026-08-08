@@ -631,7 +631,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 </h4>
                 
                 {/* Start Time */}
-                // Start Time section (wrap controls on mobile)
+                
                 <div className="mb-6">
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Start Time

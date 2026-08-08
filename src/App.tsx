@@ -31,6 +31,8 @@ import { useAuth } from './hooks/useAuth';
 import { SelfDriveBooking } from './components/SelfDriveBooking';
 import { StaffAttendance } from './components/StaffAttendance';
 import { SubscriptionPage } from './components/SubscriptionPage';
+import { EndTripPage } from './components/EndTripPage';
+import { ExtendTripPage } from './components/ExtendTripPage';
 import { getAvailableCars, createCarBooking } from './services/api';
 
 // Add API_BASE_URL constant
@@ -356,6 +358,8 @@ function App() {
       case '/self-drive': return 'self-drive';
       case '/car-availability': return 'calendar';
       case '/my-trips': return 'bookings';
+      case '/end-trip': return 'bookings';
+      case '/extend-trip': return 'bookings';
       case '/services': return 'services';
       case '/scheduled-services': return 'service-bookings';
       case '/buy-sell': return 'sale-purchase';
@@ -527,16 +531,51 @@ function App() {
     }
   };
 
-  // Helper function to format date without timezone conversion
+  // Helper function to format date for database WITHOUT off-by-one-day bugs.
+  //
+  // THE PROBLEM:
+  //   new Date("2026-09-21") in V8/Chromium parses as UTC midnight.
+  //   Then .getMonth()/.getDate() (which return LOCAL values) in a timezone
+  //   ahead of UTC (e.g. IST = +05:30) gives 2026-09-20 05:30 local time, so
+  //   the date shifts backwards by 1 day. This caused false 409 "car not
+  //   available" conflicts because the database stored the wrong calendar day.
+  //
+  // THE FIX:
+  //   * Accept Date object OR string.
+  //   * For strings in YYYY-MM-DD / YYYY-MM-DD HH:MM:SS formats → parse using
+  //     split() + numeric parts (no Date constructor), treating as LOCAL.
+  //   * Otherwise use Date methods with local getters.
+  //   * Always output as "YYYY-MM-DD 12:00:00" (noon local) so any tiny
+  //     timezone/DST rounding can't flip the calendar day.
   const formatDateForDatabase = (date: Date | string): string => {
-    const d = new Date(date);
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const hours = String(d.getHours()).padStart(2, '0');
-    const minutes = String(d.getMinutes()).padStart(2, '0');
-    const seconds = String(d.getSeconds()).padStart(2, '0');
-    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    let y: number, m: number, d: number;
+
+    if (typeof date === 'string') {
+      // Try to parse known safe formats without using Date constructor.
+      // Match "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" or "YYYY/MM/DD ..."
+      const m1 = date.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (m1) {
+        y = parseInt(m1[1], 10);
+        m = parseInt(m1[2], 10);
+        d = parseInt(m1[3], 10);
+      } else {
+        // Unknown string format → fall through to Date constructor.
+        const x = new Date(date);
+        y = x.getFullYear();
+        m = x.getMonth() + 1;
+        d = x.getDate();
+      }
+    } else {
+      y = date.getFullYear();
+      m = date.getMonth() + 1;
+      d = date.getDate();
+    }
+
+    const yy = String(y);
+    const mm = String(m).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    // Use NOON (12:00:00) so the time component is never near a day boundary.
+    return `${yy}-${mm}-${dd} 12:00:00`;
   };
 
   const handleBookingComplete = async (booking: Booking) => {
@@ -1752,6 +1791,58 @@ function App() {
 
               {/* Subscription Manager */}
               <Route path="/subscriptions" element={<SubscriptionPage />} />
+
+              {/* End Trip page - admin only, reached from My Trips > End Trip menu */}
+              <Route path="/end-trip" element={
+                isAuthenticated && (
+                  (user?.email === 'catchprabhat@gmail.com') ||
+                  (user?.email === 'umrsjd455@gmail.com') ||
+                  (user?.email === 'umrsjd562@gmail.com')
+                ) ? (
+                  <EndTripPage />
+                ) : (
+                  <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Admin access required
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                      The End Trip page is available to admins only.
+                    </p>
+                    <button
+                      onClick={() => navigate('/my-trips')}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Back to My Trips
+                    </button>
+                  </div>
+                )
+              } />
+
+              {/* Extend Trip page - admin only, reached from My Trips > Extend Trip menu */}
+              <Route path="/extend-trip" element={
+                isAuthenticated && (
+                  (user?.email === 'catchprabhat@gmail.com') ||
+                  (user?.email === 'umrsjd455@gmail.com') ||
+                  (user?.email === 'umrsjd562@gmail.com')
+                ) ? (
+                  <ExtendTripPage />
+                ) : (
+                  <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
+                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                      Admin access required
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">
+                      The Extend Trip page is available to admins only.
+                    </p>
+                    <button
+                      onClick={() => navigate('/my-trips')}
+                      className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                    >
+                      Back to My Trips
+                    </button>
+                  </div>
+                )
+              } />
 
               {/* Catch all route for 404 */}
               <Route path="*" element={

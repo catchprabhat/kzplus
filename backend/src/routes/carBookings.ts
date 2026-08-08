@@ -7,6 +7,62 @@ import { authenticateUser } from '../middleware/userAuth';
 const router = express.Router();
 // Remove this line: const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 
+// =====================================================================
+// CAR OWNER REGISTRY
+// Lookup table to resolve the owner of each car for booking notifications.
+// Matches car ID (preferred) or car name.
+// Update ownerEmail/ownerName for each car when real owners are added.
+// Default: Admin (jixdriveblr@gmail.com) for all cars initially.
+// =====================================================================
+interface CarOwnerInfo {
+  carId: string;
+  carName: string;
+  ownerName: string;
+  ownerEmail: string;
+}
+
+const CAR_OWNERS: CarOwnerInfo[] = [
+  { carId: '1',  carName: 'Safari 23',       ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '2',  carName: 'DL Crysta',        ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '3',  carName: '26 Ertiga',        ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '4',  carName: 'HR Grey Duster',    ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '5',  carName: 'HR SilverDuster',   ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '6',  carName: 'Baleno 18',         ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '7',  carName: 'Polo Grey',          ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '8',  carName: 'Black Ciaz',         ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '9',  carName: 'White Swift',        ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '10', carName: 'Baleno 2026',       ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '11', carName: 'Blue Ciaz',          ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '12', carName: 'Baleno Auto',        ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '13', carName: 'i20',                ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+];
+
+/**
+ * Look up a car owner by carId first, fall back to carName (case-insensitive partial match).
+ * Returns undefined if car owner entry not found.
+ */
+function findCarOwner(carId?: string, carName?: string): { ownerName: string; ownerEmail: string } | undefined {
+  // 1) Try exact ID match
+  if (carId) {
+    const byId = CAR_OWNERS.find(c => c.carId === String(carId));
+    if (byId) return { ownerName: byId.ownerName, ownerEmail: byId.ownerEmail };
+  }
+  // 2) Fallback: name (case-insensitive exact
+  if (carName) {
+    const byName = CAR_OWNERS.find(
+      c => c.carName.toLowerCase().trim() === String(carName).toLowerCase().trim()
+    );
+    if (byName) return { ownerName: byName.ownerName, ownerEmail: byName.ownerEmail };
+    // 3) Last resort: case-insensitive includes
+    const byNameLoose = CAR_OWNERS.find(
+      c => c.carName.toLowerCase().includes(String(carName).toLowerCase())
+        || String(carName).toLowerCase().includes(c.carName.toLowerCase())
+    );
+    if (byNameLoose) return { ownerName: byNameLoose.ownerName, ownerEmail: byNameLoose.ownerEmail };
+  }
+  return undefined;
+}
+
 // Create a new car booking (WITHOUT authentication - original endpoint)
 router.post('/', async (req: Request, res: Response) => {
   console.log('Received booking data:', req.body);
@@ -36,14 +92,17 @@ router.post('/', async (req: Request, res: Response) => {
 
   try {
     // Check for conflicting bookings using template literal syntax
+    // IMPORTANT: cast to DATE() so full-day date ranges collide correctly even if
+    // the stored pickup_date has a specific time-of-day (e.g. 2026-09-21 08:00:00 vs
+    // 2026-09-21 12:00:00). Also exclude BOTH cancelled AND deleted bookings.
     const conflictResult = await sql`
       SELECT id FROM car_bookings 
       WHERE car_id = ${carId} 
-      AND status != 'cancelled'
+      AND status != 'cancelled' AND status != 'deleted'
       AND (
-        (pickup_date <= ${pickupDate} AND drop_date > ${pickupDate}) OR
-        (pickup_date < ${dropDate} AND drop_date >= ${dropDate}) OR
-        (pickup_date >= ${pickupDate} AND drop_date <= ${dropDate})
+        (DATE(pickup_date) <= DATE(${pickupDate}::timestamp) AND DATE(drop_date) > DATE(${pickupDate}::timestamp)) OR
+        (DATE(pickup_date) < DATE(${dropDate}::timestamp) AND DATE(drop_date) >= DATE(${dropDate}::timestamp)) OR
+        (DATE(pickup_date) >= DATE(${pickupDate}::timestamp) AND DATE(drop_date) <= DATE(${dropDate}::timestamp))
       )
     ` as any[];
     
@@ -72,6 +131,7 @@ router.post('/', async (req: Request, res: Response) => {
     
     // Send confirmation email with correct property names
     try {
+      const owner = findCarOwner(carId, carName);
       await emailService.sendBookingConfirmation({
         userName: userName, // Use userName not customerName
         userEmail: userEmail,
@@ -80,7 +140,9 @@ router.post('/', async (req: Request, res: Response) => {
         pickupDate: pickupDate,
         dropDate: dropDate,
         totalPrice,
-        pickupLocation
+        pickupLocation,
+        ownerName: owner?.ownerName,
+        ownerEmail: owner?.ownerEmail,
       });
     } catch (emailError) {
       console.warn('Failed to send confirmation email:', emailError);
@@ -122,13 +184,14 @@ router.get('/available-cars', async (req: Request, res: Response) => {
 
     // Get booked car IDs for the date range using template literal
     // Exclude both 'cancelled' and 'deleted' bookings
+    // Use DATE() cast so overlapping calendar days collide regardless of stored time-of-day
     const bookedCars = await sql`
       SELECT car_id FROM car_bookings 
       WHERE status != 'cancelled' AND status != 'deleted'
       AND (
-        (pickup_date <= ${pickupDate as string} AND drop_date > ${pickupDate as string}) OR
-        (pickup_date < ${dropDate as string} AND drop_date >= ${dropDate as string}) OR
-        (pickup_date >= ${pickupDate as string} AND drop_date <= ${dropDate as string})
+        (DATE(pickup_date) <= DATE(${pickupDate as string}::timestamp) AND DATE(drop_date) > DATE(${pickupDate as string}::timestamp)) OR
+        (DATE(pickup_date) < DATE(${dropDate as string}::timestamp) AND DATE(drop_date) >= DATE(${dropDate as string}::timestamp)) OR
+        (DATE(pickup_date) >= DATE(${pickupDate as string}::timestamp) AND DATE(drop_date) <= DATE(${dropDate as string}::timestamp))
       )
     ` as any[];
     
@@ -429,14 +492,17 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
     }
 
     // Check for conflicting bookings using template literal
+    // Exclude both 'cancelled' AND 'deleted' bookings, and cast dates to DATE()
+    // so time-of-day differences (e.g. 08:00 vs. 12:00) on the same calendar day
+    // don't prevent correct overlap detection.
     const conflictSqlResult = await sql`
       SELECT id FROM car_bookings 
       WHERE car_id = ${carId} 
-      AND status != 'cancelled'
+      AND status != 'cancelled' AND status != 'deleted'
       AND (
-        (pickup_date <= ${pickupDate} AND drop_date > ${pickupDate}) OR
-        (pickup_date < ${dropDate} AND drop_date >= ${dropDate}) OR
-        (pickup_date >= ${pickupDate} AND drop_date <= ${dropDate})
+        (DATE(pickup_date) <= DATE(${pickupDate}::timestamp) AND DATE(drop_date) > DATE(${pickupDate}::timestamp)) OR
+        (DATE(pickup_date) < DATE(${dropDate}::timestamp) AND DATE(drop_date) >= DATE(${dropDate}::timestamp)) OR
+        (DATE(pickup_date) >= DATE(${pickupDate}::timestamp) AND DATE(drop_date) <= DATE(${dropDate}::timestamp))
       )
     `;
     
@@ -471,6 +537,7 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
 
     // Send confirmation email with all required parameters
     try {
+      const owner = findCarOwner(carId, carName);
       await emailService.sendBookingConfirmation({
         userEmail: contactEmail,
         userName: userName,
@@ -479,7 +546,9 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
         pickupDate: pickupDate,
         dropDate: dropDate,
         totalPrice: totalPrice,
-        pickupLocation: pickupLocation || 'Bangalore'
+        pickupLocation: pickupLocation || 'Bangalore',
+        ownerName: owner?.ownerName,
+        ownerEmail: owner?.ownerEmail,
       });
       console.log('Booking confirmation email sent to:', contactEmail);
     } catch (emailError) {
