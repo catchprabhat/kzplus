@@ -13,6 +13,7 @@ import Crysta from '../images/Innova.png';
 import swift from '../images/swiftM.png';
 import ertiga from '../images/ertigaNew.png';
 import i20 from '../images/i20.png';
+import kiaSonetBlack from '../images/kiaSonetBlack.webp';
 
 export const cars: Car[] = [
   {
@@ -197,5 +198,19 @@ export const cars: Car[] = [
     features: ['Auto Climate Control'],
     available: true,
     subscription: 1000
+  },
+  {
+    id: '14',
+    name: 'Kia Sonet Black',
+    image: kiaSonetBlack,
+    type: 'SUV',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    pricePerDay: 3500,
+    pricePerHour: 200,
+    features: ['Auto Climate Control', 'Touchscreen Infotainment'],
+    available: true,
+    subscription: 1500
   }
 ];

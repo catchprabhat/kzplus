@@ -58,6 +58,7 @@ export const BookingList: React.FC<BookingListProps> = ({
         { key: 'tatasafari2023', type: 'SUV' },
         { key: 'tatasafari', type: 'SUV' },
         { key: 'safari', type: 'SUV' },
+        { key: 'sonet', type: 'SUV' },
         { key: 'duster', type: 'SUV' },
         { key: 'baleno', type: 'Hatchback' },
         { key: 'polo', type: 'Hatchback' },
