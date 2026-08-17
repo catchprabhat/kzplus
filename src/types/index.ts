@@ -11,6 +11,8 @@ export interface Car {
   pricePerHour: number; // Add this new field
   features: string[];
   available: boolean;
+  ownerName: string;
+  ownerEmail: string;
   status?: 'pending' | 'approved' | 'rejected';
   submittedBy?: string;
   submittedAt?: Date;

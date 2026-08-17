@@ -83,8 +83,9 @@ class EmailOTPService {
 
   // For local development/testing without backend
   // This simulates the backend functionality using localStorage
-  // Set to true to skip the real API and use the built-in simulator
-  simulateBackend = import.meta.env.DEV === true;
+  // Set VITE_SIMULATE_AUTH=true in frontend .env to use the simulator (no real emails)
+  // Default: false = real API calls (actual emails sent via backend + Resend)
+  simulateBackend = import.meta.env.VITE_SIMULATE_AUTH === 'true';
 
   // Simulate backend for local testing
   private simulateOTPStorage: Map<string, {otp: string, expiresAt: Date, attempts: number}> = new Map();

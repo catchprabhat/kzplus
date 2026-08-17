@@ -28,6 +28,8 @@ export const cars: Car[] = [
     pricePerHour: 400,
     features: ['AWD', 'Panoramic Roof', 'Premium Sound', '18 Inch Tyres'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 3400
   },
   {
@@ -42,6 +44,8 @@ export const cars: Car[] = [
     pricePerHour: 400,
     features: ['Captain-Seats', 'Premium Audio'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 3000
   },
   {
@@ -56,6 +60,8 @@ export const cars: Car[] = [
     pricePerHour: 350,
     features: ['Captain-Seats', 'Premium Audio'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 2500
   },
   
@@ -71,6 +77,8 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
   },
   {
@@ -85,6 +93,8 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
   },
   {
@@ -99,6 +109,8 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
   },
   {
@@ -113,6 +125,8 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1000
   },
   {
@@ -127,6 +141,8 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
   },
   {
@@ -141,6 +157,8 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
   },
   {
@@ -155,6 +173,8 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Brand-new', 'Premium Audio'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1500
   },
   {
@@ -169,6 +189,8 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
   },
   {
@@ -183,6 +205,8 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Brand-new', 'Premium Audio'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1500
   },
   {
@@ -197,6 +221,8 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1000
   },
   {

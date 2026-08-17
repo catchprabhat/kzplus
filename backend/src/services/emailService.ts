@@ -487,7 +487,7 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
     }
   }
 
-  // Send booking confirmation email to both user and admin
+  // Send booking confirmation email to user, admin, AND car owner
   async sendBookingConfirmation(bookingDetails: {
     userEmail: string;
     userName: string;
@@ -497,6 +497,8 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
     dropDate: string;
     totalPrice: number;
     pickupLocation: string;
+    ownerEmail?: string;
+    ownerName?: string;
   }): Promise<{ success: boolean; message: string }> {
     try {
       const {
@@ -507,7 +509,9 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
         pickupDate,
         dropDate,
         totalPrice,
-        pickupLocation
+        pickupLocation,
+        ownerEmail,
+        ownerName = 'Car Owner'
       } = bookingDetails;
 
       // Format dates for better readability
@@ -525,6 +529,7 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
 
       const subject = '🚗🎉 Your Booking is Confirmed - A+ Auto Care';
       const adminSubject = '🚗📋 New Car Booking Received - A+ Auto Care';
+      const ownerSubject = `🚗📋 Your Car "${carName}" Has a New Booking! - A+ Auto Care`;
 
       const html = `
         <!DOCTYPE html>
@@ -624,6 +629,43 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
         '<p>A new booking has been made</p>'
       );
 
+      // Owner email template — personalised for the car owner
+      const ownerHtml = html
+        .replace(
+          '<h1>🚗 JIXDRIVE</h1>',
+          `<h1>🚗 JIXDRIVE</h1>\n            <h3 style="margin: 10px 0 0 0; opacity: 0.9;">Hi ${ownerName},</h3>`
+        )
+        .replace(
+          '<h2>Your Booking is Confirmed! 🎉</h2>',
+          `<h2>Your Car "${carName}" Has a New Booking! 📋</h2>`
+        )
+        .replace(
+          '<p>Thank you for choosing JIXDRIVE</p>',
+          '<p>Your vehicle has been booked by a customer. Details below:</p>'
+        );
+
+      const ownerText = `
+JIXDRIVE - Car Owner Booking Notification
+
+Hi ${ownerName},
+
+Your car "${carName}" has a new booking! 🚗📋
+
+Booking Details:
+- Customer Name: ${userName}
+- Customer Email: ${userEmail}
+- Customer Phone: ${userPhone}
+- Car: ${carName}
+- Pickup Location: ${pickupLocation}
+- Pickup: ${formatDate(pickupDate)}
+- Drop: ${formatDate(dropDate)}
+- Total Booking Amount: ₹${totalPrice}
+
+Please review this booking and prepare the vehicle.
+
+Need help? Contact us at jixdriveblr@gmail.com
+      `;
+
       const text = `
 JIXDRIVE - Booking Confirmation
 
@@ -651,7 +693,6 @@ Need help? Contact us at jixdriveblr@gmail.com
         'Thank you for choosing JIXDRIVE!',
         'Please review this booking in your admin dashboard.'
       );
-
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
         from: 'JIXDRIVE <noreply@kzplusautocare.in>',
@@ -674,10 +715,28 @@ Need help? Contact us at jixdriveblr@gmail.com
       });
 
       console.log('Admin notification email sent successfully:', adminEmailResult);
+
+      // Send email to car owner (if an owner email is provided, and it's not the same as admin)
+      let ownerEmailResult: any = null;
+      const adminEmailNormalized = (process.env.ADMIN_EMAIL || 'jixdriveblr@gmail.com').toLowerCase();
+      if (ownerEmail && ownerEmail.trim() !== '' && ownerEmail.toLowerCase() !== adminEmailNormalized) {
+        ownerEmailResult = await this.resend.emails.send({
+          from: 'JIXDRIVE <noreply@kzplusautocare.in>',
+          to: ownerEmail,
+          subject: ownerSubject,
+          html: ownerHtml,
+          text: ownerText,
+        });
+        console.log('Owner notification email sent successfully to:', ownerEmail, ownerEmailResult);
+      } else if (ownerEmail && ownerEmail.toLowerCase() === adminEmailNormalized) {
+        console.log('Owner email same as admin — skipping duplicate owner email:', ownerEmail);
+      } else {
+        console.log('No owner email provided — skipping owner notification.');
+      }
       
       return {
         success: true,
-        message: 'Booking confirmation emails sent successfully to user and admin'
+        message: `Booking confirmation emails sent successfully to user and admin${ownerEmailResult ? ' and owner' : ''}`
       };
     } catch (error) {
       console.error('Failed to send booking confirmation emails:', error);
