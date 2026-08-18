@@ -13,7 +13,7 @@ import Crysta from '../images/Innova.png';
 import swift from '../images/swiftM.png';
 import ertiga from '../images/ertigaNew.png';
 import i20 from '../images/i20.png';
-import kiaSonetBlack from '../images/kiaSonetBlack.webp';
+import kiaSonetBlack from '../images/kiaSonetBlack.jpg';
 
 export const cars: Car[] = [
   {
