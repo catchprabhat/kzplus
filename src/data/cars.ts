@@ -14,6 +14,7 @@ import swift from '../images/swiftM.png';
 import ertiga from '../images/ertigaNew.png';
 import i20 from '../images/i20.png';
 import kiaSonetBlack from '../images/kiaSonetBlack.jpg';
+import tataPunch from '../images/tatapunch.jpg';
 
 export const cars: Car[] = [
   {
@@ -229,7 +230,7 @@ export const cars: Car[] = [
     id: '14',
     name: 'Kia Sonet Black',
     image: kiaSonetBlack,
-    type: 'SUV',
+    type: 'Hatchback',
     seats: 5,
     transmission: 'Manual',
     fuel: 'Petrol',
@@ -237,6 +238,24 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Auto Climate Control', 'Touchscreen Infotainment'],
     available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1500
+  },
+  {
+    id: '15',
+    name: 'Tata Punch',
+    image: tataPunch,
+    type: 'Hatchback',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    pricePerDay: 3000,
+    pricePerHour: 150,
+    features: ['Auto Climate Control'],
+    available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
+    subscription: 1800
   }
 ];
