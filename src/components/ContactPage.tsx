@@ -41,7 +41,7 @@ const ContactPage: React.FC = () => {
             variants={itemVariants}
           >
             <Phone className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            <span>+917735537655 - Self drive</span>
+            <span>+918123540767 - Self drive</span>
           </motion.div>
           
           <motion.div 
