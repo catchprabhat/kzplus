@@ -30,7 +30,7 @@ export const cars: Car[] = [
     features: ['AWD', 'Panoramic Roof', 'Premium Sound', '18 Inch Tyres'],
     available: true,
     ownerName: 'Admin',
-    ownerEmail: 'jixdriveblr@gmail.com',
+    ownerEmail: 'KVKUMARSG@GMAIL.COM',
     subscription: 3400
   },
   {
@@ -111,7 +111,7 @@ export const cars: Car[] = [
     features: ['Auto Climate Control'],
     available: true,
     ownerName: 'Admin',
-    ownerEmail: 'jixdriveblr@gmail.com',
+    ownerEmail: 'niranjanpp1971@gmail.com',
     subscription: 1800
   },
   {
