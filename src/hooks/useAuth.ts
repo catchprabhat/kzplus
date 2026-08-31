@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export interface User {
   id: string;
@@ -108,6 +108,34 @@ export const useAuth = () => {
 
   // Consider token presence for authentication, not just user object
   const isAuthenticated = !!(user && (user.token || localStorage.getItem('driveEasyToken')));
+
+  // Auto logout after 5 minutes of inactivity
+  const logoutRef = useRef<() => void>(() => {});
+  logoutRef.current = logout;
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+    let idleTimer: ReturnType<typeof setTimeout>;
+
+    const resetIdleTimer = () => {
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => {
+        logoutRef.current();
+      }, IDLE_TIMEOUT_MS);
+    };
+
+    const events = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click', 'wheel'];
+    events.forEach((event) => window.addEventListener(event, resetIdleTimer, { passive: true }));
+
+    resetIdleTimer();
+
+    return () => {
+      clearTimeout(idleTimer);
+      events.forEach((event) => window.removeEventListener(event, resetIdleTimer));
+    };
+  }, [isAuthenticated]);
 
   return {
     user,

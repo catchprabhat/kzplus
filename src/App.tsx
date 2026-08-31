@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { Car as CarIcon, Calendar, MapPin, Wrench, Settings, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, IndianRupee, Edit } from 'lucide-react';
+import { Car as CarIcon, Calendar, MapPin, Wrench, ArrowRight, Star, Shield, Clock, Users, Menu, X, User, IndianRupee } from 'lucide-react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { fas } from '@fortawesome/free-solid-svg-icons';
@@ -28,6 +28,7 @@ import { useBookings } from './hooks/useBookings';
 import { useCalendarBookings } from './hooks/useCalendarBookings';
 import { useServiceBookings } from './hooks/useServiceBookings';
 import { useAuth } from './hooks/useAuth';
+import { fetchLatestTripData, LatestTripDates } from './utils/tripSheetUtils';
 import { SelfDriveBooking } from './components/SelfDriveBooking';
 import { StaffAttendance } from './components/StaffAttendance';
 import { SubscriptionPage } from './components/SubscriptionPage';
@@ -405,6 +406,21 @@ function App() {
     loading: calendarLoading,
     refetch: refetchCalendarBookings
   } = useCalendarBookings();
+
+  // State for extended trip dates from Google Sheets
+  const [tripDatesMap, setTripDatesMap] = useState<Map<string, LatestTripDates>>(new Map());
+  const [fetchingTripDates, setFetchingTripDates] = useState(false);
+
+  // Fetch extended trip dates when calendar bookings load
+  useEffect(() => {
+    if (calendarBookings.length > 0 && !fetchingTripDates) {
+      setFetchingTripDates(true);
+      fetchLatestTripData(calendarBookings).then((map) => {
+        setTripDatesMap(map);
+        setFetchingTripDates(false);
+      });
+    }
+  }, [calendarBookings, fetchingTripDates]);
 
   const {
     serviceBookings,
@@ -1579,7 +1595,7 @@ function App() {
                       <LoadingSpinner size="lg" text="Loading calendar..." />
                     </div>
                   ) : (
-                    <CalendarView bookings={calendarBookings} />
+                    <CalendarView bookings={calendarBookings} tripDatesMap={tripDatesMap} />
                   )}
                 </div>
               } />

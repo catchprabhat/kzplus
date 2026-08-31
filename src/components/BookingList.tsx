@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock, UserPlus, Play, Square, ArrowRightLeft } from 'lucide-react';
+import { Car, Calendar, User, Phone, Mail, CreditCard, MoreVertical, Trash2, Edit, Clock, UserPlus, Play, Square, ArrowRightLeft, RefreshCw, MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
 import { AssignDriverModal } from './AssignDriverModal';
+import { MessageCustomerModal } from './MessageCustomerModal';
 import { cars } from '../data/cars';
+import { fetchLatestTripData, LatestTripDates } from '../utils/tripSheetUtils';
 
 // =====================================================================
 // GOOGLE FORM / GOOGLE SHEET CONFIGURATION FOR TRIP MANAGEMENT
@@ -178,6 +180,10 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [showAssignDriverModal, setShowAssignDriverModal] = useState(false);
   const [selectedBookingForDriver, setSelectedBookingForDriver] = useState<Booking | null>(null);
+  const [showMessageCustomerModal, setShowMessageCustomerModal] = useState(false);
+  const [selectedBookingForMessage, setSelectedBookingForMessage] = useState<Booking | null>(null);
+  const [tripDatesMap, setTripDatesMap] = useState<Map<string, LatestTripDates>>(new Map());
+  const [fetchingTripDates, setFetchingTripDates] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   const isAdmin =
@@ -329,6 +335,17 @@ export const BookingList: React.FC<BookingListProps> = ({
     setFilteredBookings(filtered);
   }, [bookings, phoneFilter, adminSearch, vehicleFilter, monthFilter, isAdmin]);
 
+  // Fetch latest trip dates from Google Sheets
+  useEffect(() => {
+    if (bookings.length > 0) {
+      setFetchingTripDates(true);
+      fetchLatestTripData(bookings).then((map) => {
+        setTripDatesMap(map);
+        setFetchingTripDates(false);
+      });
+    }
+  }, [bookings]);
+
   const handleAssignDriver = (booking: Booking) => {
     setSelectedBookingForDriver(booking);
     setShowAssignDriverModal(true);
@@ -338,6 +355,17 @@ export const BookingList: React.FC<BookingListProps> = ({
   const closeAssignDriverModal = () => {
     setShowAssignDriverModal(false);
     setSelectedBookingForDriver(null);
+  };
+
+  const handleMessageCustomer = (booking: Booking) => {
+    setSelectedBookingForMessage(booking);
+    setShowMessageCustomerModal(true);
+    setOpenDropdown(null);
+  };
+
+  const closeMessageCustomerModal = () => {
+    setShowMessageCustomerModal(false);
+    setSelectedBookingForMessage(null);
   };
 
   const formatDate = (date: Date) => {
@@ -354,6 +382,22 @@ export const BookingList: React.FC<BookingListProps> = ({
       minute: '2-digit',
       hour12: true
     });
+  };
+
+  const getDisplayDates = (booking: Booking) => {
+    const tripData = tripDatesMap.get(booking.id);
+    if (tripData && tripData.startDate && tripData.endDate) {
+      return {
+        startDate: new Date(tripData.startDate),
+        endDate: new Date(tripData.endDate),
+        isExtended: tripData.tripAction === 'Extend Trip',
+      };
+    }
+    return {
+      startDate: new Date(booking.pickupDate),
+      endDate: new Date(booking.dropDate),
+      isExtended: false,
+    };
   };
 
   const calculateDuration = (pickupDate: Date, dropDate: Date) => {
@@ -549,9 +593,22 @@ export const BookingList: React.FC<BookingListProps> = ({
                     <Car className="w-4 h-4 mr-2 flex-shrink-0" />
                     <span className="truncate">{booking.carName}</span>
                   </h4>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    {formatDate(booking.pickupDate)} - {formatDate(booking.dropDate)}
-                  </p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                      {(() => {
+                        const { startDate, endDate, isExtended } = getDisplayDates(booking);
+                        return `${formatDate(startDate)} - ${formatDate(endDate)}`;
+                      })()}
+                    </p>
+                    {(() => {
+                      const { isExtended } = getDisplayDates(booking);
+                      return isExtended ? (
+                        <span className="inline-block text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 font-medium">
+                          Extended
+                        </span>
+                      ) : null;
+                    })()}
+                  </div>
                 </div>
                 
                 {/* Status and actions - mobile optimized */}
@@ -586,6 +643,13 @@ export const BookingList: React.FC<BookingListProps> = ({
                                   <UserPlus className="w-4 h-4 mr-2" />
                                   Assign Driver
                                 </button>
+                                <button
+                                  onClick={() => handleMessageCustomer(booking)}
+                                  className="w-full text-left px-4 py-2 text-sm text-green-700 dark:text-green-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <MessageSquare className="w-4 h-4 mr-2" />
+                                  Message Customer
+                                </button>
 
                                 {/* ====== TRIP MANAGEMENT (ADMIN ONLY) ====== */}
                                 <div className="border-t border-gray-200 dark:border-dark-600 my-1" />
@@ -612,6 +676,25 @@ export const BookingList: React.FC<BookingListProps> = ({
                                 >
                                   <ArrowRightLeft className="w-4 h-4 mr-2" />
                                   Extend Trip
+                                </button>
+                                <button
+                                  onClick={async () => {
+                                    setFetchingTripDates(true);
+                                    const map = await fetchLatestTripData([booking]);
+                                    setTripDatesMap((prev) => {
+                                      const next = new Map(prev);
+                                      const data = map.get(booking.id);
+                                      if (data) next.set(booking.id, data);
+                                      return next;
+                                    });
+                                    setFetchingTripDates(false);
+                                    setOpenDropdown(null);
+                                  }}
+                                  disabled={fetchingTripDates}
+                                  className="w-full text-left px-4 py-2 text-sm text-blue-700 dark:text-blue-400 hover:bg-gray-100 dark:hover:bg-dark-600 flex items-center"
+                                >
+                                  <RefreshCw className={`w-4 h-4 mr-2 ${fetchingTripDates ? 'animate-spin' : ''}`} />
+                                  Sync Dates from Sheets
                                 </button>
 
                                 {onUpdateStatus && (
@@ -689,7 +772,12 @@ export const BookingList: React.FC<BookingListProps> = ({
                   {/* Duration */}
                   <div className="flex items-center">
                     <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm">{calculateDuration(booking.pickupDate, booking.dropDate)}</span>
+                    <span className="text-xs sm:text-sm">
+                      {(() => {
+                        const { startDate, endDate } = getDisplayDates(booking);
+                        return calculateDuration(startDate, endDate);
+                      })()}
+                    </span>
                   </div>
                   
                   {/* Price Section - mobile optimized */}
@@ -737,6 +825,12 @@ export const BookingList: React.FC<BookingListProps> = ({
         isOpen={showAssignDriverModal}
         onClose={closeAssignDriverModal}
         booking={selectedBookingForDriver}
+      />
+      {/* Message Customer Modal */}
+      <MessageCustomerModal
+        isOpen={showMessageCustomerModal}
+        onClose={closeMessageCustomerModal}
+        booking={selectedBookingForMessage}
       />
     </div>
   );

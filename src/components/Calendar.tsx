@@ -1,13 +1,25 @@
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, Car, Calendar as CalendarIcon, ArrowRight, X, Clock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Car, Calendar as CalendarIcon, X, Clock } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Booking, CalendarDay } from '../types';
 
-interface CalendarProps {
-  bookings: Booking[];
+interface LatestTripDates {
+  startDate: string;
+  endDate: string;
+  tripAction: string;
+  timestamp: string;
+  vehicleNumber: string;
+  kmsReading: string;
+  fastTagBalance: string;
+  fuelLevel: string;
 }
 
-export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
+interface CalendarProps {
+  bookings: Booking[];
+  tripDatesMap?: Map<string, LatestTripDates>;
+}
+
+export const Calendar: React.FC<CalendarProps> = ({ bookings, tripDatesMap }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedBookings, setSelectedBookings] = useState<Booking[]>([]);
@@ -72,9 +84,20 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
         return false;
       }
       
-      // Ensure dates are properly parsed as Date objects
-      const bookingStart = new Date(booking.pickupDate);
-      const bookingEnd = new Date(booking.dropDate);
+      // Check if there are extended trip dates from Google Sheets
+      const tripData = tripDatesMap?.get(booking.id);
+      let bookingStart: Date;
+      let bookingEnd: Date;
+      
+      if (tripData && tripData.startDate && tripData.endDate) {
+        // Use extended dates from Google Sheets
+        bookingStart = new Date(tripData.startDate);
+        bookingEnd = new Date(tripData.endDate);
+      } else {
+        // Fall back to original booking dates from database
+        bookingStart = new Date(booking.pickupDate);
+        bookingEnd = new Date(booking.dropDate);
+      }
       
       // Normalize all dates to start of day for comparison
       const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -87,14 +110,30 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   };
 
   const isPickupDate = (date: Date, booking: Booking): boolean => {
-    const pickupDate = new Date(booking.pickupDate);
+    const tripData = tripDatesMap?.get(booking.id);
+    let pickupDate: Date;
+    
+    if (tripData && tripData.startDate) {
+      pickupDate = new Date(tripData.startDate);
+    } else {
+      pickupDate = new Date(booking.pickupDate);
+    }
+    
     const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const startDate = new Date(pickupDate.getFullYear(), pickupDate.getMonth(), pickupDate.getDate());
     return targetDate.getTime() === startDate.getTime();
   };
 
   const isDropDate = (date: Date, booking: Booking): boolean => {
-    const dropDate = new Date(booking.dropDate);
+    const tripData = tripDatesMap?.get(booking.id);
+    let dropDate: Date;
+    
+    if (tripData && tripData.endDate) {
+      dropDate = new Date(tripData.endDate);
+    } else {
+      dropDate = new Date(booking.dropDate);
+    }
+    
     const targetDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
     const endDate = new Date(dropDate.getFullYear(), dropDate.getMonth(), dropDate.getDate());
     return targetDate.getTime() === endDate.getTime();
@@ -226,9 +265,35 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
   };
 
   const formatTimeRange = (booking: Booking) => {
-    const pickup = new Date(booking.pickupDate);
-    const drop = new Date(booking.dropDate);
+    const tripData = tripDatesMap?.get(booking.id);
+    let pickup: Date;
+    let drop: Date;
+    
+    if (tripData && tripData.startDate && tripData.endDate) {
+      pickup = new Date(tripData.startDate);
+      drop = new Date(tripData.endDate);
+    } else {
+      pickup = new Date(booking.pickupDate);
+      drop = new Date(booking.dropDate);
+    }
+    
     return `${pickup.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })} - ${drop.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })}`;
+  };
+
+  const getDisplayDates = (booking: Booking) => {
+    const tripData = tripDatesMap?.get(booking.id);
+    if (tripData && tripData.startDate && tripData.endDate) {
+      return {
+        pickup: new Date(tripData.startDate),
+        drop: new Date(tripData.endDate),
+        isExtended: tripData.tripAction === 'Extend Trip'
+      };
+    }
+    return {
+      pickup: new Date(booking.pickupDate),
+      drop: new Date(booking.dropDate),
+      isExtended: false
+    };
   };
 
   return (
@@ -435,8 +500,20 @@ export const Calendar: React.FC<CalendarProps> = ({ bookings }) => {
                         <div className="flex items-center text-sm">
                           <Clock className="w-4 h-4 mr-2 opacity-60" />
                           <div>
-                            <p><strong>Pickup:</strong> {formatDateTime(booking.pickupDate)}</p>
-                            <p><strong>Drop:</strong> {formatDateTime(booking.dropDate)}</p>
+                            {(() => {
+                              const { pickup, drop, isExtended } = getDisplayDates(booking);
+                              return (
+                                <>
+                                  <p><strong>Pickup:</strong> {formatDateTime(pickup)}</p>
+                                  <p><strong>Drop:</strong> {formatDateTime(drop)}</p>
+                                  {isExtended && (
+                                    <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                                      (Extended trip)
+                                    </p>
+                                  )}
+                                </>
+                              );
+                            })()}
                           </div>
                         </div>
                       </div>
