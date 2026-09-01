@@ -407,20 +407,26 @@ function App() {
     refetch: refetchCalendarBookings
   } = useCalendarBookings();
 
-  // State for extended trip dates from Google Sheets
+  // State for extended trip dates from Google Sheets (calendar view only)
   const [tripDatesMap, setTripDatesMap] = useState<Map<string, LatestTripDates>>(new Map());
-  const [fetchingTripDates, setFetchingTripDates] = useState(false);
 
-  // Fetch extended trip dates when calendar bookings load
+  // Fetch extended trip dates only on the calendar page
   useEffect(() => {
-    if (calendarBookings.length > 0 && !fetchingTripDates) {
-      setFetchingTripDates(true);
-      fetchLatestTripData(calendarBookings).then((map) => {
-        setTripDatesMap(map);
-        setFetchingTripDates(false);
-      });
+    if (activeTab !== 'calendar' || calendarBookings.length === 0) {
+      return;
     }
-  }, [calendarBookings, fetchingTripDates]);
+
+    let cancelled = false;
+    fetchLatestTripData(calendarBookings).then((map) => {
+      if (!cancelled) {
+        setTripDatesMap(map);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, calendarBookings]);
 
   const {
     serviceBookings,
