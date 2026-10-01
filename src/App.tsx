@@ -333,8 +333,8 @@ function App() {
     location: 'Bangalore',
     tripStartDate: null as Date | null,
     tripEndDate: null as Date | null,
-    startTime: { hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' },
-    endTime: { hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' },
+    startTime: { hour: 9, minute: 0, period: 'AM' as 'AM' | 'PM' },
+    endTime: { hour: 9, minute: 0, period: 'AM' as 'AM' | 'PM' },
     deliveryPickup: false,
     deliveryAddress: '',
     nearbyLocation: '',
@@ -571,6 +571,7 @@ function App() {
   //     timezone/DST rounding can't flip the calendar day.
   const formatDateForDatabase = (date: Date | string): string => {
     let y: number, m: number, d: number;
+    let h: number = 0, min: number = 0, s: number = 0;
 
     if (typeof date === 'string') {
       // Try to parse known safe formats without using Date constructor.
@@ -580,24 +581,39 @@ function App() {
         y = parseInt(m1[1], 10);
         m = parseInt(m1[2], 10);
         d = parseInt(m1[3], 10);
+        // Preserve the actual time components if present in the string
+        if (m1[4] !== undefined) h = parseInt(m1[4], 10);
+        if (m1[5] !== undefined) min = parseInt(m1[5], 10);
+        if (m1[6] !== undefined) s = parseInt(m1[6], 10);
       } else {
         // Unknown string format → fall through to Date constructor.
         const x = new Date(date);
         y = x.getFullYear();
         m = x.getMonth() + 1;
         d = x.getDate();
+        // Extract real local time from the parsed Date
+        h = x.getHours();
+        min = x.getMinutes();
+        s = x.getSeconds();
       }
     } else {
       y = date.getFullYear();
       m = date.getMonth() + 1;
       d = date.getDate();
+      // Extract real local time directly from the Date object
+      h = date.getHours();
+      min = date.getMinutes();
+      s = date.getSeconds();
     }
 
     const yy = String(y);
     const mm = String(m).padStart(2, '0');
     const dd = String(d).padStart(2, '0');
-    // Use NOON (12:00:00) so the time component is never near a day boundary.
-    return `${yy}-${mm}-${dd} 12:00:00`;
+    const hh = String(h).padStart(2, '0');
+    const mi = String(min).padStart(2, '0');
+    const ss = String(s).padStart(2, '0');
+    // Preserve the ACTUAL user-selected booking time (do NOT hardcode noon)
+    return `${yy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
   };
 
   const handleBookingComplete = async (booking: Booking) => {
@@ -640,8 +656,9 @@ function App() {
         totalHours: calculateTotalHours(new Date(booking.pickupDate), new Date(booking.dropDate)),
         pickupDate: formatDateForDatabase(booking.pickupDate),
         dropDate: formatDateForDatabase(booking.dropDate),
-        // Use the edited email from the form for contact purposes; backend will store account email for ownership.
-        userName: user?.name || booking.customerName,
+        // Use the customer details EXACTLY as entered in the booking form.
+        // (Admin is booking *on behalf* of a user — do NOT overwrite with admin account info.)
+        userName: booking.customerName,
         userEmail: booking.customerEmail,
         userPhone: booking.customerPhone
       };

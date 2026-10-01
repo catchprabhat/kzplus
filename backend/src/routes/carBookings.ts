@@ -477,13 +477,14 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
         ? contactEmailRaw.trim().toLowerCase()
         : normalizedEmail;
 
-    const userName = req.body.userName || normalizedEmail;
+    const userName = req.body.userName || '';
     const userPhone = req.body.userPhone || '';
     
     console.log('=== DEBUGGING BOOKING CREATION ===');
     console.log('Token user object:', JSON.stringify(req.user, null, 2));
-    console.log('Raw email from token:', tokenEmail);
-    console.log('Email to be stored:', normalizedEmail);
+    console.log('Admin email from token:', tokenEmail);
+    console.log('Customer contact email to store:', contactEmail);
+    console.log('Customer name to store:', userName);
     
     // Validate required fields
     if (!carId || !carName || !pickupDate || !dropDate || !normalizedEmail || normalizedEmail.trim() === '') {
@@ -517,14 +518,16 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
       });
     }
 
-    // Insert booking with normalized email using sql template
+    // Insert booking with the customer contact details the admin provided in the form.
+    // contactEmail / userName / userPhone come from the form payload and may differ
+    // from the admin's own JWT token credentials (normalizedEmail).
     const sqlResult = await sql`
       INSERT INTO car_bookings (
         user_name, user_email, user_phone, car_id, car_name, car_type, 
         pickup_location, pickup_date, drop_date, total_hours, total_days, 
         total_price, delivery_pickup, status, created_at
       ) VALUES (
-        ${userName}, ${normalizedEmail}, ${userPhone}, ${carId}, ${carName}, ${carType},
+        ${userName}, ${contactEmail}, ${userPhone}, ${carId}, ${carName}, ${carType},
         ${pickupLocation || 'Bangalore'}, ${pickupDate}, ${dropDate}, ${totalHours}, ${totalDays},
         ${totalPrice}, ${deliveryPickup || false}, 'pending', ${new Date()}
       )
