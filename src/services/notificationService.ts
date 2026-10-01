@@ -1,5 +1,6 @@
 // Notification service for email and WhatsApp notifications
 import { Booking, ServiceBooking } from '../types';
+import { formatIstDate, formatIstTime } from '../utils/dateTime';
 
 export interface NotificationConfig {
   emailEnabled: boolean;
@@ -71,31 +72,13 @@ class NotificationService {
 
   // Generate email template for car rental booking
   private generateBookingEmailTemplate(booking: Booking): EmailTemplate {
-    const pickupDate = booking.pickupDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const pickupDate = formatIstDate(booking.pickupDate);
     
-    const pickupTime = booking.pickupDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+    const pickupTime = formatIstTime(booking.pickupDate);
 
-    const dropDate = booking.dropDate.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    const dropDate = formatIstDate(booking.dropDate);
     
-    const dropTime = booking.dropDate.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
+    const dropTime = formatIstTime(booking.dropDate);
 
     const subject = `🚗 Car Rental Booking Confirmed - ${booking.carName}`;
     
@@ -480,17 +463,9 @@ Thank you for choosing DriveEasy Services!
   // Send booking confirmation WhatsApp message
   private async sendBookingWhatsApp(booking: Booking): Promise<void> {
     try {
-      const pickupDate = booking.pickupDate.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
+      const pickupDate = formatIstDate(booking.pickupDate);
       
-      const pickupTime = booking.pickupDate.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        hour12: true
-      });
+      const pickupTime = formatIstTime(booking.pickupDate);
 
       const message = `🚗 *DriveEasy - Booking Confirmed!*
 

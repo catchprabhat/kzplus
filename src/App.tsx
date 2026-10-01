@@ -35,6 +35,12 @@ import { SubscriptionPage } from './components/SubscriptionPage';
 import { EndTripPage } from './components/EndTripPage';
 import { ExtendTripPage } from './components/ExtendTripPage';
 import { getAvailableCars, createCarBooking } from './services/api';
+import {
+  combineDateWithClock,
+  formatLocalDateTimeForDatabase,
+  formatLocalDateTimeInput,
+  parseLocalDateTime,
+} from './utils/dateTime';
 
 // Add API_BASE_URL constant
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
@@ -333,8 +339,8 @@ function App() {
     location: 'Bangalore',
     tripStartDate: null as Date | null,
     tripEndDate: null as Date | null,
-    startTime: { hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' },
-    endTime: { hour: 12, minute: 0, period: 'AM' as 'AM' | 'PM' },
+    startTime: { hour: 9, minute: 0, period: 'AM' as 'AM' | 'PM' },
+    endTime: { hour: 9, minute: 0, period: 'AM' as 'AM' | 'PM' },
     deliveryPickup: false,
     deliveryAddress: '',
     nearbyLocation: '',
@@ -553,52 +559,11 @@ function App() {
     }
   };
 
-  // Helper function to format date for database WITHOUT off-by-one-day bugs.
-  //
-  // THE PROBLEM:
-  //   new Date("2026-09-21") in V8/Chromium parses as UTC midnight.
-  //   Then .getMonth()/.getDate() (which return LOCAL values) in a timezone
-  //   ahead of UTC (e.g. IST = +05:30) gives 2026-09-20 05:30 local time, so
-  //   the date shifts backwards by 1 day. This caused false 409 "car not
-  //   available" conflicts because the database stored the wrong calendar day.
-  //
-  // THE FIX:
-  //   * Accept Date object OR string.
-  //   * For strings in YYYY-MM-DD / YYYY-MM-DD HH:MM:SS formats → parse using
-  //     split() + numeric parts (no Date constructor), treating as LOCAL.
-  //   * Otherwise use Date methods with local getters.
-  //   * Always output as "YYYY-MM-DD 12:00:00" (noon local) so any tiny
-  //     timezone/DST rounding can't flip the calendar day.
-  const formatDateForDatabase = (date: Date | string): string => {
-    let y: number, m: number, d: number;
-
-    if (typeof date === 'string') {
-      // Try to parse known safe formats without using Date constructor.
-      // Match "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" or "YYYY/MM/DD ..."
-      const m1 = date.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
-      if (m1) {
-        y = parseInt(m1[1], 10);
-        m = parseInt(m1[2], 10);
-        d = parseInt(m1[3], 10);
-      } else {
-        // Unknown string format → fall through to Date constructor.
-        const x = new Date(date);
-        y = x.getFullYear();
-        m = x.getMonth() + 1;
-        d = x.getDate();
-      }
-    } else {
-      y = date.getFullYear();
-      m = date.getMonth() + 1;
-      d = date.getDate();
-    }
-
-    const yy = String(y);
-    const mm = String(m).padStart(2, '0');
-    const dd = String(d).padStart(2, '0');
-    // Use NOON (12:00:00) so the time component is never near a day boundary.
-    return `${yy}-${mm}-${dd} 12:00:00`;
-  };
+  // Format pickup/drop as IST wall-clock with an explicit +05:30 offset.
+  const formatDateForDatabase = (
+    date: Date | string,
+    clock?: { hour: number; minute: number; period: 'AM' | 'PM' }
+  ): string => formatLocalDateTimeForDatabase(date, clock);
 
   const handleBookingComplete = async (booking: Booking) => {
     try {
@@ -631,19 +596,34 @@ function App() {
         return selfDriveBookingData.location || 'Bangalore';
       };
 
+      const hasSelfDriveTimes = Boolean(
+        selfDriveBookingData.tripStartDate && selfDriveBookingData.tripEndDate
+      );
+      const pickupForDb = formatDateForDatabase(
+        hasSelfDriveTimes ? selfDriveBookingData.tripStartDate! : booking.pickupDate,
+        hasSelfDriveTimes ? selfDriveBookingData.startTime : undefined
+      );
+      const dropForDb = formatDateForDatabase(
+        hasSelfDriveTimes ? selfDriveBookingData.tripEndDate! : booking.dropDate,
+        hasSelfDriveTimes ? selfDriveBookingData.endTime : undefined
+      );
+
       const enhancedBooking = {
         ...booking,
         carType: car?.type || 'Unknown',
         carSeats: car?.seats || 0,
         pickupLocation: formatPickupLocation(),
         deliveryPickup: selfDriveBookingData.deliveryPickup || false,
-        totalHours: calculateTotalHours(new Date(booking.pickupDate), new Date(booking.dropDate)),
-        pickupDate: formatDateForDatabase(booking.pickupDate),
-        dropDate: formatDateForDatabase(booking.dropDate),
-        // Use the edited email from the form for contact purposes; backend will store account email for ownership.
-        userName: user?.name || booking.customerName,
-        userEmail: booking.customerEmail,
-        userPhone: booking.customerPhone
+        totalHours: calculateTotalHours(
+          parseLocalDateTime(pickupForDb),
+          parseLocalDateTime(dropForDb)
+        ),
+        pickupDate: pickupForDb,
+        dropDate: dropForDb,
+        // Prefer details typed in the booking form over the logged-in account.
+        userName: (booking.customerName || '').trim() || user?.name || '',
+        userEmail: (booking.customerEmail || '').trim() || user?.email || '',
+        userPhone: (booking.customerPhone || '').trim() || user?.phone || '',
       };
       
       // Use createCarBooking with authentication
@@ -878,28 +858,10 @@ function App() {
     
     // Convert dates to the format expected by BookingForm
     if (bookingData.tripStartDate && bookingData.tripEndDate) {
-      const startDateTime = new Date(bookingData.tripStartDate);
-      startDateTime.setHours(
-        bookingData.startTime.period === 'PM' && bookingData.startTime.hour !== 12 
-          ? bookingData.startTime.hour + 12 
-          : bookingData.startTime.hour === 12 && bookingData.startTime.period === 'AM'
-          ? 0
-          : bookingData.startTime.hour,
-        bookingData.startTime.minute
-      );
-      
-      const endDateTime = new Date(bookingData.tripEndDate);
-      endDateTime.setHours(
-        bookingData.endTime.period === 'PM' && bookingData.endTime.hour !== 12 
-          ? bookingData.endTime.hour + 12 
-          : bookingData.endTime.hour === 12 && bookingData.endTime.period === 'AM'
-          ? 0
-          : bookingData.endTime.hour,
-        bookingData.endTime.minute
-      );
-      
-      setPickupDate(startDateTime.toISOString());
-      setDropDate(endDateTime.toISOString());
+      const startDateTime = combineDateWithClock(bookingData.tripStartDate, bookingData.startTime);
+      const endDateTime = combineDateWithClock(bookingData.tripEndDate, bookingData.endTime);
+      setPickupDate(formatLocalDateTimeInput(startDateTime));
+      setDropDate(formatLocalDateTimeInput(endDateTime));
     }
     
     navigate('/car-selection');

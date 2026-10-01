@@ -4,6 +4,7 @@ import { Car, Booking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth'; // Add this import
 import { CouponInput } from './CouponInput';
+import { parseLocalDateTime } from '../utils/dateTime';
 
 interface BookingFormProps {
   selectedCar: Car | null;
@@ -43,8 +44,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   const calculateTotalHours = () => {
     if (pickupDate && dropDate) {
-      const pickup = new Date(pickupDate);
-      const drop = new Date(dropDate);
+      const pickup = parseLocalDateTime(pickupDate);
+      const drop = parseLocalDateTime(dropDate);
       const diffTime = drop.getTime() - pickup.getTime();
       const diffHours = diffTime / (1000 * 60 * 60);
       return diffHours > 0 ? diffHours : 0;
@@ -100,8 +101,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   // Add the missing formatDuration function
   const formatDuration = () => {
     if (pickupDate && dropDate) {
-      const pickup = new Date(pickupDate);
-      const drop = new Date(dropDate);
+      const pickup = parseLocalDateTime(pickupDate);
+      const drop = parseLocalDateTime(dropDate);
       const diffTime = drop.getTime() - pickup.getTime();
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       const diffHours = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
@@ -165,8 +166,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       carName: selectedCar.name,
       carType: selectedCar.type,
       carSeats: selectedCar.seats,
-      pickupDate: new Date(pickupDate),
-      dropDate: new Date(dropDate),
+      pickupDate: parseLocalDateTime(pickupDate),
+      dropDate: parseLocalDateTime(dropDate),
       totalDays: calculateTotalDays(),
       totalPrice: getFinalPrice(), 
       customerName: customerData.name,
@@ -273,20 +274,20 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             </div>
           </div>
           <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
-            <div>Pickup: {new Date(pickupDate).toLocaleDateString('en-US', { 
+            <div>Pickup: {parseLocalDateTime(pickupDate).toLocaleDateString('en-US', { 
               weekday: 'short', 
               month: 'short', 
               day: 'numeric' 
-            })} at {new Date(pickupDate).toLocaleTimeString('en-US', { 
+            })} at {parseLocalDateTime(pickupDate).toLocaleTimeString('en-US', { 
               hour: 'numeric', 
               minute: '2-digit', 
               hour12: true 
             })}</div>
-            <div>Drop: {new Date(dropDate).toLocaleDateString('en-US', { 
+            <div>Drop: {parseLocalDateTime(dropDate).toLocaleDateString('en-US', { 
               weekday: 'short', 
               month: 'short', 
               day: 'numeric' 
-            })} at {new Date(dropDate).toLocaleTimeString('en-US', { 
+            })} at {parseLocalDateTime(dropDate).toLocaleTimeString('en-US', { 
               hour: 'numeric', 
               minute: '2-digit', 
               hour12: true 
@@ -322,7 +323,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             value={customerData.email}
             onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
-            placeholder="Enter your email"
+            placeholder="Enter customer email"
             required
             disabled={loading}
             readOnly={false}
@@ -344,10 +345,15 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             value={customerData.phone}
             onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
-            placeholder="Enter your phone number"
+            placeholder="Enter customer phone number"
             required
             disabled={loading}
           />
+          {isAuthenticated && (
+            <p className="text-xs text-gray-500 mt-1">
+              You can edit the contact phone for this booking
+            </p>
+          )}
         </div>
 
         {/* Move CouponInput here - after phone number */}

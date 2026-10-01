@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Booking } from '../types';
 import { bookingApi, ApiBooking } from '../services/api';
+import { parseLocalDateTime } from '../utils/dateTime';
 
 const convertApiBooking = (apiBooking: ApiBooking): Booking => ({
   ...apiBooking,
-  pickupDate: new Date(apiBooking.pickupDate),
-  dropDate: new Date(apiBooking.dropDate),
+  pickupDate: parseLocalDateTime(apiBooking.pickupDate),
+  dropDate: parseLocalDateTime(apiBooking.dropDate),
   createdAt: new Date(apiBooking.createdAt)
 });
 

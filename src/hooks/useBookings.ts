@@ -3,12 +3,13 @@ import { Booking } from '../types';
 import { bookingApi, ApiBooking } from '../services/api';
 import { notificationService } from '../services/notificationService';
 import { useAuth } from './useAuth'; // Add this import
+import { parseLocalDateTime } from '../utils/dateTime';
 
 // Convert API booking to internal booking format
 const convertApiBooking = (apiBooking: ApiBooking): Booking => ({
   ...apiBooking,
-  pickupDate: new Date(apiBooking.pickupDate),
-  dropDate: new Date(apiBooking.dropDate),
+  pickupDate: parseLocalDateTime(apiBooking.pickupDate),
+  dropDate: parseLocalDateTime(apiBooking.dropDate),
   createdAt: new Date(apiBooking.createdAt)
 });
 

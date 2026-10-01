@@ -1,4 +1,5 @@
 import { Resend } from 'resend';
+import { formatBookingDateTime } from '../utils/dateTime';
 
 class EmailService {
   private resend: Resend;
@@ -514,18 +515,7 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
         ownerName = 'Car Owner'
       } = bookingDetails;
 
-      // Format dates for better readability
-      const formatDate = (dateString: string) => {
-        const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        });
-      };
+      const formatDate = (dateString: string) => formatBookingDateTime(dateString);
 
       const subject = '🚗🎉 Your Booking is Confirmed - A+ Auto Care';
       const adminSubject = '🚗📋 New Car Booking Received - A+ Auto Care';

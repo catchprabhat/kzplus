@@ -470,20 +470,26 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
       deliveryPickup = false
     } = req.body;
 
-    // Use edited contact email if provided, otherwise fall back to account email
+    // Prefer entered customer contact details; fall back to the logged-in account.
     const contactEmailRaw = req.body.userEmail;
     const contactEmail =
       typeof contactEmailRaw === 'string' && contactEmailRaw.trim() !== ''
         ? contactEmailRaw.trim().toLowerCase()
         : normalizedEmail;
 
-    const userName = req.body.userName || normalizedEmail;
-    const userPhone = req.body.userPhone || '';
+    const enteredName = typeof req.body.userName === 'string' ? req.body.userName.trim() : '';
+    const userName = enteredName || contactEmail;
+
+    const enteredPhone = typeof req.body.userPhone === 'string' ? req.body.userPhone.trim() : '';
+    const tokenPhone = typeof req.user?.phone === 'string' ? req.user.phone.trim() : '';
+    const userPhone = enteredPhone || tokenPhone;
     
     console.log('=== DEBUGGING BOOKING CREATION ===');
     console.log('Token user object:', JSON.stringify(req.user, null, 2));
     console.log('Raw email from token:', tokenEmail);
-    console.log('Email to be stored:', normalizedEmail);
+    console.log('Entered customer email:', contactEmailRaw);
+    console.log('Email to be stored and emailed:', contactEmail);
+    console.log('Entered customer phone:', userPhone);
     
     // Validate required fields
     if (!carId || !carName || !pickupDate || !dropDate || !normalizedEmail || normalizedEmail.trim() === '') {
@@ -524,7 +530,7 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
         pickup_location, pickup_date, drop_date, total_hours, total_days, 
         total_price, delivery_pickup, status, created_at
       ) VALUES (
-        ${userName}, ${normalizedEmail}, ${userPhone}, ${carId}, ${carName}, ${carType},
+        ${userName}, ${contactEmail}, ${userPhone}, ${carId}, ${carName}, ${carType},
         ${pickupLocation || 'Bangalore'}, ${pickupDate}, ${dropDate}, ${totalHours}, ${totalDays},
         ${totalPrice}, ${deliveryPickup || false}, 'pending', ${new Date()}
       )
@@ -534,7 +540,7 @@ router.post('/authenticated', authenticateUser, async (req, res) => {
     // SQL result is already an array, no need for Array.from()
     const result = sqlResult as any[];
     
-    console.log('Storing booking with email:', normalizedEmail);
+    console.log('Storing booking with email:', contactEmail);
     console.log('Booking created successfully:', result[0]);
 
     // Send confirmation email with all required parameters
