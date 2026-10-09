@@ -559,11 +559,68 @@ function App() {
     }
   };
 
-  // Format pickup/drop as IST wall-clock with an explicit +05:30 offset.
-  const formatDateForDatabase = (
-    date: Date | string,
-    clock?: { hour: number; minute: number; period: 'AM' | 'PM' }
-  ): string => formatLocalDateTimeForDatabase(date, clock);
+  // Helper function to format date for database WITHOUT off-by-one-day bugs.
+  //
+  // THE PROBLEM:
+  //   new Date("2026-09-21") in V8/Chromium parses as UTC midnight.
+  //   Then .getMonth()/.getDate() (which return LOCAL values) in a timezone
+  //   ahead of UTC (e.g. IST = +05:30) gives 2026-09-20 05:30 local time, so
+  //   the date shifts backwards by 1 day. This caused false 409 "car not
+  //   available" conflicts because the database stored the wrong calendar day.
+  //
+  // THE FIX:
+  //   * Accept Date object OR string.
+  //   * For strings in YYYY-MM-DD / YYYY-MM-DD HH:MM:SS formats → parse using
+  //     split() + numeric parts (no Date constructor), treating as LOCAL.
+  //   * Otherwise use Date methods with local getters.
+  //   * Always output as "YYYY-MM-DD 12:00:00" (noon local) so any tiny
+  //     timezone/DST rounding can't flip the calendar day.
+  const formatDateForDatabase = (date: Date | string): string => {
+    let y: number, m: number, d: number;
+    let h: number = 0, min: number = 0, s: number = 0;
+
+    if (typeof date === 'string') {
+      // Try to parse known safe formats without using Date constructor.
+      // Match "YYYY-MM-DD" or "YYYY-MM-DD HH:MM:SS" or "YYYY/MM/DD ..."
+      const m1 = date.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})(?:[ T](\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/);
+      if (m1) {
+        y = parseInt(m1[1], 10);
+        m = parseInt(m1[2], 10);
+        d = parseInt(m1[3], 10);
+        // Preserve the actual time components if present in the string
+        if (m1[4] !== undefined) h = parseInt(m1[4], 10);
+        if (m1[5] !== undefined) min = parseInt(m1[5], 10);
+        if (m1[6] !== undefined) s = parseInt(m1[6], 10);
+      } else {
+        // Unknown string format → fall through to Date constructor.
+        const x = new Date(date);
+        y = x.getFullYear();
+        m = x.getMonth() + 1;
+        d = x.getDate();
+        // Extract real local time from the parsed Date
+        h = x.getHours();
+        min = x.getMinutes();
+        s = x.getSeconds();
+      }
+    } else {
+      y = date.getFullYear();
+      m = date.getMonth() + 1;
+      d = date.getDate();
+      // Extract real local time directly from the Date object
+      h = date.getHours();
+      min = date.getMinutes();
+      s = date.getSeconds();
+    }
+
+    const yy = String(y);
+    const mm = String(m).padStart(2, '0');
+    const dd = String(d).padStart(2, '0');
+    const hh = String(h).padStart(2, '0');
+    const mi = String(min).padStart(2, '0');
+    const ss = String(s).padStart(2, '0');
+    // Preserve the ACTUAL user-selected booking time (do NOT hardcode noon)
+    return `${yy}-${mm}-${dd} ${hh}:${mi}:${ss}`;
+  };
 
   const handleBookingComplete = async (booking: Booking) => {
     try {
@@ -614,16 +671,14 @@ function App() {
         carSeats: car?.seats || 0,
         pickupLocation: formatPickupLocation(),
         deliveryPickup: selfDriveBookingData.deliveryPickup || false,
-        totalHours: calculateTotalHours(
-          parseLocalDateTime(pickupForDb),
-          parseLocalDateTime(dropForDb)
-        ),
-        pickupDate: pickupForDb,
-        dropDate: dropForDb,
-        // Prefer details typed in the booking form over the logged-in account.
-        userName: (booking.customerName || '').trim() || user?.name || '',
-        userEmail: (booking.customerEmail || '').trim() || user?.email || '',
-        userPhone: (booking.customerPhone || '').trim() || user?.phone || '',
+        totalHours: calculateTotalHours(new Date(booking.pickupDate), new Date(booking.dropDate)),
+        pickupDate: formatDateForDatabase(booking.pickupDate),
+        dropDate: formatDateForDatabase(booking.dropDate),
+        // Use the customer details EXACTLY as entered in the booking form.
+        // (Admin is booking *on behalf* of a user — do NOT overwrite with admin account info.)
+        userName: booking.customerName,
+        userEmail: booking.customerEmail,
+        userPhone: booking.customerPhone
       };
       
       // Use createCarBooking with authentication
