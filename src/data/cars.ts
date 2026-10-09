@@ -15,6 +15,8 @@ import ertiga from '../images/ertigaNew.png';
 import i20 from '../images/i20.png';
 import kiaSonetBlack from '../images/kiaSonetBlack.jpg';
 import tataPunch from '../images/tatapunch.jpg';
+import whiteBaleno from '../images/whitebaleno.jpg';
+import citroenAircross from '../images/citroen-aircross.jpg';
 
 export const cars: Car[] = [
   {
@@ -252,6 +254,38 @@ export const cars: Car[] = [
     fuel: 'Petrol',
     pricePerDay: 3000,
     pricePerHour: 150,
+    features: ['Auto Climate Control'],
+    available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
+    subscription: 1800
+  },
+  {
+    id: '16',
+    name: 'White Baleno',
+    image: whiteBaleno,
+    type: 'Hatchback',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    pricePerDay: 3500,
+    pricePerHour: 200,
+    features: ['Brand-new', 'Premium Audio'],
+    available: true,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
+    subscription: 1500
+  },
+  {
+    id: '17',
+    name: 'Citroen Aircross C3',
+    image: citroenAircross,
+    type: 'SUV',
+    seats: 5,
+    transmission: 'Manual',
+    fuel: 'Petrol',
+    pricePerDay: 4000,
+    pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
     ownerName: 'Admin',
