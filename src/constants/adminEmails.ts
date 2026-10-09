@@ -7,7 +7,7 @@ export const ADMIN_EMAILS = [
   'zpluscarcare@gmail.com',
   'kvkumarsg@gmail.com',
   'bikashpatra.tcs@gmail.com',
-  'pamazon502@gmail.com'
+  'pamazon502@gmail.com',
   'umrsjd455@gmail.com',
   'umrsjd562@gmail.com',
 ].map((email) => email.toLowerCase());
