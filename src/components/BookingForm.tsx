@@ -5,6 +5,7 @@ import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth'; // Add this import
 import { CouponInput } from './CouponInput';
 import { parseLocalDateTime } from '../utils/dateTime';
+import { isAdminEmail } from '../constants/adminEmails';
 
 interface BookingFormProps {
   selectedCar: Car | null;
@@ -24,6 +25,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   onNavigate  // Add this to destructuring
 }) => {
   const { user, isAuthenticated } = useAuth(); // Add this hook
+  const isAdmin = isAdminEmail(user?.email);
   
   const [customerData, setCustomerData] = useState({
     name: '',
@@ -122,6 +124,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   // Add these state variables after the existing useState declarations
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [finalPrice, setFinalPrice] = useState(0);
+  const [adminAmountInput, setAdminAmountInput] = useState<string | null>(null);
   
   // Update the calculateTotalPrice function
   const calculateTotalPrice = () => {
@@ -134,6 +137,18 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   const getFinalPrice = () => {
     const originalPrice = calculateTotalPrice();
     return originalPrice - couponDiscount;
+  };
+
+  useEffect(() => {
+    setAdminAmountInput(null);
+  }, [pickupDate, dropDate, selectedCar?.id, couponDiscount]);
+
+  const getAmountToCharge = () => {
+    if (!isAdmin || adminAmountInput === null || adminAmountInput.trim() === '') {
+      return getFinalPrice();
+    }
+    const parsed = Number(adminAmountInput);
+    return Number.isFinite(parsed) && parsed >= 0 ? parsed : getFinalPrice();
   };
   
   // Add coupon handlers
@@ -169,7 +184,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       pickupDate: parseLocalDateTime(pickupDate),
       dropDate: parseLocalDateTime(dropDate),
       totalDays: calculateTotalDays(),
-      totalPrice: getFinalPrice(), 
+      totalPrice: getAmountToCharge(), 
       customerName: customerData.name,
       customerEmail: customerData.email,
       customerPhone: customerData.phone,
@@ -270,7 +285,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             {/* Final Total */}
             <div className="flex justify-between border-t dark:border-dark-600 pt-2 font-bold text-blue-900 dark:text-blue-300">
               <span>Total:</span>
-              <span>₹{getFinalPrice()}</span>
+              <span>₹{getAmountToCharge()}</span>
             </div>
           </div>
           <div className="mt-3 text-xs text-gray-500 dark:text-gray-400">
@@ -369,14 +384,35 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         {selectedCar && pickupDate && dropDate && (
           // Fix line 364 - Total amount section background
           <div className="mt-4 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg border border-blue-200 dark:border-blue-800">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center gap-3">
               <span className="text-lg font-semibold text-black-900 dark:text-black-100">
                 Total amount to be paid:
               </span>
-              <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
-                ₹{getFinalPrice()}
-              </span>
+              {isAdmin ? (
+                <div className="flex items-center gap-1">
+                  <span className="text-xl font-bold text-blue-600 dark:text-blue-400">₹</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={adminAmountInput ?? String(getFinalPrice())}
+                    onChange={(e) => setAdminAmountInput(e.target.value)}
+                    disabled={loading}
+                    className="w-32 px-3 py-2 text-right text-xl font-bold text-blue-600 dark:text-blue-400 border border-blue-300 dark:border-blue-700 dark:bg-dark-800 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    aria-label="Edit booking amount"
+                  />
+                </div>
+              ) : (
+                <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
+                  ₹{getFinalPrice()}
+                </span>
+              )}
             </div>
+            {isAdmin && (
+              <p className="text-xs text-gray-500 mt-2">
+                Admin: you can override the calculated amount for this booking.
+              </p>
+            )}
             
           </div>
         )}

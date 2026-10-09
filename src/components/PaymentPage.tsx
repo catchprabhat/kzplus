@@ -8,6 +8,7 @@ import axios from 'axios';
 import { API_BASE_URL } from '../services/api';
 import { serviceBookingApi } from '../services/api';
 import { useAuth } from '../hooks/useAuth';
+import { isAdminEmail } from '../constants/adminEmails';
 
 interface PaymentPageProps {
   bookingData: {
@@ -78,17 +79,7 @@ export const PaymentPage: React.FC<PaymentPageProps> = ({
 
   // Auth and admin check inside component
   const { user } = useAuth();
-  const ADMIN_EMAILS = [
-    'catchprabhat@gmail.com',
-    'zpluscarcare@gmail.com',
-    'kzplusmotors@gmail.com',
-    'padhisushreeta@gmail.com',
-    'pkumargr26@gmail.com',
-    'little.mishra23@gmail.com',
-    'umrsjd455@gmail.com',
-    'umrsjd562@gmail.com'
-  ].map(e => e.toLowerCase());
-  const isAdminUser = ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
+  const isAdminUser = isAdminEmail(user?.email);
 
   const [paymentMethod, setPaymentMethod] = useState<'debit' | 'credit' | 'upi' | 'pay-at-service'>('debit');
   const [upiOption, setUpiOption] = useState<'gpay' | 'paytm' | 'phonepe'>('gpay');

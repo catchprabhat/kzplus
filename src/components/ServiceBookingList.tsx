@@ -3,6 +3,7 @@ import { Calendar, User, Car, Phone, Mail, Clock, DollarSign, MoreVertical, Edit
 import { ServiceBooking } from '../types';
 import { LoadingSpinner } from './LoadingSpinner';
 import { useAuth } from '../hooks/useAuth';
+import { isAdminEmail } from '../constants/adminEmails';
 
 interface ServiceBookingListProps {
   bookings: ServiceBooking[];
@@ -23,18 +24,7 @@ export const ServiceBookingList: React.FC<ServiceBookingListProps> = ({
   const [phoneFilter, setPhoneFilter] = useState('');
   const { user } = useAuth();
 
-  // Admin list and check (expanded to include all admins)
-  const ADMIN_EMAILS = [
-    'catchprabhat@gmail.com',
-    'zpluscarcare@gmail.com',
-    'kzplusmotors@gmail.com',
-    'padhisushreeta@gmail.com',
-    'pkumargr26@gmail.com',
-    'little.mishra23@gmail.com',
-    'umrsjd455@gmail.com',
-    'umrsjd562@gmail.com'
-  ];
-  const isAdmin = ADMIN_EMAILS.includes((user?.email || '').toLowerCase());
+  const isAdmin = isAdminEmail(user?.email);
 
   // Admin-only month filter
   const [monthFilter, setMonthFilter] = useState<string>(''); // '' means no month filter

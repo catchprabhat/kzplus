@@ -13,6 +13,7 @@ import { useBookings } from '../hooks/useBookings';
 import { useTranslation } from 'react-i18next';
 import { ComingSoon } from './ComingSoon';
 import { OTPLoginForm } from './OTPLoginForm';
+import { isAdminEmail } from '../constants/adminEmails';
 import { ContactPage } from './ContactPage';
 import { API_BASE_URL } from '../services/api';
 
@@ -96,17 +97,7 @@ export const ServiceBooking: React.FC<ServiceBookingProps> = ({
   }, [selectedUser?.vehicleType]);
 
   const { isAuthenticated, login, logout, user } = useAuth();
-  const ADMIN_EMAILS = [
-    'catchprabhat@gmail.com',
-    'zpluscarcare@gmail.com',
-    'kzplusmotors@gmail.com',
-    'padhisushreeta@gmail.com',
-    'pkumargr26@gmail.com',
-    'little.mishra23@gmail.com',
-    'umrsjd455@gmail.com',
-    'umrsjd562@gmail.com'
-  ];
-  const isAdminUser = ADMIN_EMAILS.includes((user?.email ?? '').toLowerCase());
+  const isAdminUser = isAdminEmail(user?.email);
   const { bookings } = useBookings();
   const { t, i18n } = useTranslation();
 
