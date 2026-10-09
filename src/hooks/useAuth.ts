@@ -116,7 +116,7 @@ export const useAuth = () => {
   useEffect(() => {
     if (!isAuthenticated) return;
 
-    const IDLE_TIMEOUT_MS = 5 * 60 * 1000;
+    const IDLE_TIMEOUT_MS = 15 * 60 * 1000;
     let idleTimer: ReturnType<typeof setTimeout>;
 
     const resetIdleTimer = () => {
