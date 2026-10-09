@@ -11,6 +11,7 @@ export interface Car {
   pricePerHour: number; // Add this new field
   features: string[];
   available: boolean;
+  isSubscribed: boolean;
   ownerName: string;
   ownerEmail: string;
   status?: 'pending' | 'approved' | 'rejected';

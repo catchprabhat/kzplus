@@ -5,7 +5,7 @@ import dusterKA from '../images/duster-KA.jpg';
 import duster1 from '../images/duster1.jpg';
 import baleno from '../images/balenoo.jpg';
 import balenoAuto from '../images/balenoAuto.png';
-import Poloo from '../images/polo.jpg';
+// import Poloo from '../images/polo.jpg';
 import PoloNew from '../images/poloNew.png';
 import blackciaz from '../images/ciaz.jpg';
 import blueCiaz from '../images/blueCiaz.jpg';
@@ -31,6 +31,7 @@ export const cars: Car[] = [
     pricePerHour: 400,
     features: ['AWD', 'Panoramic Roof', 'Premium Sound', '18 Inch Tyres'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'KVKUMARSG@GMAIL.COM',
     subscription: 3400
@@ -47,6 +48,7 @@ export const cars: Car[] = [
     pricePerHour: 400,
     features: ['Captain-Seats', 'Premium Audio'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 3000
@@ -63,6 +65,7 @@ export const cars: Car[] = [
     pricePerHour: 350,
     features: ['Captain-Seats', 'Premium Audio'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 2500
@@ -80,6 +83,7 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
@@ -96,6 +100,7 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
@@ -112,26 +117,28 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'niranjanpp1971@gmail.com',
     subscription: 1800
   },
-  {
-    id: '7',
-    name: 'Polo Grey',
-    image: Poloo,
-    type: 'Hatchback',
-    seats: 5,
-    transmission: 'Manual',
-    fuel: 'Diesel',
-    pricePerDay: 3000,
-    pricePerHour: 150,
-    features: ['Auto Climate Control'],
-    available: true,
-    ownerName: 'Admin',
-    ownerEmail: 'jixdriveblr@gmail.com',
-    subscription: 1000
-  },
+  // {
+  //   id: '7',
+  //   name: 'Polo Grey',
+  //   image: Poloo,
+  //   type: 'Hatchback',
+  //   seats: 5,
+  //   transmission: 'Manual',
+  //   fuel: 'Diesel',
+  //   pricePerDay: 3000,
+  //   pricePerHour: 150,
+  //   features: ['Auto Climate Control'],
+  //   available: true,
+  //   isSubscribed: false,
+  //   ownerName: 'Admin',
+  //   ownerEmail: 'jixdriveblr@gmail.com',
+  //   subscription: 1000
+  // },
   {
     id: '8',
     name: 'Black Ciaz',
@@ -144,6 +151,7 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
@@ -160,6 +168,7 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
@@ -176,6 +185,7 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Brand-new', 'Premium Audio'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1500
@@ -192,6 +202,7 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
@@ -208,6 +219,7 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Brand-new', 'Premium Audio'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1500
@@ -224,6 +236,7 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: true,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1000
@@ -240,6 +253,7 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Auto Climate Control', 'Touchscreen Infotainment'],
     available: true,
+    isSubscribed: true,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1500
@@ -256,6 +270,7 @@ export const cars: Car[] = [
     pricePerHour: 150,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800
@@ -272,6 +287,7 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Brand-new', 'Premium Audio'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1500
@@ -288,6 +304,7 @@ export const cars: Car[] = [
     pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
+    isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
     subscription: 1800

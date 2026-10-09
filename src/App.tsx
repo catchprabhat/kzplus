@@ -35,6 +35,7 @@ import { SubscriptionPage } from './components/SubscriptionPage';
 import { EndTripPage } from './components/EndTripPage';
 import { ExtendTripPage } from './components/ExtendTripPage';
 import { getAvailableCars, createCarBooking } from './services/api';
+import { isAdminEmail } from './constants/adminEmails';
 import {
   combineDateWithClock,
   formatLocalDateTimeForDatabase,
@@ -1833,11 +1834,7 @@ function App() {
 
               {/* End Trip page - admin only, reached from My Trips > End Trip menu */}
               <Route path="/end-trip" element={
-                isAuthenticated && (
-                  (user?.email === 'catchprabhat@gmail.com') ||
-                  (user?.email === 'umrsjd455@gmail.com') ||
-                  (user?.email === 'umrsjd562@gmail.com')
-                ) ? (
+                isAuthenticated && isAdminEmail(user?.email) ? (
                   <EndTripPage />
                 ) : (
                   <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">
@@ -1859,11 +1856,7 @@ function App() {
 
               {/* Extend Trip page - admin only, reached from My Trips > Extend Trip menu */}
               <Route path="/extend-trip" element={
-                isAuthenticated && (
-                  (user?.email === 'catchprabhat@gmail.com') ||
-                  (user?.email === 'umrsjd455@gmail.com') ||
-                  (user?.email === 'umrsjd562@gmail.com')
-                ) ? (
+                isAuthenticated && isAdminEmail(user?.email) ? (
                   <ExtendTripPage />
                 ) : (
                   <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8 text-center">

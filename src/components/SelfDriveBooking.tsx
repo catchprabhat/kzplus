@@ -3,6 +3,7 @@ import { Calendar, ChevronLeft, ChevronRight, CheckCircle, CreditCard, MessageCi
 import { motion, AnimatePresence } from 'framer-motion';
 import { cars } from '../data/cars';
 import type { Booking, SelfDriveBooking as SelfDriveBookingType } from '../types';
+import subscribedLogo from '../images/subscribed.svg';
 
 interface SelfDriveBookingProps {
   onBookingComplete?: (booking: Booking) => void;
@@ -418,6 +419,14 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                   alt={car.name}
                   className="w-full h-48 sm:h-56 object-cover"
                 />
+                {car.isSubscribed && (
+                  <img
+                    src={subscribedLogo}
+                    alt="Subscribed"
+                    title="Subscribed for this month"
+                    className="absolute top-2 left-2 h-24 w-24 sm:h-28 sm:w-28 object-contain drop-shadow-md pointer-events-none"
+                  />
+                )}
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                   <h4 className="text-white font-bold text-lg sm:text-xl">
                     {car.name}

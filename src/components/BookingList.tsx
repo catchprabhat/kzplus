@@ -8,6 +8,7 @@ import { AssignDriverModal } from './AssignDriverModal';
 import { MessageCustomerModal } from './MessageCustomerModal';
 import { cars } from '../data/cars';
 import { fetchLatestTripData, LatestTripDates } from '../utils/tripSheetUtils';
+import { isAdminEmail } from '../constants/adminEmails';
 
 // =====================================================================
 // GOOGLE FORM / GOOGLE SHEET CONFIGURATION FOR TRIP MANAGEMENT
@@ -186,10 +187,7 @@ export const BookingList: React.FC<BookingListProps> = ({
   const [fetchingTripDates, setFetchingTripDates] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const isAdmin =
-    user?.email === 'catchprabhat@gmail.com' ||
-    user?.email === 'umrsjd455@gmail.com' ||
-    user?.email === 'umrsjd562@gmail.com';
+  const isAdmin = isAdminEmail(user?.email);
 
   // Admin-only filters
   const [adminSearch, setAdminSearch] = useState('');

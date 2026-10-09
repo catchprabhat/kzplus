@@ -1,6 +1,7 @@
 import React from 'react';
 import { Car } from '../types';
 import { Users, Zap, Settings, Fuel } from 'lucide-react';
+import subscribedLogo from '../images/subscribed.svg';
 
 interface CarCardProps {
   car: Car;
@@ -35,6 +36,14 @@ export const CarCard: React.FC<CarCardProps> = ({ car, onSelect, isSelected, isB
           alt={car.name}
           className="w-full h-48 object-cover"
         />
+        {car.isSubscribed && (
+          <img
+            src={subscribedLogo}
+            alt="Subscribed"
+            title="Subscribed for this month"
+            className="absolute top-2 left-2 h-24 w-24 object-contain drop-shadow-md pointer-events-none"
+          />
+        )}
         <div className="absolute top-4 right-4 bg-black dark:bg-dark-700 bg-opacity-90 backdrop-blur-sm px-3 py-1 rounded-full">
           <span className="text-sm font-semibold text-gray-800 dark:text-gray-200">{displayType}</span>
         </div>
