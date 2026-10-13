@@ -450,10 +450,10 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
                 <div className="flex items-center justify-between">
                 <div>
                     <p className="text-gray-600 dark:text-gray-400 text-sm">
-                      Monthly subscription
+                      Per day
                     </p>
                     <p className="text-gray-800 dark:text-gray-300 font-semibold">
-                      ₹{car.pricePerDay}/perday
+                      ₹{car.pricePerDay}
                     </p>
                   </div>
                   
