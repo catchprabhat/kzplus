@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Calendar, ChevronLeft, ChevronRight, CheckCircle, CreditCard, MessageCircle, Mail, CarIcon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { cars } from '../data/cars';
+import { listedCars } from '../data/cars';
 import type { Booking, SelfDriveBooking as SelfDriveBookingType } from '../types';
 import subscribedLogo from '../images/subscribed.svg';
 
@@ -29,7 +29,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
   const [googleMapsLocation, setGoogleMapsLocation] = useState('');
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [fleetType, setFleetType] = useState('');
-  const typeOptions = useMemo(() => Array.from(new Set(cars.map(c => c.type))).sort(), []);
+  const typeOptions = useMemo(() => Array.from(new Set(listedCars.map(c => c.type))).sort(), []);
   
   // Add the missing ref
   const timeSelectionRef = useRef<HTMLDivElement>(null);
@@ -408,7 +408,7 @@ export const SelfDriveBooking: React.FC<SelfDriveBookingProps> = ({
         </div>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 px-4">
-          {(fleetType ? cars.filter(car => car.available && car.type === fleetType) : cars.filter(car => car.available)).map((car) => (
+          {(fleetType ? listedCars.filter(car => car.available && car.type === fleetType) : listedCars.filter(car => car.available)).map((car) => (
             <div 
               key={car.id} 
               className="bg-white dark:bg-dark-800 rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]"

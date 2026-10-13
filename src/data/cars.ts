@@ -73,7 +73,7 @@ export const cars: Car[] = [
   
   {
     id: '4',
-    name: 'HR Grey Duster',
+    name: 'Grey Duster',
     image: dusterKA,
     type: 'SUV',
     seats: 5,
@@ -90,7 +90,7 @@ export const cars: Car[] = [
   },
   {
     id: '5',
-    name: 'HR SilverDuster',
+    name: 'Silver Duster',
     image: duster1,
     type: 'SUV',
     seats: 5,
@@ -243,7 +243,7 @@ export const cars: Car[] = [
   },
   {
     id: '14',
-    name: 'Kia Sonet Black',
+    name: 'Black Sonet',
     image: kiaSonetBlack,
     type: 'Hatchback',
     seats: 5,
@@ -310,3 +310,5 @@ export const cars: Car[] = [
     subscription: 1800
   }
 ];
+
+export const listedCars = cars.filter((car) => !car.isSubscribed);

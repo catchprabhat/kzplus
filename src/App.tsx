@@ -22,7 +22,7 @@ import { LoadingSpinner } from './components/LoadingSpinner';
 import { ThemeToggle } from './components/ThemeToggle';
 import { ComingSoon } from './components/ComingSoon';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { cars } from './data/cars';
+import { cars, listedCars } from './data/cars';
 import { Car, Booking, ServiceBooking as ServiceBookingType } from './types';
 import { useBookings } from './hooks/useBookings';
 import { useCalendarBookings } from './hooks/useCalendarBookings';
@@ -326,7 +326,7 @@ function App() {
   const [serviceBookingLoading, setServiceBookingLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showServicesOverlay, setShowServicesOverlay] = useState(false);
-  const [availableCars, setAvailableCars] = useState<Car[]>(cars);
+  const [availableCars, setAvailableCars] = useState<Car[]>(listedCars);
   const [bookedCarIds, setBookedCarIds] = useState<string[]>([]);
   
   // Add page loading state
@@ -468,11 +468,10 @@ function App() {
       const result = await getAvailableCars(pickupDate, dropDate);
       setBookedCarIds(result.bookedCarIds);
       
-      // Show all cars instead of filtering out booked ones
-      setAvailableCars(cars);
+      setAvailableCars(listedCars);
     } catch (error) {
       console.error('Error fetching available cars:', error);
-      setAvailableCars(cars); // Fallback to all cars
+      setAvailableCars(listedCars);
     }
   };
 
