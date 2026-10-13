@@ -17,6 +17,7 @@ import kiaSonetBlack from '../images/kiaSonetBlack.jpg';
 import tataPunch from '../images/tatapunch.jpg';
 import whiteBaleno from '../images/whitebaleno.jpg';
 import citroenAircross from '../images/citroen-aircross.jpg';
+import thar from '../images/thar.jpg';
 
 export const cars: Car[] = [
   {
@@ -233,7 +234,7 @@ export const cars: Car[] = [
     transmission: 'Manual',
     fuel: 'Petrol',
     pricePerDay: 3000,
-    pricePerHour: 150,
+    pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
     isSubscribed: true,
@@ -250,13 +251,13 @@ export const cars: Car[] = [
     transmission: 'Manual',
     fuel: 'Petrol',
     pricePerDay: 3500,
-    pricePerHour: 200,
+    pricePerHour: 250,
     features: ['Auto Climate Control', 'Touchscreen Infotainment'],
     available: true,
     isSubscribed: true,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
-    subscription: 1500
+    subscription: 2000
   },
   {
     id: '15',
@@ -267,7 +268,7 @@ export const cars: Car[] = [
     transmission: 'Manual',
     fuel: 'Petrol',
     pricePerDay: 3000,
-    pricePerHour: 150,
+    pricePerHour: 250,
     features: ['Auto Climate Control'],
     available: true,
     isSubscribed: false,
@@ -307,7 +308,24 @@ export const cars: Car[] = [
     isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
-    subscription: 1800
+    subscription: 2500
+  },
+  {
+    id: '18',
+    name: 'Thar',
+    image: thar,
+    type: 'SUV',
+    seats: 4,
+    transmission: 'Manual',
+    fuel: 'Diesel',
+    pricePerDay: 6000,
+    pricePerHour: 400,
+    features: ['4x4'],
+    available: true,
+    isSubscribed: false,
+    ownerName: 'Admin',
+    ownerEmail: 'jixdriveblr@gmail.com',
+    subscription: 3000
   }
 ];
 

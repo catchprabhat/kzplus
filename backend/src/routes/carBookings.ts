@@ -39,6 +39,7 @@ const CAR_OWNERS: CarOwnerInfo[] = [
   { carId: '15', carName: 'Tata Punch',         ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
   { carId: '16', carName: 'White Baleno',       ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
   { carId: '17', carName: 'Citroen Aircross C3', ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
+  { carId: '18', carName: 'Thar',               ownerName: 'Admin', ownerEmail: 'jixdriveblr@gmail.com' },
 ];
 
 /**
