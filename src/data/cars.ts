@@ -121,7 +121,7 @@ export const cars: Car[] = [
     isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'niranjanpp1971@gmail.com',
-    subscription: 1800
+    subscription: 1500
   },
   // {
   //   id: '7',
@@ -149,7 +149,7 @@ export const cars: Car[] = [
     transmission: 'Manual',
     fuel: 'Petrol',
     pricePerDay: 3500,
-    pricePerHour: 150,
+    pricePerHour: 250,
     features: ['Auto Climate Control'],
     available: true,
     isSubscribed: false,
@@ -166,13 +166,13 @@ export const cars: Car[] = [
     transmission: 'Manual',
     fuel: 'Petrol',
     pricePerDay: 3000,
-    pricePerHour: 150,
+    pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
     isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
-    subscription: 1800
+    subscription: 1500
   },
   {
     id: '10',
@@ -200,7 +200,7 @@ export const cars: Car[] = [
     transmission: 'Manual',
     fuel: 'Petrol',
     pricePerDay: 3500,
-    pricePerHour: 150,
+    pricePerHour: 200,
     features: ['Auto Climate Control'],
     available: true,
     isSubscribed: false,
@@ -223,7 +223,7 @@ export const cars: Car[] = [
     isSubscribed: false,
     ownerName: 'Admin',
     ownerEmail: 'jixdriveblr@gmail.com',
-    subscription: 1500
+    subscription: 1800
   },
   {
     id: '13',
