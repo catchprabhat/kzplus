@@ -1,6 +1,8 @@
+import path from 'path';
 import { neon, NeonQueryFunction } from '@neondatabase/serverless';
 import dotenv from 'dotenv';
 
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 dotenv.config();
 
 if (!process.env.NETLIFY_DATABASE_URL) {

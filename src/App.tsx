@@ -625,15 +625,7 @@ function App() {
   const handleBookingComplete = async (booking: Booking) => {
     try {
       setBookingLoading(true);
-      
-      // Check if user is authenticated
-      if (!isAuthenticated) {
-        alert('Please log in to make a booking.');
-        setRedirectAfterLogin('/car-selection'); // Remember to redirect to book page after login
-        navigate('/login'); // Redirect to login
-        return;
-      }
-      
+
       // Find the selected car to get its type and seats
       const car = cars.find(c => c.id === booking.carId);
       
@@ -681,48 +673,42 @@ function App() {
         userPhone: booking.customerPhone
       };
       
-      // Use createCarBooking with authentication
       const createdBooking = await createCarBooking(enhancedBooking);
-      setLatestBooking(createdBooking);
+      setLatestBooking({
+        ...booking,
+        id: createdBooking.id || booking.id,
+        carName: createdBooking.carName || booking.carName,
+        totalDays: createdBooking.totalDays ?? booking.totalDays,
+      });
       setLatestServiceBooking(null); // Clear service booking
       setShowConfirmation(true);
-      
-      // Add scroll to top functionality when booking is confirmed
+
       window.scrollTo({
         top: 0,
         behavior: 'smooth'
       });
-      
-      // Refresh bookings list
-      fetchBookings();
 
       // Refresh available cars before resetting dates
       if (pickupDate && dropDate) {
         fetchAvailableCars(pickupDate, dropDate);
       }
-      
-      // Reset form
+
       setSelectedCar(null);
-      setPickupDate('');
-      setDropDate('');
-      
-      // Redirect to My Trips page after successful booking
-      navigate('/my-trips');
-      
-      // Hide confirmation after 5 seconds
+
+      if (isAuthenticated) {
+        setPickupDate('');
+        setDropDate('');
+        fetchBookings();
+        navigate('/my-trips');
+      }
+
       setTimeout(() => {
         setShowConfirmation(false);
       }, 5000);
     } catch (error) {
       console.error('Error creating booking:', error);
-      
-      // Handle authentication errors specifically
-      if (error instanceof Error && error.message.includes('Authentication required')) {
-        alert('Please log in to make a booking.');
-        navigate('/profile');
-      } else {
-        alert('Failed to create booking. Please try again.');
-      }
+      const message = error instanceof Error ? error.message : 'Failed to create booking. Please try again.';
+      alert(message);
     } finally {
       setBookingLoading(false);
     }
@@ -1776,34 +1762,17 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Show Booking Form only when car is selected, dates are available, and user is authenticated */}
+                    {/* Show Booking Form when car and dates are selected. Login is optional. */}
                     {selectedCar && pickupDate && dropDate && (
                       <div ref={bookingDetailsRef} className="max-w-md mx-auto">
-                        {isAuthenticated ? (
-                          <BookingForm
-                            selectedCar={selectedCar}
-                            pickupDate={pickupDate}
-                            dropDate={dropDate}
-                            onBookingComplete={handleBookingComplete}
-                            loading={bookingLoading}
-                            onNavigate={handleTabChange}
-                          />
-                        ) : (
-                          <div className="text-center py-8 bg-white dark:bg-dark-800 rounded-xl shadow-lg p-8">
-                            <User className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-300 mb-2">Authentication Required</h3>
-                            <p className="text-gray-500 dark:text-gray-400 mb-4">Please log in to make a booking. This ensures your bookings are saved to your account.</p>
-                            <button
-                              onClick={() => {
-                                setRedirectAfterLogin('/car-selection'); // Remember to redirect back to car selection
-                                navigate('/login');
-                              }}
-                              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                              Go to Login
-                            </button>
-                          </div>
-                        )}
+                        <BookingForm
+                          selectedCar={selectedCar}
+                          pickupDate={pickupDate}
+                          dropDate={dropDate}
+                          onBookingComplete={handleBookingComplete}
+                          loading={bookingLoading}
+                          onNavigate={handleTabChange}
+                        />
                       </div>
                     )}
                     

@@ -167,13 +167,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     e.preventDefault();
     
     if (!selectedCar || !pickupDate || !dropDate || loading) return;
-  
-    // Check if user is authenticated
-    if (!isAuthenticated) {
-      alert('Please log in to make a booking.');
-      return;
-    }
-  
+
     // Only store the final discounted price in totalPrice
     const booking: Booking = {
       id: Date.now().toString(),
@@ -205,24 +199,6 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     // setFinalPrice(0);
   };
 
-  // Show login prompt if not authenticated
-  if (!isAuthenticated) {
-    return (
-      <div className="bg-white dark:bg-dark-800 rounded-xl shadow-lg p-6 text-center">
-        <h3 className="text-xl font-bold text-gray-900 dark:text-black mb-4">Authentication Required</h3>
-        <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Please log in to make a booking. This ensures your bookings are saved to your account.
-        </p>
-        <button 
-          onClick={() => onNavigate?.('profile')}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
-        >
-          Go to Login
-        </button>
-      </div>
-    );
-  }
-
   const isFormValid = selectedCar && pickupDate && dropDate && customerData.name && customerData.email && customerData.phone;
 
   const pricingBreakdown = calculatePricingBreakdown();
@@ -239,6 +215,21 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         <User className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />
         Booking Details
       </h3>
+
+      {!isAuthenticated && (
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800">
+          <p className="text-sm text-gray-700 dark:text-gray-300 mb-3">
+            Login is optional. You can book as a guest with your name, email, and phone.
+          </p>
+          <button
+            type="button"
+            onClick={() => onNavigate?.('login')}
+            className="text-sm bg-white dark:bg-dark-700 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-lg border border-blue-200 dark:border-blue-700 hover:bg-blue-50 dark:hover:bg-dark-600 transition-colors"
+          >
+            Log in to save this trip to your account
+          </button>
+        </div>
+      )}
 
       {selectedCar && pickupDate && dropDate && (
         <div className="mb-6 p-4 bg-gray-50 dark:bg-dark-700 rounded-lg">
@@ -338,16 +329,16 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             value={customerData.email}
             onChange={(e) => setCustomerData({ ...customerData, email: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
-            placeholder="Enter customer email"
+            placeholder="Enter your email"
             required
             disabled={loading}
             readOnly={false}
           />
-          {isAuthenticated && (
-            <p className="text-xs text-gray-500 mt-1">
-              You can edit the contact email for this booking
-            </p>
-          )}
+          <p className="text-xs text-gray-500 mt-1">
+            {isAuthenticated
+              ? 'You can edit the contact email for this booking'
+              : 'We will send your booking confirmation to this email'}
+          </p>
         </div>
 
         <div>
@@ -360,15 +351,15 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             value={customerData.phone}
             onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-dark-600 dark:bg-dark-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all"
-            placeholder="Enter customer phone number"
+            placeholder="Enter your phone number"
             required
             disabled={loading}
           />
-          {isAuthenticated && (
-            <p className="text-xs text-gray-500 mt-1">
-              You can edit the contact phone for this booking
-            </p>
-          )}
+          <p className="text-xs text-gray-500 mt-1">
+            {isAuthenticated
+              ? 'You can edit the contact phone for this booking'
+              : 'We will use this number to confirm your booking'}
+          </p>
         </div>
 
         {/* Move CouponInput here - after phone number */}

@@ -1,6 +1,3 @@
-const NETLIFY_DATABASE_URL='postgresql://neondb_owner:npg_c2IJw9LjlbpE@ep-cold-lab-a56reurn-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require'; 
-import { neon } from '@netlify/neon';
-const sql = neon(NETLIFY_DATABASE_URL); // automatically uses env NETLIFY_DATABASE_URL
 export interface ApiBooking {
   id: string;
   carId: string;
@@ -488,30 +485,42 @@ export interface CarBookingData {
   deliveryPickup?: boolean;
 }
 
-// Create car booking
+// Create car booking. Logged-in users use the authenticated endpoint;
+// guests can book without a token via the public endpoint.
 export const createCarBooking = async (bookingData: CarBookingData) => {
-  // Get authentication token
   const token = localStorage.getItem('driveEasyToken');
-  
-  if (!token) {
-    throw new Error('Authentication required. Please log in to make a booking.');
-  }
+  const endpoint = token
+    ? `${API_BASE_URL}/car-bookings/authenticated`
+    : `${API_BASE_URL}/car-bookings`;
 
-  const response = await fetch(`${API_BASE_URL}/car-bookings/authenticated`, {
+  const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     body: JSON.stringify(bookingData),
   });
 
   if (!response.ok) {
-    const error = await response.json();
+    const error = await response.json().catch(() => ({}));
     throw new Error(error.error || 'Failed to create booking');
   }
 
-  return response.json();
+  const data = await response.json();
+  const booking = data.booking || data;
+
+  return {
+    ...booking,
+    id: String(booking.id ?? ''),
+    carName: booking.carName || booking.car_name,
+    totalDays: booking.totalDays ?? booking.total_days,
+    totalPrice: booking.totalPrice ?? booking.total_price,
+    pickupDate: booking.pickupDate || booking.pickup_date,
+    dropDate: booking.dropDate || booking.drop_date,
+    status: booking.status,
+    userEmail: booking.userEmail || booking.user_email,
+  };
 };
 
 // Get available cars

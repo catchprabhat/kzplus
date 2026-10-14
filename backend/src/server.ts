@@ -3,6 +3,7 @@ import cors from 'cors';
 // Remove or use the helmet import
 // import helmet from 'helmet';
 import morgan from 'morgan';
+import path from 'path';
 import dotenv from 'dotenv';
 import carBookingsRouter from './routes/carBookings';
 import couponRoutes from './routes/coupons';
@@ -15,6 +16,7 @@ import bookingRoutes from './routes/bookings';
 import adminRoutes from './routes/admin';
 import vehiclesRoutes from './routes/vehicles'; // Add this import
 
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 dotenv.config();
 
 const app = express();
