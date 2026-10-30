@@ -151,7 +151,7 @@ This is an automated security message.
       try {
         // Send email using Resend
         const data = await this.resend.emails.send({
-          from: 'A+ Auto Care <noreply@kzplusautocare.in>', // Updated to use verified domain
+          from: 'A+ Auto Care <noreply@jixautocare.in>', // Updated to use verified domain
           to: email,
           subject: template.subject,
           html: template.html,
@@ -455,7 +455,7 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
 
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <noreply@kzplusautocare.in>', // CHANGE THIS LINE
+        from: 'JIXDRIVE <noreply@jixautocare.in>', // CHANGE THIS LINE
         to: userEmail,
         subject: subject,
         html: html,
@@ -466,7 +466,7 @@ A+ AUTO CARE - Service Booking Confirmation\n\nBooking Confirmed! 🔧🎉\n\nSe
 
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <noreply@kzplusautocare.in>', // CHANGE THIS LINE
+        from: 'JIXDRIVE <noreply@jixautocare.in>', // CHANGE THIS LINE
         to: 'kzplusmotors@gmail.com',
         subject: adminSubject,
         html: adminHtml,
@@ -685,7 +685,7 @@ Need help? Contact us at jixdriveblr@gmail.com
       );
       // Send email to user
       const userEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <noreply@kzplusautocare.in>',
+        from: 'JIXDRIVE <noreply@jixautocare.in>',
         to: userEmail,
         subject: subject,
         html: html,
@@ -696,7 +696,7 @@ Need help? Contact us at jixdriveblr@gmail.com
 
       // Send email to admin
       const adminEmailResult = await this.resend.emails.send({
-        from: 'JIXDRIVE <noreply@kzplusautocare.in>',
+        from: 'JIXDRIVE <noreply@jixautocare.in>',
         to: process.env.ADMIN_EMAIL || 'jixdriveblr@gmail.com',
 
         subject: adminSubject,
@@ -711,7 +711,7 @@ Need help? Contact us at jixdriveblr@gmail.com
       const adminEmailNormalized = (process.env.ADMIN_EMAIL || 'jixdriveblr@gmail.com').toLowerCase();
       if (ownerEmail && ownerEmail.trim() !== '' && ownerEmail.toLowerCase() !== adminEmailNormalized) {
         ownerEmailResult = await this.resend.emails.send({
-          from: 'JIXDRIVE <noreply@kzplusautocare.in>',
+          from: 'JIXDRIVE <noreply@jixautocare.in>',
           to: ownerEmail,
           subject: ownerSubject,
           html: ownerHtml,

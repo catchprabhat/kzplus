@@ -320,7 +320,7 @@ export const bookingApi = {
 const API_BASE_URL = import.meta.env.VITE_API_URL || (
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
     ? '/api'                              // Dev: Vite proxy forwards to http://localhost:5000/api
-    : 'https://api.kzplusautocare.in/api' // Production backend with custom domain
+    : 'https://api.jixautocare.in/api' // Production backend with custom domain
 );
 
 // Export it so other components can use it
