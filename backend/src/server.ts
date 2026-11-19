@@ -16,8 +16,9 @@ import bookingRoutes from './routes/bookings';
 import adminRoutes from './routes/admin';
 import vehiclesRoutes from './routes/vehicles'; // Add this import
 
+// backend/.env first so local/prod DB URL is not overwritten by a stale root .env
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

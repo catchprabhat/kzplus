@@ -281,10 +281,12 @@ export const BookingList: React.FC<BookingListProps> = ({
         const priceStr = String(b.totalPrice).toLowerCase();
         const modelStr = (b.carName || '').toLowerCase();
         const typeStr = (b.carType || '').toLowerCase();
+        const nameStr = (b.customerName || '').toLowerCase();
         const emailStr = (b.customerEmail || '').toLowerCase();
         const phoneStr = (b.customerPhone || '').toLowerCase();
 
         return (
+          nameStr.includes(term) ||
           modelStr.includes(term) ||
           typeStr.includes(term) ||
           emailStr.includes(term) ||
@@ -305,30 +307,12 @@ export const BookingList: React.FC<BookingListProps> = ({
       filtered = filtered.filter((b) => getCanonicalCarType(b).toLowerCase() === vf);
     }
 
-    // Admin-only month filter for repeated customers (2+)
+    // Admin-only month filter: show all bookings in the selected month
     if (isAdmin && monthFilter !== '') {
       const monthIndex = parseInt(monthFilter, 10); // 0..11 for Jan..Dec
-      const monthFiltered = filtered.filter(
+      filtered = filtered.filter(
         (b) => new Date(b.pickupDate).getMonth() === monthIndex
       );
-
-      const counts: Record<string, number> = {};
-      monthFiltered.forEach((b) => {
-        const key =
-          (b.customerPhone || '').trim() ||
-          (b.customerEmail || '').trim() ||
-          (b.customerName || '').trim();
-        if (!key) return;
-        counts[key] = (counts[key] || 0) + 1;
-      });
-
-      filtered = monthFiltered.filter((b) => {
-        const key =
-          (b.customerPhone || '').trim() ||
-          (b.customerEmail || '').trim() ||
-          (b.customerName || '').trim();
-        return key && counts[key] >= 2;
-      });
     }
 
     setFilteredBookings(filtered);
@@ -521,9 +505,9 @@ export const BookingList: React.FC<BookingListProps> = ({
                 type="text"
                 value={adminSearch}
                 onChange={(e) => setAdminSearch(e.target.value)}
-                placeholder="Search"
+                placeholder="Search name, car, phone..."
                 className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base"
-                title="Search by vehicle model, date, time, price, duration, email, phone number, vehicle type"
+                title="Search by customer name, vehicle model, date, time, price, duration, email, phone number, vehicle type"
               />
 
               <select
@@ -544,7 +528,7 @@ export const BookingList: React.FC<BookingListProps> = ({
                 value={monthFilter}
                 onChange={(e) => setMonthFilter(e.target.value)}
                 className="w-full sm:w-64 px-4 py-2 border border-gray-300 dark:border-dark-600 bg-white dark:bg-dark-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
-                title="Show repeated customers (2+) in selected month"
+                title="Show all bookings in the selected month"
               >
                 <option value="">All months</option>
                 <option value="0">January</option>

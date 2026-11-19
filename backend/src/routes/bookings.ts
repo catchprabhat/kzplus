@@ -4,6 +4,7 @@ import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
 import { authenticateUser } from '../middleware/userAuth';
 import { emailService } from '../services/emailService';
+import { ADMIN_EMAILS, isAdminEmail } from '../constants/adminEmails';
 // Remove these unused imports:
 // import jwt from 'jsonwebtoken';
 
@@ -22,20 +23,6 @@ interface ServiceBooking {
   created_at: string;
   services: any; // Added services field
 }
-
-// Centralized admin list (match frontend)
-const ADMIN_EMAILS = [
-  'catchprabhat@gmail.com',
-  'zpluscarcare@gmail.com',
-  'kzplusmotors@gmail.com',
-  'jixdriveblr@gmail.com',
-  'little.mishra23@gmail.com',
-  'umrsjd455@gmail.com',
-  'umrsjd562@gmail.com',
-  'KVKUMARSG@gmail.com',
-  'bikashpatra.tcs@gmail.com',
-  'pamazon502@gmail.com'
-].map(e => e.toLowerCase());
 
 router.post(
   '/',
@@ -70,7 +57,7 @@ router.post(
     try {
       const requesterEmail = (req.user?.email || '').toLowerCase();
       const requesterPhone = req.user?.phone;
-      const isAdminRequester = ADMIN_EMAILS.includes(requesterEmail);
+      const isAdminRequester = isAdminEmail(requesterEmail);
 
       // Prefer explicit targetUserId whenever provided (selected vehicle card)
       let user;
@@ -178,7 +165,7 @@ router.get(
       }
 
       // Check if user is admin
-      const isAdmin = ADMIN_EMAILS.includes(userEmail);
+      const isAdmin = isAdminEmail(userEmail);
 
       let result;
       if (isAdmin) {
@@ -293,7 +280,7 @@ router.put('/service-bookings/:id/status', authenticateUser, async (req: Request
     console.log('Request body:', req.body);
 
     // Check if user is an authorized admin
-    if (!ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
+    if (!isAdminEmail(user.email)) {
       console.log('❌ Access denied - user is not an authorized admin');
       console.log('User email:', user.email, 'Allowed admins:', ADMIN_EMAILS);
       return res.status(403).json({ error: 'Admin access required. Only authorized admin can update booking status.' });
@@ -413,7 +400,7 @@ router.delete('/service-bookings/:id', authenticateUser, async (req, res) => {
     }
 
     // Check if user is admin or owns the booking
-    const isAdmin = ADMIN_EMAILS.includes((user.email || '').toLowerCase());
+    const isAdmin = isAdminEmail(user.email);
     
     if (!isAdmin) {
       // Regular users can only delete their own bookings

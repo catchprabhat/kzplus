@@ -4,6 +4,7 @@ import { bookingApi, ApiBooking } from '../services/api';
 import { notificationService } from '../services/notificationService';
 import { useAuth } from './useAuth'; // Add this import
 import { parseLocalDateTime } from '../utils/dateTime';
+import { isAdminEmail } from '../constants/adminEmails';
 
 // Convert API booking to internal booking format
 const convertApiBooking = (apiBooking: ApiBooking): Booking => ({
@@ -35,8 +36,7 @@ export const useBookings = () => {
   const [error, setError] = useState<string | null>(null);
   const { isAuthenticated, getAuthToken, user } = useAuth();
 
-  // Check if current user is admin
-  const isAdmin = user?.email === 'catchprabhat@gmail.com' || user?.email === 'umrsjd455@gmail.com';
+  const isAdmin = isAdminEmail(user?.email);
 
   // Fetch bookings from API
   const fetchBookings = async () => {

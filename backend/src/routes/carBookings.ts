@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import { sql } from '../config/database';
 import { emailService } from '../services/emailService';
 import { authenticateUser } from '../middleware/userAuth';
+import { isAdminEmail } from '../constants/adminEmails';
 // Remove this line: import jwt from 'jsonwebtoken';
 
 const router = express.Router();
@@ -293,10 +294,9 @@ router.put('/:id/status', authenticateUser, async (req: Request, res: Response) 
   console.log('User info:', { userId: user.id, email: user.email, phone: user.phone });
   console.log('Request body:', req.body);
 
-  // Check if user is the specific admin
-  if (user.email !== 'catchprabhat@gmail.com' && user.email !== 'umrsjd455@gmail.com') {
-    console.log('❌ Access denied - user is not the authorized admin');
-    console.log('User email:', user.email, 'Required:', 'catchprabhat@gmail.com or umrsjd455@gmail.com');
+  if (!isAdminEmail(user.email)) {
+    console.log('❌ Access denied - user is not an authorized admin');
+    console.log('User email:', user.email);
     return res.status(403).json({ error: 'Admin access required. Only authorized admin can update booking status.' });
   }
 
@@ -390,7 +390,7 @@ router.delete('/:id', authenticateUser, async (req, res) => {
     }
 
     // Check if user is admin or owns the booking
-    const isAdmin = user.email === 'catchprabhat@gmail.com';
+    const isAdmin = isAdminEmail(user.email);
     
     if (!isAdmin) {
       // Regular users can only delete their own bookings - use user_email instead of user_id
